@@ -4,6 +4,12 @@ Changelog
 1.0.0a2 (unreleased)
 --------------------
 
+- Fix/simplify packaging.
+  [jensens]
+
+- Implement subdirectory editable install
+  [jensens]
+
 - Implement package extras
   [jensens]
 

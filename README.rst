@@ -46,6 +46,10 @@ Those can be referenced in other values as ``${settings:key}`` and will be expan
 ``extras = EXTRA1,EXTRA2``
      Package extras to install. Default empty.
 
+``subdirectory = SUBPATH``
+      For specifying the path to the Python package, when it is not in the root of the VCS directory.
+      Default empty.
+
 Usage
 =====
 

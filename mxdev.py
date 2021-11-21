@@ -49,6 +49,7 @@ class Configuration:
                 "url": url,
                 "branch": ini[name].get("branch", "main"),
                 "extras": ini[name].get("extras", ""),
+                "subdir": ini[name].get("subdirectory", ""),
             }
 
     @property
@@ -131,12 +132,15 @@ def write(
         fio.write("# mxdev combined constraints\n")
         fio.write(f"-c {constraints_filename}\n\n")
         fio.writelines(requirements)
-        fio.write("\n"+ "#" * 79 + "\n")
+        fio.write("\n" + "#" * 79 + "\n")
         fio.write("# mxdev development sources:\n\n")
         for name in packages:
             package = packages[name]
-            extras = f"[{package['extras']}]" if package['extras'] else ""
-            fio.write(f"-e {package['url']}@{package['branch']}#egg={name}{extras}\n")
+            extras = f"[{package['extras']}]" if package["extras"] else ""
+            subdir = f"&subdirectory={package['subdir']}" if package["subdir"] else ""
+            fio.write(
+                f"-e {package['url']}@{package['branch']}#egg={name}{extras}{subdir}\n"
+            )
         fio.write("\n")
 
     with open(constraints_filename, "w") as fio:

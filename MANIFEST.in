@@ -2,4 +2,4 @@ include *.rst
 recursive-include example *.ini
 recursive-include example *.txt
 recursive-exclude example *-outfile.txt
-recursive-include src *.py
+recursive-include mxdev.py
