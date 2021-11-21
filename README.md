@@ -15,14 +15,11 @@ Create an INI file, like `sources.ini` in [configparser.ExtendedInterpolation](h
 The main section must be called `[settings]`, even if kept empty.
 In the main sections the input and output files are defined.
 
-`requirements-in`
-    Main requirements file to start with. This can be an URL too.
+- `requirements-in`: Main requirements file to start with. This can be an URL too.
 
-`requirements-out`
-    Output of the combined requirements including development sources to be used later with `pip install`
+- `requirements-out`: Output of the combined requirements including development sources to be used later with `pip install`
 
-`constraints-out`
-    Output of the combined constraints.
+- `constraints-out`: Output of the combined constraints.
 
 Additional, custom variables can be defined as `key = value` pair.
 Those can be referenced in other values as `${settings:key}` and will be expanded there.
@@ -37,13 +34,16 @@ Hint: to configure a target directory for the sources call `pip install --src TA
 
 ## Rationale
 
-Problem:
-    There is a constraint file like `-c constraints.txt` with a package `foo.bar` with a version pin.
-    Then it is not possible to install this package in a requirements file editable like `-r requirements.txt` with `-e -e git+ssh://git@github.com/orga/foo.bar.git@fix-99#egg=foo.bar`.
+### Problem:
 
-Idea:
-    A pre-processor fetches (as this can be an URL) and expands all `-c SOMEOTHER_FILE_OR_URL` and `-r SOMEOTHER_FILE_OR_URL` files into one, filtering out all packages given in a configuration file.
-    For each of those packages a `-e ...` entry is generated instead and written to a new `TARGET.txt`.
+There is a constraint file like `-c constraints.txt` with a package `foo.bar` with a version pin.
+Then it is not possible to install this package in a requirements file editable like `-r requirements.txt` with `-e -e git+ssh://git@github.com/orga/foo.bar.git@fix-99#egg=foo.bar`.
+
+### Idea:
+A pre-processor fetches (as this can be an URL) and expands all `-c SOMEOTHER_FILE_OR_URL` and `-r SOMEOTHER_FILE_OR_URL` files into one, filtering out all packages given in a configuration file.
+For each of those packages a `-e ...` entry is generated instead and written to a new `TARGET.txt`.
+
+## Example Configuration
 
 The configuration is written in a file `sources.ini` in [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) INI syntax (YAML would be nice, but the package must not have any dependencies to other package)
 
