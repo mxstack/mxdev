@@ -34,12 +34,13 @@ Hint: to configure a target directory for the sources call `pip install --src TA
 
 ## Rationale
 
-### Problem:
+### Problem
 
 There is a constraint file like `-c constraints.txt` with a package `foo.bar` with a version pin.
 Then it is not possible to install this package in a requirements file editable like `-r requirements.txt` with `-e -e git+ssh://git@github.com/orga/foo.bar.git@fix-99#egg=foo.bar`.
 
-### Idea:
+### Idea
+
 A pre-processor fetches (as this can be an URL) and expands all `-c SOMEOTHER_FILE_OR_URL` and `-r SOMEOTHER_FILE_OR_URL` files into one, filtering out all packages given in a configuration file.
 For each of those packages a `-e ...` entry is generated instead and written to a new `TARGET.txt`.
 
