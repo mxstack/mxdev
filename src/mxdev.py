@@ -104,7 +104,7 @@ def read(
                 f"# begin requirements from: {file_or_url}\n\n",
             ]
             + requirements
-            + ["", f"# end requirements from: {file_or_url}", "#" * 79 + "\n"]
+            + ["", f"# end requirements from: {file_or_url}\n", "#" * 79 + "\n"]
         )
     if constraints and variety == "c":
         constraints = (
@@ -135,7 +135,8 @@ def write(
         fio.write("# mxdev development sources:\n\n")
         for name in packages:
             package = packages[name]
-            fio.write(f"-e {package['url']}#{package['branch']}\n")
+            fio.write(f"-e {package['url']}@{package['branch']}#egg={name}\n")
+        fio.write("\n")
 
     with open(constraints_filename, "w") as fio:
         fio.writelines(constraints)
