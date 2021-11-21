@@ -22,10 +22,11 @@ This looks like so:
 
 ```INI
 [settings]
-infile =requirements.txt
-outfile = requirements-dev.txt
+requirements-in = requirements-infile.txt
+contraints-out = constraints-outfile.txt
+requirements-out = requirements-outfile.txt
 
-# github = git+https://github.com/
+# custom variables
 github = git+ssh://git@github.com/
 
 [foo.bar]
