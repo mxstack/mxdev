@@ -6,6 +6,35 @@ It builds on top of the idea to have stable version constraints and then develop
 
 Other software following the same idea are [mr.developer](https://pypi.org/project/mr.developer/) for Python's ``zc.buildout`` or [mrs-developer](https://www.npmjs.com/package/mrs-developer) for NPM packages.
 
+## Configuration
+
+Given a `requirements.txt` (or similar named) file which itself references a `constraints.txt` file inside.
+
+Create an INI file, like `sources.ini` in [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) syntax.
+
+The main section must be called `[settings]`, even if kept empty.
+In the main sections the input and output files are defined.
+
+`requirements-in`
+    Main requirements file to start with. This can be an URL too.
+
+`requirements-out`
+    Output of the combined requirements including development sources to be used later with `pip install`
+
+`constraints-out`
+    Output of the combined constraints.
+
+Additional, custom variables can be defined as `key = value` pair.
+Those can be referenced in other values as `${settings:key}` and will be expanded there.
+
+### Usage
+
+Run `mxdev -c sources.ini`.
+
+Now use the generated requirements and constrainst files with `pip install -r FILENAME`.
+
+Hint: to configure a target directory for the sources call `pip install --src TARGET_DIRECTORY -r FILENAME`.
+
 ## Rationale
 
 Problem:
@@ -16,15 +45,15 @@ Idea:
     A pre-processor fetches (as this can be an URL) and expands all `-c SOMEOTHER_FILE_OR_URL` and `-r SOMEOTHER_FILE_OR_URL` files into one, filtering out all packages given in a configuration file.
     For each of those packages a `-e ...` entry is generated instead and written to a new `TARGET.txt`.
 
-The configuration is written in a file `dev.ini` in [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) INI syntax (YAML would be nice, but the package must not have any dependencies to other package)
+The configuration is written in a file `sources.ini` in [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) INI syntax (YAML would be nice, but the package must not have any dependencies to other package)
 
 This looks like so:
 
 ```INI
 [settings]
 requirements-in = requirements-infile.txt
-contraints-out = constraints-outfile.txt
 requirements-out = requirements-outfile.txt
+contraints-out = constraints-outfile.txt
 
 # custom variables
 github = git+ssh://git@github.com/
@@ -37,4 +66,4 @@ extras = test,baz
 
 ## Trivia
 
-Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms.
+Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.

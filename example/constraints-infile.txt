@@ -1,0 +1,2 @@
+-c https://dist.plone.org/release/6.0.0a1/constraints.txt
+bar==1.2.3
