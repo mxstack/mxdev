@@ -60,7 +60,7 @@ Example Configuration
 
 This looks like so:
 
-..code-block: INI
+.. code-block:: INI
 
     [settings]
     requirements-in = requirements-infile.txt
