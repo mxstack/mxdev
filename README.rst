@@ -21,7 +21,7 @@ In the main sections the input and output files are defined.
 ``requirements-in``
     Main requirements file to start with. This can be an URL too. Default: ``requirements.txt``
 
-``requirements-out```
+``requirements-out``
     Output of the combined requirements including development sources to be used later with ``pip install``. Default: ``requirements-dev.txt``
 ``constraints-out``
     Output of the combined constraints. Default: ``constraints-dev.txt``
