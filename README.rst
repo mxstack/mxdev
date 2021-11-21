@@ -44,7 +44,7 @@ Those can be referenced in other values as ``${settings:key}`` and will be expan
     Defaults to `main`.
 
 ``extras = EXTRA1,EXTRA2``
-     (not yet implemented)
+     Package extras to install. Default empty.
 
 Usage
 =====

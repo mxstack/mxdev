@@ -135,7 +135,8 @@ def write(
         fio.write("# mxdev development sources:\n\n")
         for name in packages:
             package = packages[name]
-            fio.write(f"-e {package['url']}@{package['branch']}#egg={name}\n")
+            extras = f"[{package['extras']}]" if package['extras'] else ""
+            fio.write(f"-e {package['url']}@{package['branch']}#egg={name}{extras}\n")
         fio.write("\n")
 
     with open(constraints_filename, "w") as fio:
