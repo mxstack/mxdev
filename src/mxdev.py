@@ -127,6 +127,9 @@ def write(
     packages,
 ):
     with open(requirements_filename, "w") as fio:
+        fio.write("#" * 79 + "\n")
+        fio.write("# mxdev combined constraints\n")
+        fio.write(f"-c {constraints_filename}\n\n")
         fio.writelines(requirements)
         fio.write("\n"+ "#" * 79 + "\n")
         fio.write("# mxdev development sources:\n\n")
