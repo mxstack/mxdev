@@ -37,7 +37,7 @@ Hint: to configure a target directory for the sources call `pip install --src TA
 ### Problem
 
 There is a constraint file like `-c constraints.txt` with a package `foo.bar` with a version pin.
-Then it is not possible to install this package in a requirements file editable like `-r requirements.txt` with `-e -e git+ssh://git@github.com/orga/foo.bar.git@fix-99#egg=foo.bar`.
+Then it is not possible to install this package in a requirements file editable like `-r requirements.txt` with `-e git+ssh://git@github.com/orga/foo.bar.git@fix-99`.
 
 ### Idea
 
