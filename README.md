@@ -12,17 +12,22 @@ Given a `requirements.txt` (or similar named) file which itself references a `co
 
 Create an INI file, like `sources.ini` in [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) syntax.
 
-The main section must be called `[settings]`, even if kept empty.
+The **main section** must be called `[settings]`, even if kept empty.
 In the main sections the input and output files are defined.
 
-- `requirements-in`: Main requirements file to start with. This can be an URL too.
-
-- `requirements-out`: Output of the combined requirements including development sources to be used later with `pip install`
-
-- `constraints-out`: Output of the combined constraints.
+- `requirements-in`: Main requirements file to start with. This can be an URL too. Default: `requirements.txt`
+- `requirements-out`: Output of the combined requirements including development sources to be used later with `pip install`. Default: `requirements-dev.txt`
+- `constraints-out`: Output of the combined constraints. Default: `constraints-dev.txt`
 
 Additional, custom variables can be defined as `key = value` pair.
 Those can be referenced in other values as `${settings:key}` and will be expanded there.
+
+**Subsequent sections** are defining the sources.
+
+- `[PACKAGENAME]` The section name is the package name.
+- `url = URL` the URL to the source in VCS and must follow the [pip install editable](https://pip.pypa.io/en/stable/cli/pip_install/#local-project-installs) format. Attention, this differs from the format one copies from Github/Gitlab, etc. The URL is required.
+- `branch = BRANCHNAME_OR_TAG` the branch name or tag to checkout. Defaults to `main`.
+- `extras = EXTRA1,EXTRA2` (not yet implemented)
 
 ### Usage
 
