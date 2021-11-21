@@ -1,0 +1,4 @@
+include *.md
+recursive-include example *.ini
+recursive-include example *.txt
+recursive-include src *.py
