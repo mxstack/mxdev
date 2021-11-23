@@ -1,15 +1,14 @@
+from libvcs.shortcuts import create_repo_from_pip_url
 from urllib import parse
 from urllib import request
-from libvcs.shortcuts import create_repo_from_pip_url, create_repo
 
 import argparse
 import configparser
 import logging
-import pkg_resources
-import typing
 import os
-import logging
+import pkg_resources
 import sys
+import typing
 
 
 logger = logging.getLogger("mxdev")
@@ -28,9 +27,8 @@ parser.add_argument(
     type=argparse.FileType("r"),
     required=True,
 )
-parser.add_argument(
-    "-v", "--verbose", help="Increase verbosity", action="store_true"
-)
+parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
+
 
 def setup_logger(level):
     root = logging.getLogger()
@@ -38,7 +36,9 @@ def setup_logger(level):
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(level)
     if level == logging.DEBUG:
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         handler.setFormatter(formatter)
     root.addHandler(handler)
 
@@ -61,9 +61,7 @@ class Configuration:
             "constraints-out", "constraints-dev.txt"
         )
         logger.debug(f"out_constraints={self.out_constraints}")
-        target: str = ini["settings"].get(
-            "default-target", "sources"
-        )
+        target: str = ini["settings"].get("default-target", "sources")
         self.packages = {}
         for name in ini.sections():
             logger.debug(f"config section={name}")
@@ -106,6 +104,19 @@ def process_line(
     return [line], []
 
 
+def process_io(
+    fio: typing.IO,
+    requirements: typing.List[str],
+    constraints: typing.List[str],
+    package_keys: typing.List[str],
+    variety: str,
+) -> None:
+    for line in fio:
+        new_requirements, new_constraints = process_line(line, package_keys, variety)
+        requirements += new_requirements
+        constraints += new_constraints
+
+
 def read(
     file_or_url: str,
     package_keys: typing.List[str],
@@ -116,17 +127,14 @@ def read(
     constraints: typing.List[str] = []
     logger.info(f"Read [{variety}]: {file_or_url}")
     parsed = parse.urlparse(file_or_url)
+
     if not parsed.scheme:
-        opener = open, (file_or_url, "r")
+        with open(file_or_url, "r") as fio:
+            process_io(fio, requirements, constraints, package_keys, variety)
     else:
-        opener = request.urlopen, (file_or_url,)
-    with opener[0](*opener[1]) as fio:
-        for line in fio:
-            new_requirements, new_constraints = process_line(
-                line, package_keys, variety
-            )
-            requirements += new_requirements
-            constraints += new_constraints
+        with request.urlopen(file_or_url) as fio:
+            process_io(fio, requirements, constraints, package_keys, variety)
+
     if requirements and variety == "r":
         requirements = (
             [
@@ -148,19 +156,19 @@ def read(
         )
     return (requirements, constraints)
 
-def fetch(packages):
+
+def fetch(packages) -> None:
     logger.info("#" * 79)
     logger.info("# Fetch sources from VCS")
 
     for name in packages:
         logger.info(f"Fetch or update {name}")
-        package = packages[name]
-        repo_dir = os.path.abspath(f"{package['target']}/{name}")
-        pip_url = f"{package['url']}@{package['branch']}"
+        package: dict = packages[name]
+        repo_dir: str = os.path.abspath(f"{package['target']}/{name}")
+        pip_url: str = f"{package['url']}@{package['branch']}"
         logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
         repo = create_repo_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
         repo.update_repo()
-
 
 
 def write(
