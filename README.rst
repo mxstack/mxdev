@@ -16,7 +16,7 @@ mxdev procedure is:
 1. Configuration is read,
 2. Requirements and constraints (given in configuration) are read.
 3. Sources from VCS are fetched into a target directory,
-4. Modified constrainst (handled packages commented)/ requirements (handled packages as editable from sources) are written.
+4. Modified constraints (handled packages commented)/ requirements (handled packages as editable from sources) are written.
 
 mxdev will **not** run pip for you!
 
