@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0a3 (unreleased)
+1.0.0a3 (2021-11-23)
 --------------------
 
 - Fix #1: Re-run of pip vanishes comitted changes
