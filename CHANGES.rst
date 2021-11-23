@@ -4,7 +4,8 @@ Changelog
 1.0.0a4 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Fix: editables need to be added before other requirements.
+  [jensens]
 
 
 1.0.0a3 (2021-11-23)

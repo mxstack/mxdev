@@ -185,7 +185,6 @@ def write(
         fio.write("#" * 79 + "\n")
         fio.write("# mxdev combined constraints\n")
         fio.write(f"-c {constraints_filename}\n\n")
-        fio.writelines(requirements)
         fio.write("\n" + "#" * 79 + "\n")
         fio.write("# mxdev development sources:\n\n")
         for name in packages:
@@ -196,6 +195,7 @@ def write(
             logger.debug(f"-> {editable.strip()}")
             fio.write(editable)
         fio.write("\n")
+        fio.writelines(requirements)
 
     logger.info(f"write {constraints_filename}")
     with open(constraints_filename, "w") as fio:
