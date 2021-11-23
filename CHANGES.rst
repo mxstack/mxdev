@@ -4,7 +4,8 @@ Changelog
 1.0.0a3 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Fix #1: Re-run of pip vanishes comitted changes
+  [jensens]
 
 
 1.0.0a2 (2021-11-21)

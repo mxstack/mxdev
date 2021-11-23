@@ -2,11 +2,23 @@
 Mixed development source packages on top of stable constraints using pip
 ========================================================================
 
-``mxdev`` is a utility that makes it easy to work with Python projects containing lots of packages, of which you only want to develop some.
+``mxdev`` [mɪks dɛv] is a utility that makes it easy to work with Python projects containing lots of packages, of which you only want to develop some.
 
-It builds on top of the idea to have stable version constraints and then develop on top of it.
+It builds on top of the idea to have stable version constraints and then develop from a VCS on top of it.
 
 Other software following the same idea are `mr.developer <https://pypi.org/project/mr.developer/>`_  for Python's ``zc.buildout`` or `mrs-developer <https://www.npmjs.com/package/mrs-developer>`_ for NPM packages.
+
+Overview
+========
+
+mxdev procedure is:
+
+1. Configuration is read,
+2. Requirements and constraints (given in configuration) are read.
+3. Sources from VCS are fetched into a target directory,
+4. Modified constrainst (handled packages commented)/ requirements (handled packages as editable from sources) are written.
+
+mxdev will **not** run pip for you!
 
 Configuration
 =============
@@ -21,10 +33,15 @@ In the main sections the input and output files are defined.
 ``requirements-in``
     Main requirements file to start with. This can be an URL too. Default: ``requirements.txt``
 
+
 ``requirements-out``
     Output of the combined requirements including development sources to be used later with ``pip install``. Default: ``requirements-dev.txt``
+
 ``constraints-out``
     Output of the combined constraints. Default: ``constraints-dev.txt``
+
+``target``
+    Target directory for sources from VCS. Default: ``./sources``
 
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
@@ -50,14 +67,16 @@ Those can be referenced in other values as ``${settings:key}`` and will be expan
       For specifying the path to the Python package, when it is not in the root of the VCS directory.
       Default empty.
 
+``target``
+    Target directory for source from this section. Default to target directory configured in main section ``[settings]`` ``target =`` value.
+
 Usage
 =====
 
 Run ``mxdev -c sources.ini``.
 
-Now use the generated requirements and constrainst files with ``pip install -r FILENAME``.
+Now use the generated requirements and constrainst files with ``pip install -r NEW_REQUIREMENTS_FILENAME.txt``.
 
-Hint: to configure a target directory for the sources call ``pip install --src TARGET_DIRECTORY -r FILENAME``.
 
 Example Configuration
 =====================
@@ -89,7 +108,7 @@ Problem
 Idea
     A pre-processor fetches (as this can be an URL) and expands all ``-c SOMEOTHER_FILE_OR_URL`` and ``-r SOMEOTHER_FILE_OR_URL`` files into one, filtering out all packages given in a configuration file.
     For each of those packages a ``-e ...`` entry is generated instead and written to a new ``TARGET.txt``.
-    The configuration is written in a file ``sources.ini`` in ExtendedInterpolation INI syntax (YAML would be nice, but the package must not have any dependencies to other package)
+    The configuration is written in a file ``sources.ini`` in ExtendedInterpolation INI syntax (YAML would be nice, but the package must not have as less dependencies as possible to other packages).
 
 Trivia
     Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.
