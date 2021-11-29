@@ -4,7 +4,7 @@ Changelog
 1.0.0a4 (unreleased)
 --------------------
 
-- Fix: editables need to be added before other requirements.
+- Fix: editables can be configured to be processed before or after initial requirements.
   [jensens]
 
 

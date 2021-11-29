@@ -62,6 +62,7 @@ class Configuration:
         )
         logger.debug(f"out_constraints={self.out_constraints}")
         target: str = ini["settings"].get("default-target", "sources")
+        position: str = ini["settings"].get("default-position", "before")
         self.packages = {}
         for name in ini.sections():
             logger.debug(f"config section={name}")
@@ -74,6 +75,7 @@ class Configuration:
                 "extras": ini[name].get("extras", ""),
                 "subdir": ini[name].get("subdirectory", ""),
                 "target": ini[name].get("target", target),
+                "position": ini[name].get("position", position),
             }
             logger.debug(f"config data={self.packages[name]}")
 
@@ -170,6 +172,20 @@ def fetch(packages) -> None:
         repo = create_repo_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
         repo.update_repo()
 
+def write_dev_sources(fio, packages, position):
+    fio.write("\n" + "#" * 79 + "\n")
+    fio.write(f"# mxdev development sources {position}:\n\n")
+    for name in packages:
+        package = packages[name]
+        if package["position"] != position:
+            continue
+        extras = f"[{package['extras']}]" if package["extras"] else ""
+        subdir = f"/{package['subdir']}" if package["subdir"] else ""
+        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}\n"""
+        logger.debug(f"-> {editable.strip()}")
+        fio.write(editable)
+    fio.write("\n")
+
 
 def write(
     requirements: typing.List[str],
@@ -185,17 +201,9 @@ def write(
         fio.write("#" * 79 + "\n")
         fio.write("# mxdev combined constraints\n")
         fio.write(f"-c {constraints_filename}\n\n")
-        fio.write("\n" + "#" * 79 + "\n")
-        fio.write("# mxdev development sources:\n\n")
-        for name in packages:
-            package = packages[name]
-            extras = f"[{package['extras']}]" if package["extras"] else ""
-            subdir = f"/{package['subdir']}" if package["subdir"] else ""
-            editable = f"""-e ./{package['target']}/{name}{subdir}{extras}\n"""
-            logger.debug(f"-> {editable.strip()}")
-            fio.write(editable)
-        fio.write("\n")
+        write_dev_sources(fio, packages, "before")
         fio.writelines(requirements)
+        write_dev_sources(fio, packages, "after")
 
     logger.info(f"write {constraints_filename}")
     with open(constraints_filename, "w") as fio:

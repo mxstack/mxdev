@@ -40,8 +40,13 @@ In the main sections the input and output files are defined.
 ``constraints-out``
     Output of the combined constraints. Default: ``constraints-dev.txt``
 
-``target``
+``default-target``
     Target directory for sources from VCS. Default: ``./sources``
+
+``default-position``
+    Default position of ``pip install -e`` for sources from VCS in ``requirements-out``.
+    Install ``before`` or ``after`` requirements was processed.
+    Default: ``after``.
 
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
@@ -68,7 +73,13 @@ Those can be referenced in other values as ``${settings:key}`` and will be expan
       Default empty.
 
 ``target``
-    Target directory for source from this section. Default to target directory configured in main section ``[settings]`` ``target =`` value.
+    Target directory for source from this section.
+    Default to target directory configured in main section ``[settings]`` ``default-target =`` value.
+
+``position``
+    Position of ``pip install -e`` for this source in ``requirements-out``.
+    Install ``before`` or ``after`` requirements was processed.
+    Default to position configured in main section ``[settings]`` ``default-position =`` value.
 
 Usage
 =====
