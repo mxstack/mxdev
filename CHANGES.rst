@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0a4 (unreleased)
+1.0.0a4 (2021-11-29)
 --------------------
 
 - Fix: editables can be configured to be processed before or after initial requirements.
