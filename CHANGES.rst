@@ -4,7 +4,8 @@ Changelog
 1.0.0a7 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Removed Workaround for libvcs and depend on libcs>=0.10.1.
+  [jensens]
 
 
 1.0.0a6 (2021-11-30)
