@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0a7 (unreleased)
+1.0.0a7 (2021-11-30)
 --------------------
 
 - Removed Workaround for libvcs and depend on libcs>=0.10.1.
