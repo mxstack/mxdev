@@ -13,6 +13,22 @@ import typing
 
 logger = logging.getLogger("mxdev")
 
+# TEMPORARY LIBVCS PATCH
+# until https://github.com/vcs-python/libvcs/issues/293 is fixed
+
+from libvcs.base import BaseRepo
+
+_old_libvcs_base_init = BaseRepo.__init__
+
+def _new_libvcs_base_init(self, *args, **kwargs):
+    _old_libvcs_base_init(self, *args, **kwargs)
+    if "rev" in kwargs:
+        self.rev = kwargs["rev"]
+
+BaseRepo.__init__ = _new_libvcs_base_init
+
+# END OF PATCH
+
 
 parser = argparse.ArgumentParser(
     description="Make it easy to work with Python projects containing lots "
