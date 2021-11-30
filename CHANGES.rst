@@ -4,7 +4,14 @@ Changelog
 1.0.0a8 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Added interdependency handling to avoid manual dependency order resolution.
+  [jensens, gogobd]
+
+- Added skip mode to exclude packages from installation (clone/update only).
+  [jensens, gogobd]
+
+- Removed position feature.
+  [jensens, gogobd]
 
 
 1.0.0a7 (2021-11-30)

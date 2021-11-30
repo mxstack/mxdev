@@ -62,20 +62,30 @@ class Configuration:
         )
         logger.debug(f"out_constraints={self.out_constraints}")
         target: str = ini["settings"].get("default-target", "sources")
-        position: str = ini["settings"].get("default-position", "before")
+        mode: str = ini["settings"].get("default-install-mode", "interdependency")
+        if mode not in ["direct", "interdependency", "skip"]:
+            raise ValueError(
+                "default-install-mode must be one of 'direct', 'interdependency' or 'skip'"
+            )
+
         self.packages = {}
         for name in ini.sections():
             logger.debug(f"config section={name}")
             url = ini[name].get("url")
             if not url:
                 raise ValueError(f"Section {name} has no URL set!")
+            pmode = ini[name].get("install-mode", mode)
+            if pmode not in ["direct", "interdependency", "skip"]:
+                raise ValueError(
+                    "install-mode in [{name}] must be one of 'direct', 'interdependency' or 'skip'"
+                )
             self.packages[name] = {
                 "url": url,
                 "branch": ini[name].get("branch", "main"),
                 "extras": ini[name].get("extras", ""),
                 "subdir": ini[name].get("subdirectory", ""),
                 "target": ini[name].get("target", target),
-                "position": ini[name].get("position", position),
+                "mode": pmode,
             }
             logger.debug(f"config data={self.packages[name]}")
 
@@ -175,14 +185,25 @@ def fetch(packages) -> None:
 
 def write_dev_sources(fio, packages, position):
     fio.write("\n" + "#" * 79 + "\n")
-    fio.write(f"# mxdev development sources {position}:\n\n")
+    fio.write("# mxdev development sources\n")
+    if position == "nodeps":
+        fio.write("# install without dependencies (interdependency mode)\n\n")
+    else:
+        fio.write("# install with dependencies\n\n")
     for name in packages:
         package = packages[name]
-        if package["position"] != position:
+        if package["mode"] == "skip" or (
+            position == "nodeps" and package["mode"] == "direct"
+        ):
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
         subdir = f"/{package['subdir']}" if package["subdir"] else ""
-        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}\n"""
+        nodeps = (
+            ' --install-option="--no-deps"'
+            if package["mode"] == "interdependency" and position == "top"
+            else ""
+        )
+        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}{nodeps}\n"""
         logger.debug(f"-> {editable.strip()}")
         fio.write(editable)
     fio.write("\n")
@@ -202,9 +223,9 @@ def write(
         fio.write("#" * 79 + "\n")
         fio.write("# mxdev combined constraints\n")
         fio.write(f"-c {constraints_filename}\n\n")
-        write_dev_sources(fio, packages, "before")
+        write_dev_sources(fio, packages, "nodeps")
+        write_dev_sources(fio, packages, "deps")
         fio.writelines(requirements)
-        write_dev_sources(fio, packages, "after")
 
     logger.info(f"write {constraints_filename}")
     with open(constraints_filename, "w") as fio:

@@ -43,10 +43,10 @@ In the main sections the input and output files are defined.
 ``default-target``
     Target directory for sources from VCS. Default: ``./sources``
 
-``default-position``
-    Default position of ``pip install -e`` for sources from VCS in ``requirements-out``.
-    Install ``before`` or ``after`` requirements was processed.
-    Default: ``after``.
+``default-install-mode``
+    Default for ``install-mode`` on section, read there for details
+    Allowed values: ``direct``, ``interdependency``, ``skip``
+    Default: ``interdependency``
 
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
@@ -74,12 +74,26 @@ Those can be referenced in other values as ``${settings:key}`` and will be expan
 
 ``target``
     Target directory for source from this section.
-    Default to target directory configured in main section ``[settings]`` ``default-target =`` value.
+    Default to ``target`` directory configured in main section ``[settings]`` ``default-target =`` value.
 
-``position``
-    Position of ``pip install -e`` for this source in ``requirements-out``.
-    Install ``before`` or ``after`` requirements was processed.
-    Default to position configured in main section ``[settings]`` ``default-position =`` value.
+``install-mode``
+    There are different modes of pip installation:
+
+    ``skip``
+        Do not install with pip, just clone/update the repository.
+
+    ``direct``
+        Install the package using ``pip -e PACKAGEPATH``.
+        Dependencies are resolved immediately.
+
+    ``interdependency``
+        Pre-install the packages first using ``pip -e PACKAGEPATH --install-option="--no-deps"``.
+        After all packages are pre-installed, install them again with dependencies using ``pip -e PACKAGEPATH``.
+        This helps if one develops many package with dependencies between those packages.
+        With *direct* the order of the packages matters, so a developer would need to do manual dependency management.
+        With *interdependency* mode this is circumevented by pre-installing all this packages without dependencies first.
+
+    Defaults to ``install-dependencies`` configured in main section ``[settings]`` ``default-install-mode =`` value.
 
 Usage
 =====
