@@ -4,7 +4,8 @@ Changelog
 1.0.0a6 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Workaround for libvcs bug https://github.com/vcs-python/libvcs/issues/295
+  [jensens, gogobd]
 
 
 1.0.0a5 (2021-11-30)
