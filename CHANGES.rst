@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0a8 (unreleased)
+1.0.0a8 (2021-11-30)
 --------------------
 
 - Added interdependency handling to avoid manual dependency order resolution.
