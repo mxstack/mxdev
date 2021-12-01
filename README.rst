@@ -60,7 +60,11 @@ Those can be referenced in other values as ``${settings:key}`` and will be expan
     the URL to the source in VCS and must follow the `pip install editable <https://pip.pypa.io/en/stable/cli/pip_install/#local-project-installs>`_ format.
     
     Attention, this differs from the format one copies from Github/Gitlab, etc.
-    Some auto-correction got applied: ``ssh://`` to ``git+ssh://``, ``git@` to ``git+ssh://git@`` and ``https://`` to ``git+https://``.
+    Some auto-correction got applied: 
+    
+    - ``ssh://`` to ``git+ssh://``
+    - ``git@`` to ``git+ssh://git@`` 
+    - ``https://`` to ``git+https://``
     
     The URL is required.
 
