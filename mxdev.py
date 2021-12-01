@@ -169,6 +169,24 @@ def read(
     return (requirements, constraints)
 
 
+def autocorrect_pip_url(pip_url: str) -> str:
+    """
+    do some autocorrection for pip urls, especially urls copy/pasted
+    from github as e.g. git@github.com:bluedynamics/mxdev.git
+    which should be git+ssh://git@github.com/bluedynamics/mxdev.git
+
+    when no correction necessary, return the original
+    """
+    if pip_url.startswith("git@"):
+        return f"git+ssh://{pip_url.replace(':', '/')}"
+    elif pip_url.startswith("ssh://"):
+        return f"git+{pip_url}"
+    elif pip_url.startswith("https://"):
+        return f"git+{pip_url}"
+
+    return pip_url
+
+
 def fetch(packages) -> None:
     logger.info("#" * 79)
     logger.info("# Fetch sources from VCS")
@@ -177,7 +195,9 @@ def fetch(packages) -> None:
         logger.info(f"Fetch or update {name}")
         package: dict = packages[name]
         repo_dir: str = os.path.abspath(f"{package['target']}/{name}")
-        pip_url: str = f"{package['url']}@{package['branch']}"
+        pip_url: str = autocorrect_pip_url(
+            f"{package['url']}@{package['branch']}"
+        )
         logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
         repo = create_repo_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
         repo.update_repo()
