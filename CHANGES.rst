@@ -4,8 +4,9 @@ Changelog
 1.0.0a9 (unreleased)
 --------------------
 
-- Nothing changed yet.
-
+- Added autocorrection for pip urls, so that github or gitlab urls can be used as copied
+  in sources.ini .
+  [zworkb]
 
 1.0.0a8 (2021-11-30)
 --------------------
