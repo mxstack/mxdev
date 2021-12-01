@@ -195,9 +195,7 @@ def fetch(packages) -> None:
         logger.info(f"Fetch or update {name}")
         package: dict = packages[name]
         repo_dir: str = os.path.abspath(f"{package['target']}/{name}")
-        pip_url: str = autocorrect_pip_url(
-            f"{package['url']}@{package['branch']}"
-        )
+        pip_url: str = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
         logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
         repo = create_repo_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
         repo.update_repo()
