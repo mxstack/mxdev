@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0a9 (unreleased)
+1.0.0a9 (2021-12-01)
 --------------------
 
 - Added autocorrection for pip urls, so that github or gitlab urls can be used as copied
