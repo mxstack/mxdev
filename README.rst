@@ -58,14 +58,14 @@ Those can be referenced in other values as ``${settings:key}`` and will be expan
 
 ``url = URL``
     the URL to the source in VCS and must follow the `pip install editable <https://pip.pypa.io/en/stable/cli/pip_install/#local-project-installs>`_ format.
-    
+
     Attention, this differs from the format one copies from Github/Gitlab, etc.
-    Fo convienince *mxdev* applies auto-correction for these common cases: 
-    
+    Fo convienince *mxdev* applies auto-correction for these common cases:
+
     - ``ssh://`` -> ``git+ssh://``
-    - ``git@`` -> ``git+ssh://git@`` 
+    - ``git@`` -> ``git+ssh://git@``
     - ``https://`` t-> ``git+https://``
-    
+
     The URL is required.
 
 ``branch = BRANCHNAME_OR_TAG``

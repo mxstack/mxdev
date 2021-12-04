@@ -154,7 +154,7 @@ def read(
                 f"# begin requirements from: {file_or_url}\n\n",
             ]
             + requirements
-            + ["", f"# end requirements from: {file_or_url}\n", "#" * 79 + "\n"]
+            + ["\n", f"# end requirements from: {file_or_url}\n", "#" * 79 + "\n"]
         )
     if constraints and variety == "c":
         constraints = (
@@ -189,6 +189,9 @@ def autocorrect_pip_url(pip_url: str) -> str:
 
 def fetch(packages) -> None:
     logger.info("#" * 79)
+    if not packages:
+        logger.info("# No sources configured!")
+        return
     logger.info("# Fetch sources from VCS")
 
     for name in packages:
@@ -236,7 +239,7 @@ def write(
 ):
     logger.info("#" * 79)
     logger.info("# Write outfiles")
-    logger.info(f"write {requirements_filename}")
+    logger.info(f"Write [r]: {requirements_filename}")
     with open(requirements_filename, "w") as fio:
         fio.write("#" * 79 + "\n")
         fio.write("# mxdev combined constraints\n")
@@ -245,7 +248,7 @@ def write(
         write_dev_sources(fio, packages, "deps")
         fio.writelines(requirements)
 
-    logger.info(f"write {constraints_filename}")
+    logger.info(f"Write [c]: {constraints_filename}")
     with open(constraints_filename, "w") as fio:
         fio.writelines(constraints)
 

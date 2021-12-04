@@ -1,10 +1,14 @@
 Changelog
 =========
 
-1.0.0a10 (unreleased)
+1.0.0b1 (unreleased)
 ---------------------
 
-- Nothing changed yet.
+- Beautified output.
+  [jensens]
+
+- Fixed missing CR if ``*.txt`` does not end with newline.
+  [jensens]
 
 
 1.0.0a9 (2021-12-01)
