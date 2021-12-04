@@ -4,6 +4,9 @@ Changelog
 1.0.0b1 (unreleased)
 ---------------------
 
+- Add ``-s`` or ``--silent`` option.
+  [jensens]
+
 - Beautified output.
   [jensens]
 

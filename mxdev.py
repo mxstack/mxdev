@@ -28,6 +28,7 @@ parser.add_argument(
     required=True,
 )
 parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
+parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
 
 
 def setup_logger(level):
@@ -255,7 +256,12 @@ def write(
 
 def main() -> None:
     args = parser.parse_args()
-    setup_logger(logging.DEBUG if args.verbose else logging.INFO)
+    loglevel = logging.INFO
+    if not args.silent and args.verbose:
+        loglevel = logging.INFO
+    elif not args.verbose and args.silent:
+        loglevel = logging.WARNING
+    setup_logger(loglevel)
     cfg = Configuration(args.configuration)
     logger.info("#" * 79)
     logger.info("# Read infiles")
