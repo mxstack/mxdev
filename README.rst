@@ -86,7 +86,7 @@ All other sections are defining the sources to be used.
     the URL to the source in VCS and must follow the `pip install editable <https://pip.pypa.io/en/stable/cli/pip_install/#local-project-installs>`_ format.
 
     Attention, this differs from the format one copies from Github/Gitlab, etc.
-    Fo convienince *mxdev* applies auto-correction for these common cases:
+    For convienince *mxdev* applies auto-correction for this common cases:
 
     - ``ssh://`` -> ``git+ssh://``
     - ``git@`` -> ``git+ssh://git@``
