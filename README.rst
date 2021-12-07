@@ -67,8 +67,8 @@ In the main sections the input and output files are defined.
             otherpackage==33.12.1
 
     It is possible to add as many overrides as needed.
-    When writing the *constraints-out* ,the new version will be taken into account.
-    I there is a source-section defined for the same package, the source will be used and entries here are ignored.
+    When writing the *constraints-out*, the new version will be taken into account.
+    If there is a source-section defined for the same package, the source will be used and entries here are ignored.
 
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
