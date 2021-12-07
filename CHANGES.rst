@@ -4,7 +4,8 @@ Changelog
 1.0.0b4 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Fix interdependency mode.
+  [jensens]
 
 
 1.0.0b3 (2021-12-07)

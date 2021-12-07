@@ -242,24 +242,24 @@ def fetch(packages) -> None:
         repo.update_repo()
 
 
-def write_dev_sources(fio, packages, position):
+def write_dev_sources(fio, packages, nodeps: bool):
     fio.write("\n" + "#" * 79 + "\n")
     fio.write("# mxdev development sources\n")
-    if position == "nodeps":
+    if nodeps:
         fio.write("# install without dependencies (interdependency mode)\n\n")
     else:
         fio.write("# install with dependencies\n\n")
     for name in packages:
         package = packages[name]
         if package["mode"] == "skip" or (
-            position == "nodeps" and package["mode"] == "direct"
+            nodeps and package["mode"] == "direct"
         ):
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
         subdir = f"/{package['subdir']}" if package["subdir"] else ""
         nodeps = (
             ' --install-option="--no-deps"'
-            if package["mode"] == "interdependency" and position == "top"
+            if nodeps and package["mode"] == "interdependency"
             else ""
         )
         editable = f"""-e ./{package['target']}/{name}{subdir}{extras}{nodeps}\n"""
@@ -295,8 +295,8 @@ def write(
         fio.write("#" * 79 + "\n")
         fio.write("# mxdev combined constraints\n")
         fio.write(f"-c {cfg.out_constraints}\n\n")
-        write_dev_sources(fio, cfg.packages, "nodeps")
-        write_dev_sources(fio, cfg.packages, "deps")
+        write_dev_sources(fio, cfg.packages, True)
+        write_dev_sources(fio, cfg.packages, False)
         fio.writelines(requirements)
 
     logger.info(f"Write [c]: {cfg.out_constraints}")
