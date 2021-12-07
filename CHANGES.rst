@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0b2 (unreleased)
+1.0.0b2 (2021-12-07)
 --------------------
 
 - Add feature: version overrides.
