@@ -164,11 +164,13 @@ Rationale
 Problem
     There is a constraint file like ``-c constraints.txt`` with a package ``foo.bar`` with a version pin.
     Then it is not possible to install this package in a requirements file editable like ``-r requirements.txt`` with ``-e git+ssh://git@github.com/orga/foo.bar.git@fix-99``.
+    Neither it is possible to override inherited version constraints with custom ones.
 
 Idea
     A pre-processor fetches (as this can be an URL) and expands all ``-c SOMEOTHER_FILE_OR_URL`` and ``-r SOMEOTHER_FILE_OR_URL`` files into one, filtering out all packages given in a configuration file.
     For each of those packages a ``-e ...`` entry is generated instead and written to a new ``TARGET.txt``.
-    The configuration is written in a file ``sources.ini`` in ExtendedInterpolation INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
+    Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
+    The configuration is read from a file ``sources.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
 
 Trivia
     Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.
