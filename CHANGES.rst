@@ -4,8 +4,8 @@ Changelog
 1.0.0b3 (unreleased)
 --------------------
 
-- Nothing changed yet.
-
+- Fix: Do not apply override disabling on requirements.
+  [jensens]
 
 1.0.0b2 (2021-12-07)
 --------------------

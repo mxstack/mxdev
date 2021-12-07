@@ -139,7 +139,7 @@ def process_line(
     else:
         if parsed.key in package_keys:
             line = f"# {line.strip()} -> mxdev disabled (source)\n"
-        if parsed.key in override_keys:
+        if variety == "c" and parsed.key in override_keys:
             line = f"# {line.strip()} -> mxdev disabled (override)\n"
     if variety == "c":
         return [], [line]
