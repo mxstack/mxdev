@@ -4,8 +4,8 @@ Changelog
 1.0.0b2 (unreleased)
 --------------------
 
-- Nothing changed yet.
-
+- Add feature: version overrides.
+  [jensens]
 
 1.0.0b1 (2021-12-04)
 --------------------

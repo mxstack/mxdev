@@ -6,6 +6,8 @@ Mixed development source packages on top of stable constraints using pip
 
 It builds on top of the idea to have stable version constraints and then develop from a VCS on top of it.
 
+As part of the above use-case sometimes versions of the stable constraints need an overrides with different (newer) version.
+
 Other software following the same idea are `mr.developer <https://pypi.org/project/mr.developer/>`_  for Python's ``zc.buildout`` or `mrs-developer <https://www.npmjs.com/package/mrs-developer>`_ for NPM packages.
 
 Overview
@@ -16,7 +18,7 @@ mxdev procedure is:
 1. Configuration is read,
 2. Requirements and constraints (given in configuration) are read.
 3. Sources from VCS are fetched into a target directory,
-4. Modified constraints (handled packages commented)/ requirements (handled packages as editable from sources) are written.
+4. Modified constraints (handled packages commented, overridden versions replaced) and  requirements (handled packages as editable from sources) are written.
 
 mxdev will **not** run pip for you!
 
@@ -26,6 +28,9 @@ Configuration
 Given a ``requirements.txt`` (or similar named) file which itself references a ``constraints.txt`` file inside.
 
 Create an INI file, like `sources.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
+
+Main section ``[settings]``
+---------------------------
 
 The **main section** must be called ``[settings]``, even if kept empty.
 In the main sections the input and output files are defined.
@@ -48,10 +53,31 @@ In the main sections the input and output files are defined.
     Allowed values: ``direct``, ``interdependency``, ``skip``
     Default: ``interdependency``
 
+``version-overrides``
+    Override package versions which already defined in a dependent constraints file.
+    I.e. an upstream *constraints.txt* contains already ``somefancypackage==2.0.3``.
+    For some reason (like with my further developed sources) we need version 3.0.0 of above package.
+    Then in this section this can be defined as:
+
+    .. code-block:: INI
+
+        [settings]
+        version-overrides =
+            somefancypackage==3.0.0
+            otherpackage==33.12.1
+
+    It is possible to add as many overrides as needed.
+    When writing the *constraints-out* ,the new version will be taken into account.
+    I there is a source-section defined for the same package, the source will be used and entries here are ignored.
+
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
 
-**Subsequent sections** are defining the sources.
+
+Subsequent package source sections
+----------------------------------
+
+All other sections are defining the sources to be used.
 
 ``[PACKAGENAME]``
     The section name is the package name.

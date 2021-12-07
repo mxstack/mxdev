@@ -68,50 +68,79 @@ class Configuration:
             raise ValueError(
                 "default-install-mode must be one of 'direct', 'interdependency' or 'skip'"
             )
+        raw_overrides = ini["settings"].get("version-overrides", "").strip()
+        self.overrides: typing.Dict[str, str] = {}
+        for line in raw_overrides.split("\n"):
+            try:
+                parsed = pkg_resources.Requirement.parse(line)
+            except Exception:
+                logger.error(f"Can not parse override: {line}")
+                continue
+            self.overrides[parsed.key] = line
 
-        self.packages = {}
+        self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
         for name in ini.sections():
+            section = ini[name]
             logger.debug(f"config section={name}")
-            url = ini[name].get("url")
+            url = section.get("url")
             if not url:
                 raise ValueError(f"Section {name} has no URL set!")
-            pmode = ini[name].get("install-mode", mode)
+            pmode = section.get("install-mode", mode)
             if pmode not in ["direct", "interdependency", "skip"]:
                 raise ValueError(
                     "install-mode in [{name}] must be one of 'direct', 'interdependency' or 'skip'"
                 )
             self.packages[name] = {
                 "url": url,
-                "branch": ini[name].get("branch", "main"),
-                "extras": ini[name].get("extras", ""),
-                "subdir": ini[name].get("subdirectory", ""),
-                "target": ini[name].get("target", target),
+                "branch": section.get("branch", "main"),
+                "extras": section.get("extras", ""),
+                "subdir": section.get("subdirectory", ""),
+                "target": section.get("target", target),
                 "mode": pmode,
             }
             logger.debug(f"config data={self.packages[name]}")
 
     @property
-    def keys(self) -> typing.List[str]:
+    def package_keys(self) -> typing.List[str]:
         return [k.lower() for k in self.packages]
+
+    @property
+    def override_keys(self) -> typing.List[str]:
+        return [k.lower() for k in self.overrides]
 
 
 def process_line(
-    line: str, package_keys: typing.List[str], variety: str
+    line: str,
+    package_keys: typing.List[str],
+    override_keys: typing.List[str],
+    variety: str,
 ) -> typing.Tuple[typing.List[str], typing.List[str]]:
     if isinstance(line, bytes):
         line = line.decode("utf8")
     logger.debug(f"Process Line [{variety}]: {line.strip()}")
     if line.startswith("-c"):
-        return read(line.split(" ")[1].strip(), package_keys=package_keys, variety="c")
+        return read(
+            line.split(" ")[1].strip(),
+            package_keys=package_keys,
+            override_keys=override_keys,
+            variety="c",
+        )
     elif line.startswith("-r"):
-        return read(line.split(" ")[1].strip(), package_keys=package_keys, variety="r")
+        return read(
+            line.split(" ")[1].strip(),
+            package_keys=package_keys,
+            override_keys=override_keys,
+            variety="r",
+        )
     try:
         parsed = pkg_resources.Requirement.parse(line)
     except Exception:
         pass
     else:
         if parsed.key in package_keys:
-            line = f"# mxdev disabled: {line}"
+            line = f"# {line.strip()} -> mxdev disabled (source)\n"
+        if parsed.key in override_keys:
+            line = f"# {line.strip()} -> mxdev disabled (override)\n"
     if variety == "c":
         return [], [line]
     return [line], []
@@ -122,10 +151,13 @@ def process_io(
     requirements: typing.List[str],
     constraints: typing.List[str],
     package_keys: typing.List[str],
+    override_keys: typing.List[str],
     variety: str,
 ) -> None:
     for line in fio:
-        new_requirements, new_constraints = process_line(line, package_keys, variety)
+        new_requirements, new_constraints = process_line(
+            line, package_keys, override_keys, variety
+        )
         requirements += new_requirements
         constraints += new_constraints
 
@@ -133,6 +165,7 @@ def process_io(
 def read(
     file_or_url: str,
     package_keys: typing.List[str],
+    override_keys: typing.List[str],
     variety: str = "r",
 ) -> typing.Tuple[typing.List[str], typing.List[str]]:
 
@@ -143,10 +176,14 @@ def read(
 
     if not parsed.scheme:
         with open(file_or_url, "r") as fio:
-            process_io(fio, requirements, constraints, package_keys, variety)
+            process_io(
+                fio, requirements, constraints, package_keys, override_keys, variety
+            )
     else:
         with request.urlopen(file_or_url) as fio:
-            process_io(fio, requirements, constraints, package_keys, variety)
+            process_io(
+                fio, requirements, constraints, package_keys, override_keys, variety
+            )
 
     if requirements and variety == "r":
         requirements = (
@@ -231,27 +268,42 @@ def write_dev_sources(fio, packages, position):
     fio.write("\n")
 
 
+def write_dev_overrides(
+    fio, overrides: typing.Dict[str, str], package_keys: typing.List[str]
+):
+    fio.write("\n" + "#" * 79 + "\n")
+    fio.write("# mxdev constraint overrides\n")
+    for pkg, line in overrides.items():
+        if pkg in package_keys:
+            fio.write(
+                f"# {line} IGNORE mxdev constraint override. Source override wins!\n"
+            )
+        else:
+            fio.write(f"{line}\n")
+    fio.write("\n")
+
+
 def write(
     requirements: typing.List[str],
-    requirements_filename: str,
     constraints: typing.List[str],
-    constraints_filename: str,
-    packages,
+    cfg: Configuration,
 ):
     logger.info("#" * 79)
     logger.info("# Write outfiles")
-    logger.info(f"Write [r]: {requirements_filename}")
-    with open(requirements_filename, "w") as fio:
+    logger.info(f"Write [r]: {cfg.out_requirements}")
+    with open(cfg.out_requirements, "w") as fio:
         fio.write("#" * 79 + "\n")
         fio.write("# mxdev combined constraints\n")
-        fio.write(f"-c {constraints_filename}\n\n")
-        write_dev_sources(fio, packages, "nodeps")
-        write_dev_sources(fio, packages, "deps")
+        fio.write(f"-c {cfg.out_constraints}\n\n")
+        write_dev_sources(fio, cfg.packages, "nodeps")
+        write_dev_sources(fio, cfg.packages, "deps")
         fio.writelines(requirements)
 
-    logger.info(f"Write [c]: {constraints_filename}")
-    with open(constraints_filename, "w") as fio:
+    logger.info(f"Write [c]: {cfg.out_constraints}")
+    with open(cfg.out_constraints, "w") as fio:
         fio.writelines(constraints)
+        if cfg.overrides:
+            write_dev_overrides(fio, cfg.overrides, cfg.package_keys)
 
 
 def main() -> None:
@@ -265,15 +317,9 @@ def main() -> None:
     cfg = Configuration(args.configuration)
     logger.info("#" * 79)
     logger.info("# Read infiles")
-    requirements, constraints = read(cfg.infile, cfg.keys)
+    requirements, constraints = read(cfg.infile, cfg.package_keys, cfg.override_keys)
     fetch(cfg.packages)
-    write(
-        requirements,
-        cfg.out_requirements,
-        constraints,
-        cfg.out_constraints,
-        cfg.packages,
-    )
+    write(requirements, constraints, cfg)
     logger.info("🎂 Ready for pip! 🎂")
 
 
