@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0b4 (unreleased)
+1.0.0b4 (2021-12-07)
 --------------------
 
 - Fix interdependency mode.
