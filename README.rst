@@ -6,7 +6,7 @@ Mixed development source packages on top of stable constraints using pip
 
 It builds on top of the idea to have stable version constraints and then develop from a VCS on top of it.
 
-As part of the above use-case sometimes versions of the stable constraints need an overrides with different (newer) version.
+As part of the above use-case sometimes versions of the stable constraints need an overrides with a different (i.e. newer) version.
 
 Other software following the same idea are `mr.developer <https://pypi.org/project/mr.developer/>`_  for Python's ``zc.buildout`` or `mrs-developer <https://www.npmjs.com/package/mrs-developer>`_ for NPM packages.
 
