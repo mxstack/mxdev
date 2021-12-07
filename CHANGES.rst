@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0b3 (unreleased)
+1.0.0b3 (2021-12-07)
 --------------------
 
 - Fix: Do not apply override disabling on requirements.
