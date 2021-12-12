@@ -251,9 +251,7 @@ def write_dev_sources(fio, packages, nodeps: bool):
         fio.write("# install with dependencies\n\n")
     for name in packages:
         package = packages[name]
-        if package["mode"] == "skip" or (
-            nodeps and package["mode"] == "direct"
-        ):
+        if package["mode"] == "skip" or (nodeps and package["mode"] == "direct"):
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
         subdir = f"/{package['subdir']}" if package["subdir"] else ""
