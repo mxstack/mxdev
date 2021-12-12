@@ -1,10 +1,11 @@
 Changelog
 =========
 
-1.0.0b5 (unreleased)
---------------------
+1.0.0 (unreleased)
+------------------
 
-- Nothing changed yet.
+- Defaults for outfiles are ``*-mxdev.txt`` now.
+  [jensens]
 
 
 1.0.0b4 (2021-12-07)
@@ -20,11 +21,13 @@ Changelog
 - Fix: Do not apply override disabling on requirements.
   [jensens]
 
+
 1.0.0b2 (2021-12-07)
 --------------------
 
 - Add feature: version overrides.
   [jensens]
+
 
 1.0.0b1 (2021-12-04)
 --------------------
@@ -45,6 +48,7 @@ Changelog
 - Added autocorrection for pip urls, so that github or gitlab urls can be used as copied
   in sources.ini .
   [zworkb]
+
 
 1.0.0a8 (2021-11-30)
 --------------------

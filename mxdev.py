@@ -55,11 +55,11 @@ class Configuration:
         self.infile: str = ini["settings"].get("requirements-in", "requirements.txt")
         logger.debug(f"infile={self.infile}")
         self.out_requirements: str = ini["settings"].get(
-            "requirements-out", "requirements-dev.txt"
+            "requirements-out", "requirements-mxdev.txt"
         )
         logger.debug(f"out_requirements={self.out_requirements}")
         self.out_constraints: str = ini["settings"].get(
-            "constraints-out", "constraints-dev.txt"
+            "constraints-out", "constraints-mxdev.txt"
         )
         logger.debug(f"out_constraints={self.out_constraints}")
         target: str = ini["settings"].get("default-target", "sources")
