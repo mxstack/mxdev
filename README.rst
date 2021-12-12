@@ -6,7 +6,7 @@ Mixed development source packages on top of stable constraints using pip
 
 It builds on top of the idea to have stable version constraints and then develop from a VCS on top of it.
 
-As part of the above use-case sometimes versions of the stable constraints need an overrides with a different (i.e. newer) version.
+As part of above use-case sometimes versions of the stable constraints need an override with a different (i.e. newer) version.
 
 Other software following the same idea are `mr.developer <https://pypi.org/project/mr.developer/>`_  for Python's ``zc.buildout`` or `mrs-developer <https://www.npmjs.com/package/mrs-developer>`_ for NPM packages.
 
@@ -20,7 +20,7 @@ mxdev procedure is:
 3. Sources from VCS are fetched into a target directory,
 4. Modified constraints (handled packages commented, overridden versions replaced) and  requirements (handled packages as editable from sources) are written.
 
-mxdev will **not** run pip for you!
+mxdev will **not** run *pip* for you!
 
 Configuration
 =============
@@ -141,22 +141,42 @@ For more options run ``mxdev --help``.
 Example Configuration
 =====================
 
+Example ``sources.ini``
+-----------------------
+
 This looks like so:
 
 .. code-block:: INI
 
     [settings]
-    requirements-in = requirements-infile.txt
-    requirements-out = requirements-outfile.txt
-    contraints-out = constraints-outfile.txt
+    requirements-in = requirements.txt
+    requirements-out = requirements-mxdev.txt
+    contraints-out = constraints-mxdev.txt
+
+    version-overrides =
+        baz.baaz = 1.9.32
 
     # custom variables
     github = git+ssh://git@github.com/
+    mygit = git+ssh://git@git.kup.tirol/
 
     [foo.bar]
     url = ${settings:github}orga/foo.bar.git
     branch = fix99
     extras = test,baz
+
+    [kup.fancyproject]
+    url = ${settings:mygit}kcustomers/fancycorp/kup.fancyproject.git
+    branch = fix99
+    extras = test,baz
+    mode = direct
+
+Examples at Github
+------------------
+
+- `"new" plone.org backend <https://github.com/plone/plone.org/tree/main/backend>`_
+- (add more)
+
 
 Rationale
 =========
