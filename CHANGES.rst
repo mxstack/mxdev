@@ -1,7 +1,7 @@
 Changes
 =======
 
-1.0.1 (unreleased)
+1.0.1 (2021-12-21)
 ------------------
 
 - Fix: If a developed package depends on another developed package the dependent package was ignored *sometimes* (!?).
