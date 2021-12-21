@@ -260,7 +260,9 @@ def write_dev_sources(fio, packages, nodeps: bool):
             if nodeps and package["mode"] == "interdependency"
             else ' --install-option="--pre"'
         )
-        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}{install_options}\n"""
+        editable = (
+            f"""-e ./{package['target']}/{name}{subdir}{extras}{install_options}\n"""
+        )
         logger.debug(f"-> {editable.strip()}")
         fio.write(editable)
     fio.write("\n")
