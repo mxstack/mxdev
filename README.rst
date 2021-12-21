@@ -133,7 +133,7 @@ Usage
 
 Run ``mxdev -c sources.ini``.
 
-Now use the generated requirements and constrainst files with ``pip install -r NEW_REQUIREMENTS_FILENAME.txt``.
+Now use the generated requirements and constraints files with ``pip install -r NEW_REQUIREMENTS_FILENAME.txt``.
 
 For more options run ``mxdev --help``.
 
@@ -171,7 +171,7 @@ This looks like so:
     extras = test,baz
     mode = direct
 
-Examples at Github
+Examples at GitHub
 ------------------
 
 - `"new" plone.org backend <https://github.com/plone/plone.org/tree/main/backend>`_
