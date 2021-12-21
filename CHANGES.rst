@@ -1,16 +1,19 @@
-Changelog
-=========
+Changes
+=======
 
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix: If a developed package depends on another developed package the dependent package was ignored *sometimes* (!?).
+  Instead the last release was taken.
+  Solution: Install it with the `--pre` option in order allow the other non-final/in-development *release*.
+  [jensens]
 
 
 1.0.0 (2021-12-12)
 ------------------
 
-- Defaults for outfiles are ``*-mxdev.txt`` now.
+- Defaults for "outfiles" are ``*-mxdev.txt`` now.
   [jensens]
 
 
@@ -51,8 +54,7 @@ Changelog
 1.0.0a9 (2021-12-01)
 --------------------
 
-- Added autocorrection for pip urls, so that github or gitlab urls can be used as copied
-  in sources.ini .
+- Added auto correction for pip URLs, so that GitHub or Gitlab URLs can be used as copied in `sources.ini`.
   [zworkb]
 
 
@@ -72,7 +74,7 @@ Changelog
 1.0.0a7 (2021-11-30)
 --------------------
 
-- Removed Workaround for libvcs and depend on libcs>=0.10.1.
+- Removed Workaround for libvcs and depend on libvcs>=0.10.1.
   [jensens]
 
 
@@ -93,14 +95,14 @@ Changelog
 1.0.0a4 (2021-11-29)
 --------------------
 
-- Fix: editables can be configured to be processed before or after initial requirements.
+- Fix: editable can be configured to be processed before or after initial requirements.
   [jensens]
 
 
 1.0.0a3 (2021-11-23)
 --------------------
 
-- Fix #1: Re-run of pip vanishes comitted changes
+- Fix #1: Re-run of pip vanishes committed changes
   [jensens]
 
 

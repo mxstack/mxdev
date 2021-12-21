@@ -2,7 +2,7 @@
 
 If you want to help with the development (improvement, update, bug-fixing, ...) of `mxdev` this is a great idea!
 
-The code is located in the [GitHub BlueDynamics Organisation / mxdev](https://github.com/bluedynamics/mxdev).
+The code is located in the [GitHub BlueDynamics Organization / mxdev](https://github.com/bluedynamics/mxdev).
 
 You can fork it, work on the project and create a pull request.
 

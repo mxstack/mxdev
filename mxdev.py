@@ -255,12 +255,12 @@ def write_dev_sources(fio, packages, nodeps: bool):
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
         subdir = f"/{package['subdir']}" if package["subdir"] else ""
-        nodeps = (
+        install_options = (
             ' --install-option="--no-deps"'
             if nodeps and package["mode"] == "interdependency"
-            else ""
+            else ' --install-option="--pre"'
         )
-        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}{nodeps}\n"""
+        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}{install_options}\n"""
         logger.debug(f"-> {editable.strip()}")
         fio.write(editable)
     fio.write("\n")
