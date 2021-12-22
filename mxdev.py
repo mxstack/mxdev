@@ -6,6 +6,7 @@ import argparse
 import configparser
 import logging
 import os
+import pathlib
 import pkg_resources
 import sys
 import typing
@@ -44,31 +45,68 @@ def setup_logger(level):
     root.addHandler(handler)
 
 
+def read_relative(file_or_url: str, relative_to: typing.Union[pathlib.Path, str]):
+    parsed_url = parse.urlparse(file_or_url)
+    if not parsed_url.scheme:
+        if isinstance(relative_to, pathlib.Path):
+            file_or_url = pathlib.Path(file_or_url)
+            if not file_or_url.is_absolute():
+                file_or_url = relative_to / pathlib.Path(file_or_url)
+        else:
+            file_or_url = f"{relative_to}/{file_or_url}"
+            parsed_url = parse.urlparse(file_or_url)
+    if not parsed_url.scheme:
+        with open(file_or_url, "r") as tio:
+            data = tio.read()
+            new_relative_to = file_or_url.parent
+    else:
+        with request.urlopen(file_or_url) as tio:
+            data = tio.read()
+            # XXX relative to calculation
+    return data, new_relative_to
+
+
 class Configuration:
     def __init__(self, tio: typing.TextIO) -> None:
         logger.debug("Read configuration")
-        ini = configparser.ConfigParser(
+        all_inis = self.prefetch(tio.read())
+        self.ini = configparser.ConfigParser(
             default_section="settings",
             interpolation=configparser.ExtendedInterpolation(),
         )
-        ini.read_file(tio)
-        self.infile: str = ini["settings"].get("requirements-in", "requirements.txt")
+        for current_ini in reversed(all_inis):
+            self.ini.read_string(current_ini)
+        self.init_values()
+
+    def prefetch(self, data: str, relative_to: typing.Union[pathlib.Path, str]):
+        inis = [data]
+        parser = configparser.ConfigParser(default_section="settings")
+        parser.read_string(data)
+        for extend in reversed(parser["settings"].get("extends", "").strip().split()):
+            new_data, new_relative_to = read_relative(extend, relative_to)
+            inis += self.prefetch(new_data, new_relative_to)
+        return inis
+
+    def init_values(self):
+        self.infile: str = self.ini["settings"].get(
+            "requirements-in", "requirements.txt"
+        )
         logger.debug(f"infile={self.infile}")
-        self.out_requirements: str = ini["settings"].get(
+        self.out_requirements: str = self.ini["settings"].get(
             "requirements-out", "requirements-mxdev.txt"
         )
         logger.debug(f"out_requirements={self.out_requirements}")
-        self.out_constraints: str = ini["settings"].get(
+        self.out_constraints: str = self.ini["settings"].get(
             "constraints-out", "constraints-mxdev.txt"
         )
         logger.debug(f"out_constraints={self.out_constraints}")
-        target: str = ini["settings"].get("default-target", "sources")
-        mode: str = ini["settings"].get("default-install-mode", "interdependency")
+        target: str = self.ini["settings"].get("default-target", "sources")
+        mode: str = self.ini["settings"].get("default-install-mode", "interdependency")
         if mode not in ["direct", "interdependency", "skip"]:
             raise ValueError(
                 "default-install-mode must be one of 'direct', 'interdependency' or 'skip'"
             )
-        raw_overrides = ini["settings"].get("version-overrides", "").strip()
+        raw_overrides = self.ini["settings"].get("version-overrides", "").strip()
         self.overrides: typing.Dict[str, str] = {}
         for line in raw_overrides.split("\n"):
             try:
@@ -79,8 +117,8 @@ class Configuration:
             self.overrides[parsed.key] = line
 
         self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
-        for name in ini.sections():
-            section = ini[name]
+        for name in self.ini.sections():
+            section = self.ini[name]
             logger.debug(f"config section={name}")
             url = section.get("url")
             if not url:
