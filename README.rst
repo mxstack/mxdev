@@ -40,10 +40,10 @@ In the main sections the input and output files are defined.
 
 
 ``requirements-out``
-    Output of the combined requirements including development sources to be used later with ``pip install``. Default: ``requirements-dev.txt``
+    Output of the combined requirements including development sources to be used later with ``pip install``. Default: ``requirements-mxdev.txt``
 
 ``constraints-out``
-    Output of the combined constraints. Default: ``constraints-dev.txt``
+    Output of the combined constraints. Default: ``constraints-mxdev.txt``
 
 ``default-target``
     Target directory for sources from VCS. Default: ``./sources``
@@ -56,7 +56,7 @@ In the main sections the input and output files are defined.
 ``version-overrides``
     Override package versions which already defined in a dependent constraints file.
     I.e. an upstream *constraints.txt* contains already ``somefancypackage==2.0.3``.
-    For some reason (like with my further developed sources) we need version 3.0.0 of above package.
+    Given, for some reason (like with my further developed sources), we need version 3.0.0 of above package.
     Then in this section this can be defined as:
 
     .. code-block:: INI
@@ -124,7 +124,7 @@ All other sections are defining the sources to be used.
         After all packages are pre-installed, install them again with dependencies using ``pip -e PACKAGEPATH``.
         This helps if one develops many package with dependencies between those packages.
         With *direct* the order of the packages matters, so a developer would need to do manual dependency management.
-        With *interdependency* mode this is circumevented by pre-installing all this packages without dependencies first.
+        With *interdependency* mode this is circumevented by pre-installing all those packages without dependencies first.
 
     Defaults to ``install-dependencies`` configured in main section ``[settings]`` ``default-install-mode =`` value.
 
@@ -166,7 +166,7 @@ This looks like so:
     extras = test,baz
 
     [kup.fancyproject]
-    url = ${settings:mygit}kcustomers/fancycorp/kup.fancyproject.git
+    url = ${settings:mygit}customers/fancycorp/kup.fancyproject.git
     branch = fix99
     extras = test,baz
     mode = direct
