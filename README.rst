@@ -70,6 +70,21 @@ In the main sections the input and output files are defined.
     When writing the *constraints-out*, the new version will be taken into account.
     If there is a source-section defined for the same package, the source will be used and entries here are ignored.
 
+``ignores``
+    Ignore packages which are already defined in a dependent constraints file.
+    No new version will be provided.
+    This is specifically handy if a package is going to be installed editable from local file system (like ``-e .``), but was already pinned in an upstream constraints-file.
+
+    This can be defined as:
+
+    .. code-block:: INI
+
+        [settings]
+        ignores =
+            somefancypackage
+            otherpackage
+
+
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
 
@@ -155,6 +170,8 @@ This looks like so:
 
     version-overrides =
         baz.baaz = 1.9.32
+
+    ignores = boo.baa.bi
 
     # custom variables
     github = git+ssh://git@github.com/

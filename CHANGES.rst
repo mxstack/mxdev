@@ -1,10 +1,12 @@
 Changes
 =======
 
-1.0.2 (unreleased)
+1.1.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Feature: Ignore existing constraints.
+  New setting ``ignores`` with a list of packages (one per line) to ignore from constraints without providing a version.
+  [jensens]
 
 
 1.0.1 (2021-12-21)

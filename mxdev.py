@@ -77,6 +77,12 @@ class Configuration:
                 logger.error(f"Can not parse override: {line}")
                 continue
             self.overrides[parsed.key] = line
+        raw_ignores = ini["settings"].get("ignores", "").strip()
+        self.ignore_keys: typing.List[str] = []
+        for line in raw_ignores.split("\n"):
+            line.strip()
+            if line:
+                self.ignore_keys.append(line)
 
         self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
         for name in ini.sections():
@@ -113,6 +119,7 @@ def process_line(
     line: str,
     package_keys: typing.List[str],
     override_keys: typing.List[str],
+    ignore_keys: typing.List[str],
     variety: str,
 ) -> typing.Tuple[typing.List[str], typing.List[str]]:
     if isinstance(line, bytes):
@@ -123,6 +130,7 @@ def process_line(
             line.split(" ")[1].strip(),
             package_keys=package_keys,
             override_keys=override_keys,
+            ignore_keys=ignore_keys,
             variety="c",
         )
     elif line.startswith("-r"):
@@ -130,6 +138,7 @@ def process_line(
             line.split(" ")[1].strip(),
             package_keys=package_keys,
             override_keys=override_keys,
+            ignore_keys=ignore_keys,
             variety="r",
         )
     try:
@@ -141,6 +150,8 @@ def process_line(
             line = f"# {line.strip()} -> mxdev disabled (source)\n"
         if variety == "c" and parsed.key in override_keys:
             line = f"# {line.strip()} -> mxdev disabled (override)\n"
+        if variety == "c" and parsed.key in ignore_keys:
+            line = f"# {line.strip()} -> mxdev disabled (ignore)\n"
     if variety == "c":
         return [], [line]
     return [line], []
@@ -152,11 +163,12 @@ def process_io(
     constraints: typing.List[str],
     package_keys: typing.List[str],
     override_keys: typing.List[str],
+    ignore_keys: typing.List[str],
     variety: str,
 ) -> None:
     for line in fio:
         new_requirements, new_constraints = process_line(
-            line, package_keys, override_keys, variety
+            line, package_keys, override_keys, ignore_keys, variety
         )
         requirements += new_requirements
         constraints += new_constraints
@@ -166,6 +178,7 @@ def read(
     file_or_url: str,
     package_keys: typing.List[str],
     override_keys: typing.List[str],
+    ignore_keys: typing.List[str],
     variety: str = "r",
 ) -> typing.Tuple[typing.List[str], typing.List[str]]:
 
@@ -177,12 +190,24 @@ def read(
     if not parsed.scheme:
         with open(file_or_url, "r") as fio:
             process_io(
-                fio, requirements, constraints, package_keys, override_keys, variety
+                fio,
+                requirements,
+                constraints,
+                package_keys,
+                override_keys,
+                ignore_keys,
+                variety,
             )
     else:
         with request.urlopen(file_or_url) as fio:
             process_io(
-                fio, requirements, constraints, package_keys, override_keys, variety
+                fio,
+                requirements,
+                constraints,
+                package_keys,
+                override_keys,
+                ignore_keys,
+                variety,
             )
 
     if requirements and variety == "r":
@@ -317,7 +342,9 @@ def main() -> None:
     cfg = Configuration(args.configuration)
     logger.info("#" * 79)
     logger.info("# Read infiles")
-    requirements, constraints = read(cfg.infile, cfg.package_keys, cfg.override_keys)
+    requirements, constraints = read(
+        cfg.infile, cfg.package_keys, cfg.override_keys, cfg.ignore_keys
+    )
     fetch(cfg.packages)
     write(requirements, constraints, cfg)
     logger.info("🎂 Ready for pip! 🎂")
