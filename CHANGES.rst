@@ -1,7 +1,7 @@
 Changes
 =======
 
-1.1.0 (unreleased)
+1.1.0 (2021-12-29)
 ------------------
 
 - Feature: Ignore existing constraints.
