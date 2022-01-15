@@ -105,7 +105,7 @@ All other sections are defining the sources to be used.
 
     - ``ssh://`` -> ``git+ssh://``
     - ``git@`` -> ``git+ssh://git@``
-    - ``https://`` t-> ``git+https://``
+    - ``https://`` -> ``git+https://``
 
     The URL is required.
 
