@@ -1,3 +1,4 @@
+from pathlib import Path
 from libvcs.shortcuts import create_repo_from_pip_url
 from urllib import parse
 from urllib import request
@@ -184,9 +185,21 @@ def read(
     constraints: typing.List[str] = []
     logger.info(f"Read [{variety}]: {file_or_url}")
     parsed = parse.urlparse(file_or_url)
+    variety_verbose = "requirements" if variety == "r" else "constraints"
 
     if not parsed.scheme:
-        with open(file_or_url, "r") as fio:
+        requirements_in_file = Path(file_or_url)
+        if not requirements_in_file.exists():
+            logger.error(
+                f"Can not read {variety_verbose} file '{file_or_url}', it does not exist."
+            )
+            exit(1)
+        if not requirements_in_file.is_file():
+            logger.error(
+                f"Can not read {variety_verbose} file '{file_or_url}', it is not a file."
+            )
+            exit(1)
+        with requirements_in_file.open("r") as fio:
             process_io(
                 fio,
                 requirements,
@@ -335,7 +348,8 @@ def main() -> None:
     )
     fetch(cfg.packages)
     write(requirements, constraints, cfg)
-    logger.info("🎂 Ready for pip! 🎂")
+    logger.info(f"🎂 You are now ready for: pip install -r {cfg.out_requirements}")
+    logger.info("   (path to pip may vary dependent on your installation method)")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -8,6 +8,11 @@ Changes
   Remove all interdependency related code.
   [jensens]
 
+- Better error message if the requirements-in file does not exists.
+  [jensens]
+
+- Better last message with the full pip command.
+  [jensens]
 
 1.1.0 (2021-12-29)
 ------------------
