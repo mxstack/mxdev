@@ -10,6 +10,8 @@ As part of above use-case sometimes versions of the stable constraints need an o
 
 Other software following the same idea are `mr.developer <https://pypi.org/project/mr.developer/>`_  for Python's ``zc.buildout`` or `mrs-developer <https://www.npmjs.com/package/mrs-developer>`_ for NPM packages.
 
+**mxdev 2.0 needs pip version 22 at minimum to work properly**
+
 Overview
 ========
 
@@ -50,8 +52,8 @@ In the main sections the input and output files are defined.
 
 ``default-install-mode``
     Default for ``install-mode`` on section, read there for details
-    Allowed values: ``direct``, ``interdependency``, ``skip``
-    Default: ``interdependency``
+    Allowed values: ``direct`` or ``skip``
+    Default: ``direct``
 
 ``version-overrides``
     Override package versions which already defined in a dependent constraints file.
@@ -122,7 +124,7 @@ All other sections are defining the sources to be used.
 
 ``target``
     Target directory for source from this section.
-    Default to ``target`` directory configured in main section ``[settings]`` ``default-target =`` value.
+    Default to default target directory configured in main section ``[settings]`` ``default-target =`` value.
 
 ``install-mode``
     There are different modes of pip installation:
@@ -134,21 +136,15 @@ All other sections are defining the sources to be used.
         Install the package using ``pip -e PACKAGEPATH``.
         Dependencies are resolved immediately.
 
-    ``interdependency``
-        Pre-install the packages first using ``pip -e PACKAGEPATH --install-option="--no-deps"``.
-        After all packages are pre-installed, install them again with dependencies using ``pip -e PACKAGEPATH``.
-        This helps if one develops many package with dependencies between those packages.
-        With *direct* the order of the packages matters, so a developer would need to do manual dependency management.
-        With *interdependency* mode this is circumevented by pre-installing all those packages without dependencies first.
 
-    Defaults to ``install-dependencies`` configured in main section ``[settings]`` ``default-install-mode =`` value.
+    Defaults to default mode configured in main section ``[settings]`` ``default-install-mode =`` value.
 
 Usage
 =====
 
 Run ``mxdev -c sources.ini``.
 
-Now use the generated requirements and constraints files with ``pip install -r NEW_REQUIREMENTS_FILENAME.txt``.
+Now, use the generated requirements and constraints files with i.e. ``pip install -r requirements-mxdev.txt``.
 
 For more options run ``mxdev --help``.
 
@@ -171,7 +167,8 @@ This looks like so:
     version-overrides =
         baz.baaz = 1.9.32
 
-    ignores = boo.baa.bi
+    ignores =
+        my.ignoredpackage
 
     # custom variables
     github = git+ssh://git@github.com/
@@ -186,7 +183,6 @@ This looks like so:
     url = ${settings:mygit}customers/fancycorp/kup.fancyproject.git
     branch = fix99
     extras = test,baz
-    mode = direct
 
 Examples at GitHub
 ------------------

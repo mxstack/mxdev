@@ -1,10 +1,12 @@
 Changes
 =======
 
-1.1.1 (unreleased)
+2.0.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Depend on pip 22, where interdependency mode is no longer needed.
+  Remove all interdependency related code.
+  [jensens]
 
 
 1.1.0 (2021-12-29)
