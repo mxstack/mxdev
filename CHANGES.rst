@@ -1,7 +1,7 @@
 Changes
 =======
 
-2.0.0 (unreleased)
+2.0.0 (2022-01-31)
 ------------------
 
 - Depend on pip 22, where interdependency mode is no longer needed.
