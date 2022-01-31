@@ -38,7 +38,11 @@ The **main section** must be called ``[settings]``, even if kept empty.
 In the main sections the input and output files are defined.
 
 ``requirements-in``
-    Main requirements file to start with. This can be an URL too. Default: ``requirements.txt``
+    Main requirements file to start with. This can be an URL too.
+
+    If given an empty value mxdev will only generate output from the information given in INI file itself.
+
+    Default: ``requirements.txt``
 
 
 ``requirements-out``

@@ -14,6 +14,9 @@ Changes
 - Better last message with the full pip command.
   [jensens]
 
+- Allow empty ``requirements-in`` configuration.
+  [jensens]
+
 1.1.0 (2021-12-29)
 ------------------
 

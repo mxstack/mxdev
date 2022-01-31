@@ -183,6 +183,9 @@ def read(
 
     requirements: typing.List[str] = []
     constraints: typing.List[str] = []
+    if not file_or_url.strip():
+        logger.info("mxdev is configured to run without input requirements!")
+        return (requirements, constraints)
     logger.info(f"Read [{variety}]: {file_or_url}")
     parsed = parse.urlparse(file_or_url)
     variety_verbose = "requirements" if variety == "r" else "constraints"
