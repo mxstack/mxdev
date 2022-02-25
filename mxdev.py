@@ -193,7 +193,7 @@ def read(state: State, variety: str = "r") -> None:
     constraints = state.constraints
     if not file_or_url.strip():
         logger.info("mxdev is configured to run without input requirements!")
-        return (requirements, constraints)
+        return
     logger.info(f"Read [{variety}]: {file_or_url}")
     parsed = parse.urlparse(file_or_url)
     variety_verbose = "requirements" if variety == "r" else "constraints"
@@ -354,7 +354,8 @@ def main() -> None:
     read(state)
     fetch(state)
     write(state)
-    logger.info(f"🎂 You are now ready for: pip install -r {cfg.out_requirements}")
+    out_requirements = state.configuration.out_requirements
+    logger.info(f"🎂 You are now ready for: pip install -r {out_requirements}")
     logger.info("   (path to pip may vary dependent on your installation method)")
 
 
