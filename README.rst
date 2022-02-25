@@ -44,7 +44,6 @@ In the main sections the input and output files are defined.
 
     Default: ``requirements.txt``
 
-
 ``requirements-out``
     Output of the combined requirements including development sources to be used later with ``pip install``. Default: ``requirements-mxdev.txt``
 

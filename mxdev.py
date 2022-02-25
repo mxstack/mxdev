@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from libvcs.shortcuts import create_repo_from_pip_url
 from urllib import parse
@@ -114,6 +116,14 @@ class Configuration:
         return [k.lower() for k in self.overrides]
 
 
+@dataclass
+class State:
+    configuration: Configuration
+    requirements: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    annotations: dict = field(default_factory=dict)
+
+
 def process_line(
     line: str,
     package_keys: typing.List[str],
@@ -173,16 +183,14 @@ def process_io(
         constraints += new_constraints
 
 
-def read(
-    file_or_url: str,
-    package_keys: typing.List[str],
-    override_keys: typing.List[str],
-    ignore_keys: typing.List[str],
-    variety: str = "r",
-) -> typing.Tuple[typing.List[str], typing.List[str]]:
-
-    requirements: typing.List[str] = []
-    constraints: typing.List[str] = []
+def read(state: State, variety: str = "r") -> None:
+    cfg = state.configuration
+    file_or_url = cfg.infile
+    package_keys = cfg.package_keys
+    override_keys = cfg.override_keys
+    ignore_keys = cfg.ignore_keys
+    requirements = state.requirements
+    constraints = state.constraints
     if not file_or_url.strip():
         logger.info("mxdev is configured to run without input requirements!")
         return (requirements, constraints)
@@ -243,7 +251,6 @@ def read(
             + constraints
             + ["\n", f"# end constraints from: {file_or_url}\n", "#" * 79 + "\n\n"]
         )
-    return (requirements, constraints)
 
 
 def autocorrect_pip_url(pip_url: str) -> str:
@@ -260,17 +267,16 @@ def autocorrect_pip_url(pip_url: str) -> str:
         return f"git+{pip_url}"
     elif pip_url.startswith("https://"):
         return f"git+{pip_url}"
-
     return pip_url
 
 
-def fetch(packages) -> None:
+def fetch(state: State) -> None:
+    packages = state.configuration.packages
     logger.info("#" * 79)
     if not packages:
         logger.info("# No sources configured!")
         return
     logger.info("# Fetch sources from VCS")
-
     for name in packages:
         logger.info(f"Fetch or update {name}")
         package: dict = packages[name]
@@ -314,11 +320,10 @@ def write_dev_overrides(
     fio.write("\n")
 
 
-def write(
-    requirements: typing.List[str],
-    constraints: typing.List[str],
-    cfg: Configuration,
-):
+def write(state: State) -> None:
+    requirements = state.requirements
+    constraints = state.constraints
+    cfg = state.configuration
     logger.info("#" * 79)
     logger.info("# Write outfiles")
     logger.info(f"Write [c]: {cfg.out_constraints}")
@@ -343,14 +348,12 @@ def main() -> None:
     elif not args.verbose and args.silent:
         loglevel = logging.WARNING
     setup_logger(loglevel)
-    cfg = Configuration(args.configuration)
     logger.info("#" * 79)
     logger.info("# Read infiles")
-    requirements, constraints = read(
-        cfg.infile, cfg.package_keys, cfg.override_keys, cfg.ignore_keys
-    )
-    fetch(cfg.packages)
-    write(requirements, constraints, cfg)
+    state = State(configuration=Configuration(args.configuration))
+    read(state)
+    fetch(state)
+    write(state)
     logger.info(f"🎂 You are now ready for: pip install -r {cfg.out_requirements}")
     logger.info("   (path to pip may vary dependent on your installation method)")
 
