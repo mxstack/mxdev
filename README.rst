@@ -12,6 +12,7 @@ Other software following the same idea are `mr.developer <https://pypi.org/proje
 
 **mxdev 2.0 needs pip version 22 at minimum to work properly**
 
+
 Overview
 ========
 
@@ -24,12 +25,14 @@ mxdev procedure is:
 
 mxdev will **not** run *pip* for you!
 
+
 Configuration
 =============
 
 Given a ``requirements.txt`` (or similar named) file which itself references a ``constraints.txt`` file inside.
 
-Create an INI file, like `sources.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
+Create an INI file, like `mxdev.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
+
 
 Main section ``[settings]``
 ---------------------------
@@ -89,7 +92,6 @@ In the main sections the input and output files are defined.
             somefancypackage
             otherpackage
 
-
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
 
@@ -142,10 +144,11 @@ All other sections are defining the sources to be used.
 
     Defaults to default mode configured in main section ``[settings]`` ``default-install-mode =`` value.
 
+
 Usage
 =====
 
-Run ``mxdev -c sources.ini``.
+Run ``mxdev -c mxdev.ini``.
 
 Now, use the generated requirements and constraints files with i.e. ``pip install -r requirements-mxdev.txt``.
 
@@ -155,8 +158,8 @@ For more options run ``mxdev --help``.
 Example Configuration
 =====================
 
-Example ``sources.ini``
------------------------
+Example ``mxdev.ini``
+---------------------
 
 This looks like so:
 
@@ -187,6 +190,7 @@ This looks like so:
     branch = fix99
     extras = test,baz
 
+
 Examples at GitHub
 ------------------
 
@@ -206,7 +210,7 @@ Idea
     A pre-processor fetches (as this can be an URL) and expands all ``-c SOMEOTHER_FILE_OR_URL`` and ``-r SOMEOTHER_FILE_OR_URL`` files into one, filtering out all packages given in a configuration file.
     For each of those packages a ``-e ...`` entry is generated instead and written to a new ``TARGET.txt``.
     Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
-    The configuration is read from a file ``sources.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
+    The configuration is read from a file ``mxdev.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
 
 Trivia
     Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.
