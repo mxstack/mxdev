@@ -67,7 +67,7 @@ In the main sections the input and output files are defined.
     Given, for some reason (like with my further developed sources), we need version 3.0.0 of above package.
     Then in this section this can be defined as:
 
-    .. code-block:: INI
+    .. code-block:: ini
 
         [settings]
         version-overrides =
@@ -85,7 +85,7 @@ In the main sections the input and output files are defined.
 
     This can be defined as:
 
-    .. code-block:: INI
+    .. code-block:: ini
 
         [settings]
         ignores =
@@ -163,7 +163,7 @@ Example ``mxdev.ini``
 
 This looks like so:
 
-.. code-block:: INI
+.. code-block:: ini
 
     [settings]
     requirements-in = requirements.txt
@@ -196,6 +196,59 @@ Examples at GitHub
 
 - `"new" plone.org backend <https://github.com/plone/plone.org/tree/main/backend>`_
 - (add more)
+
+
+Extending
+=========
+
+Functionality of mxdev can be extended by hooks.
+This is useful to generate additional scripts or files or automate any other setup steps related to mxdev's domain.
+
+Extension configuration ends up in the ``mxdev.ini`` file and can be added globally to the ``settings`` section or package specific.
+To avoid naming conflicts the convention is to prefix options with an extension related prefix.
+
+This looks like so:
+
+.. code-block:: ini
+
+    [settings]
+    myextension_global_setting = 1
+
+    [foo.bar]
+    myextension_package_setting = 1
+
+The extension is implemented as subclass of ``mxdev.Hook``:
+
+.. code-block:: python
+
+    from mxdev import Hook
+
+    class MyExtension(Hook):
+        order = 0  # can be defined if working with multiple extensions
+                   # to control hook execution order
+
+    def read(state: State) -> None:
+        """Gets executed after mxdev read operation."""
+        # The state object provides an ``annotations`` dict which can be used
+        # to carry extension related runtime data.
+
+    def write(state: State) -> None:
+        """Gets executed after mxdev write operation."""
+
+The hook must be registered as entry point in the ``setup.py`` or ``setup.cfg``
+of your package:
+
+.. code-block:: python
+
+    setup(
+        name='myextension',
+        ...
+        entry_points={
+            'mxdev': [
+                'hook = myextension.MyExtension',
+            ],
+        }
+    )
 
 
 Rationale

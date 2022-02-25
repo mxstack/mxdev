@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
+from pkg_resources import iter_entry_points
 from libvcs.shortcuts import create_repo_from_pip_url
 from urllib import parse
 from urllib import request
@@ -122,6 +123,25 @@ class State:
     requirements: list[str] = field(default_factory=list)
     constraints: list[str] = field(default_factory=list)
     annotations: dict = field(default_factory=dict)
+
+
+class Hook:
+    """Entry point for hooking into mxdev."""
+
+    order = 0
+
+    def read(state: State) -> None:
+        """Gets executed after mxdev read operation."""
+
+    def write(state: State) -> None:
+        """Gets executed after mxdev write operation."""
+
+
+def load_hooks() -> list:
+    return sorted(
+        [ep.load() for ep in iter_entry_points('mxdev') if ep.name == 'hook'],
+        key=lambda x: x.order
+    )
 
 
 def process_line(
@@ -351,9 +371,14 @@ def main() -> None:
     logger.info("#" * 79)
     logger.info("# Read infiles")
     state = State(configuration=Configuration(args.configuration))
+    hooks = load_hooks()
     read(state)
+    for hook in hooks:
+        hook.read(state)
     fetch(state)
     write(state)
+    for hook in hooks:
+        hook.write(state)
     out_requirements = state.configuration.out_requirements
     logger.info(f"🎂 You are now ready for: pip install -r {out_requirements}")
     logger.info("   (path to pip may vary dependent on your installation method)")
