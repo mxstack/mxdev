@@ -10,7 +10,7 @@ Changes
 - Rename sources.ini to mxdev.ini in documentation.
   [rnix]
 
-- Instrocuce state object and pass it to read/fetch/write. State object
+- Instroduce state object and pass it to read/fetch/write. State object
   contains all required runtime data.
   [rnix]
 
