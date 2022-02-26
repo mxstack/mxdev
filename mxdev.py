@@ -51,7 +51,7 @@ def setup_logger(level):
 
 class Configuration:
 
-    def __init__(self, tio: typing.TextIO) -> None:
+    def __init__(self, tio: typing.TextIO, hooks: typing.List["Hook"]) -> None:
         logger.debug("Read configuration")
         self.data: configparser.ConfigParser = configparser.ConfigParser(
             default_section="settings",
@@ -89,8 +89,14 @@ class Configuration:
             if line:
                 self.ignore_keys.append(line)
 
+        self.no_packages: typing.List[str] = list()
+        for hook in hooks:
+            self.no_packages += hook.sections
+
         self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
         for name in self.data.sections():
+            if name in self.no_packages:
+                continue
             section = self.data[name]
             logger.debug(f"config section={name}")
             url = section.get("url")
@@ -133,6 +139,11 @@ class Hook:
 
     order = 0
     """Control hook execution order if working with multiple hooks."""
+
+    sections = []
+    """List of config sections in the INI file which relates to this hook,
+    thus get ignored when parsing packages config.
+    """
 
     def read(state: State) -> None:
         """Gets executed after mxdev read operation."""
@@ -374,7 +385,8 @@ def main() -> None:
     logger.info("#" * 79)
     logger.info("# Read infiles")
     hooks = load_hooks()
-    state = State(configuration=Configuration(tio=args.configuration))
+    configuration = Configuration(tio=args.configuration, hooks=hooks)
+    state = State(configuration=configuration)
     read(state)
     for hook in hooks:
         hook.read(state)
