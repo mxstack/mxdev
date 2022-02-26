@@ -230,22 +230,13 @@ The extension is implemented as subclass of ``mxdev.Hook``:
         order = 0
         """Control hook execution order if working with multiple hooks."""
 
-        global_settings = []
-        """List of global setting names related to this hook."""
+        def read(state: State) -> None:
+            """Gets executed after mxdev read operation."""
 
-        package_settings = []
-        """List of package setting names related to this hook."""
+        def write(state: State) -> None:
+            """Gets executed after mxdev write operation."""
 
-    def read(state: State) -> None:
-        """Gets executed after mxdev read operation."""
-
-    def write(state: State) -> None:
-        """Gets executed after mxdev write operation."""
-
-Settings defined in ``global_settings`` are available via ``state.configurations.hooks`` dictionary.
-
-Settings defined in ``package_settings`` are available via ``state.configurations.packages[<packagename>]["hooks"]`` dictionary.
-
+The raw settings from the INI file are available at ``state.configuration.data`` as ``configparser.ConfigParser`` instance.
 The state object provides an ``annotations`` dict which can be used to carry extension related runtime data.
 
 The hook must be registered as entry point in the ``setup.py`` or ``setup.cfg`` of your package:

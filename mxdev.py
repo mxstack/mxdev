@@ -51,14 +51,14 @@ def setup_logger(level):
 
 class Configuration:
 
-    def __init__(self, tio: typing.TextIO, hooks: typing.List["Hook"]) -> None:
+    def __init__(self, tio: typing.TextIO) -> None:
         logger.debug("Read configuration")
-        ini = configparser.ConfigParser(
+        self.data: configparser.ConfigParser = configparser.ConfigParser(
             default_section="settings",
             interpolation=configparser.ExtendedInterpolation(),
         )
-        ini.read_file(tio)
-        settings = ini["settings"]
+        self.data.read_file(tio)
+        settings = self.data["settings"]
         self.infile: str = settings.get("requirements-in", "requirements.txt")
         logger.debug(f"infile={self.infile}")
         self.out_requirements: str = settings.get(
@@ -88,16 +88,10 @@ class Configuration:
             line.strip()
             if line:
                 self.ignore_keys.append(line)
-        self.hooks: typing.Dict[str] = dict()
-        hook_package_settings = list()
-        for hook in hooks:
-            for setting in hook.global_settings:
-                self.hooks[setting] = settings.get(setting, "")
-            hook_package_settings += hook.package_settings
 
         self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
-        for name in ini.sections():
-            section = ini[name]
+        for name in self.data.sections():
+            section = self.data[name]
             logger.debug(f"config section={name}")
             url = section.get("url")
             if not url:
@@ -107,17 +101,14 @@ class Configuration:
                 raise ValueError(
                     f"install-mode in [{name}] must be one of 'direct' or 'skip'"
                 )
-            package = self.packages[name] = {
+            self.packages[name] = {
                 "url": url,
                 "branch": section.get("branch", "main"),
                 "extras": section.get("extras", ""),
                 "subdir": section.get("subdirectory", ""),
                 "target": section.get("target", target),
-                "mode": pmode,
-                "hooks": dict()
+                "mode": pmode
             }
-            for setting in hook_package_settings:
-                package["hooks"][setting] = section.get(setting, "")
             logger.debug(f"config data={self.packages[name]}")
 
     @property
@@ -143,12 +134,6 @@ class Hook:
     order = 0
     """Control hook execution order if working with multiple hooks."""
 
-    global_settings = []
-    """List of global setting names related to this hook."""
-
-    package_settings = []
-    """List of package setting names related to this hook."""
-
     def read(state: State) -> None:
         """Gets executed after mxdev read operation."""
 
@@ -158,7 +143,7 @@ class Hook:
 
 def load_hooks() -> list:
     return sorted(
-        [ep.load() for ep in iter_entry_points('mxdev') if ep.name == 'hook'],
+        [ep.load() for ep in iter_entry_points('mxdev') if ep.name == "hook"],
         key=lambda x: x.order
     )
 
@@ -389,8 +374,7 @@ def main() -> None:
     logger.info("#" * 79)
     logger.info("# Read infiles")
     hooks = load_hooks()
-    configuration = Configuration(tio=args.configuration, hooks=hooks)
-    state = State(configuration=configuration)
+    state = State(configuration=Configuration(tio=args.configuration))
     read(state)
     for hook in hooks:
         hook.read(state)
