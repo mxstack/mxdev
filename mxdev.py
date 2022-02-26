@@ -50,28 +50,30 @@ def setup_logger(level):
 
 
 class Configuration:
-    def __init__(self, tio: typing.TextIO) -> None:
+
+    def __init__(self, tio: typing.TextIO, hooks: typing.List["Hook"]) -> None:
         logger.debug("Read configuration")
         ini = configparser.ConfigParser(
             default_section="settings",
             interpolation=configparser.ExtendedInterpolation(),
         )
         ini.read_file(tio)
-        self.infile: str = ini["settings"].get("requirements-in", "requirements.txt")
+        settings = ini["settings"]
+        self.infile: str = settings.get("requirements-in", "requirements.txt")
         logger.debug(f"infile={self.infile}")
-        self.out_requirements: str = ini["settings"].get(
+        self.out_requirements: str = settings.get(
             "requirements-out", "requirements-mxdev.txt"
         )
         logger.debug(f"out_requirements={self.out_requirements}")
-        self.out_constraints: str = ini["settings"].get(
+        self.out_constraints: str = settings.get(
             "constraints-out", "constraints-mxdev.txt"
         )
         logger.debug(f"out_constraints={self.out_constraints}")
-        target: str = ini["settings"].get("default-target", "sources")
-        mode: str = ini["settings"].get("default-install-mode", "direct")
+        target: str = settings.get("default-target", "sources")
+        mode: str = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:
             raise ValueError("default-install-mode must be one of 'direct' or 'skip'")
-        raw_overrides = ini["settings"].get("version-overrides", "").strip()
+        raw_overrides = settings.get("version-overrides", "").strip()
         self.overrides: typing.Dict[str, str] = {}
         for line in raw_overrides.split("\n"):
             try:
@@ -80,12 +82,18 @@ class Configuration:
                 logger.error(f"Can not parse override: {line}")
                 continue
             self.overrides[parsed.key] = line
-        raw_ignores = ini["settings"].get("ignores", "").strip()
+        raw_ignores = settings.get("ignores", "").strip()
         self.ignore_keys: typing.List[str] = []
         for line in raw_ignores.split("\n"):
             line.strip()
             if line:
                 self.ignore_keys.append(line)
+        self.hooks: typing.Dict[str] = dict()
+        hook_package_settings = list()
+        for hook in hooks:
+            for setting in hook.global_settings:
+                self.hooks[setting] = settings.get(setting, "")
+            hook_package_settings += hook.package_settings
 
         self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
         for name in ini.sections():
@@ -99,14 +107,17 @@ class Configuration:
                 raise ValueError(
                     f"install-mode in [{name}] must be one of 'direct' or 'skip'"
                 )
-            self.packages[name] = {
+            package = self.packages[name] = {
                 "url": url,
                 "branch": section.get("branch", "main"),
                 "extras": section.get("extras", ""),
                 "subdir": section.get("subdirectory", ""),
                 "target": section.get("target", target),
                 "mode": pmode,
+                "hooks": dict()
             }
+            for setting in hook_package_settings:
+                package["hooks"][setting] = section.get(setting, "")
             logger.debug(f"config data={self.packages[name]}")
 
     @property
@@ -130,6 +141,13 @@ class Hook:
     """Entry point for hooking into mxdev."""
 
     order = 0
+    """Control hook execution order if working with multiple hooks."""
+
+    global_settings = []
+    """List of global setting names related to this hook."""
+
+    package_settings = []
+    """List of package setting names related to this hook."""
 
     def read(state: State) -> None:
         """Gets executed after mxdev read operation."""
@@ -370,8 +388,9 @@ def main() -> None:
     setup_logger(loglevel)
     logger.info("#" * 79)
     logger.info("# Read infiles")
-    state = State(configuration=Configuration(args.configuration))
     hooks = load_hooks()
+    configuration = Configuration(tio=args.configuration, hooks=hooks)
+    state = State(configuration=configuration)
     read(state)
     for hook in hooks:
         hook.read(state)

@@ -227,19 +227,28 @@ The extension is implemented as subclass of ``mxdev.Hook``:
     from mxdev import State
 
     class MyExtension(Hook):
-        order = 0  # can be defined if working with multiple extensions
-                   # to control hook execution order
+        order = 0
+        """Control hook execution order if working with multiple hooks."""
+
+        global_settings = []
+        """List of global setting names related to this hook."""
+
+        package_settings = []
+        """List of package setting names related to this hook."""
 
     def read(state: State) -> None:
         """Gets executed after mxdev read operation."""
-        # The state object provides an ``annotations`` dict which can be used
-        # to carry extension related runtime data.
 
     def write(state: State) -> None:
         """Gets executed after mxdev write operation."""
 
-The hook must be registered as entry point in the ``setup.py`` or ``setup.cfg``
-of your package:
+Settings defined in ``global_settings`` are available via ``state.configurations.hooks`` dictionary.
+
+Settings defined in ``package_settings`` are available via ``state.configurations.packages[<packagename>]["hooks"]`` dictionary.
+
+The state object provides an ``annotations`` dict which can be used to carry extension related runtime data.
+
+The hook must be registered as entry point in the ``setup.py`` or ``setup.cfg`` of your package:
 
 .. code-block:: python
 
