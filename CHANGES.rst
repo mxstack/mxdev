@@ -1,8 +1,8 @@
 Changes
 =======
 
-2.1 (unreleased)
-----------------
+2.1.0 (unreleased)
+------------------
 
 - Add support for custom hooks.
   [rnix]
@@ -10,7 +10,7 @@ Changes
 - Rename sources.ini to mxdev.ini in documentation.
   [rnix]
 
-- Instroduce state object and pass it to read/fetch/write. State object
+- Introduce state object and pass it to read/fetch/write. State object
   contains all required runtime data.
   [rnix]
 

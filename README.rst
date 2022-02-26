@@ -205,7 +205,7 @@ Functionality of mxdev can be extended by hooks.
 This is useful to generate additional scripts or files or automate any other setup steps related to mxdev's domain.
 
 Extension configuration ends up in the ``mxdev.ini`` file and can be added globally to the ``settings`` section or package specific.
-To avoid naming conflicts the convention is to prefix options with an extension related prefix.
+To avoid naming conflicts the convention is to prefix options with an extension related namespace.
 
 This looks like so:
 
