@@ -31,8 +31,9 @@ parser.add_argument(
     type=argparse.FileType("r"),
     required=True,
 )
-parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
+parser.add_argument("-n", "--no-fetch", help="Do not fetch sources", action="store_true")
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
+parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
 
 
 def setup_logger(level):
@@ -274,12 +275,11 @@ def read(state: State, variety: str = "r") -> None:
 
 
 def autocorrect_pip_url(pip_url: str) -> str:
-    """
-    do some autocorrection for pip urls, especially urls copy/pasted
+    """So some autocorrection for pip urls, especially urls copy/pasted
     from github as e.g. git@github.com:bluedynamics/mxdev.git
-    which should be git+ssh://git@github.com/bluedynamics/mxdev.git
+    which should be git+ssh://git@github.com/bluedynamics/mxdev.git.
 
-    when no correction necessary, return the original
+    If no correction necessary, return the original value.
     """
     if pip_url.startswith("git@"):
         return f"git+ssh://{pip_url.replace(':', '/')}"
@@ -375,7 +375,8 @@ def main() -> None:
     read(state)
     for hook in hooks:
         hook.read(state)
-    fetch(state)
+    if not args.no_fetch:
+        fetch(state)
     write(state)
     for hook in hooks:
         hook.write(state)

@@ -4,6 +4,9 @@ Changes
 2.1.0 (unreleased)
 ------------------
 
+- Add flag to skip fetching of repositories.
+  [rnix]
+
 - Add support for custom hooks.
   [rnix]
 

@@ -150,6 +150,8 @@ Usage
 
 Run ``mxdev -c mxdev.ini``.
 
+Mxdev will **read** the configuration, **fetch** the packages defined in the config file and **write** a requirements and constraints file.
+
 Now, use the generated requirements and constraints files with i.e. ``pip install -r requirements-mxdev.txt``.
 
 For more options run ``mxdev --help``.
@@ -222,6 +224,7 @@ The extension is implemented as subclass of ``mxdev.Hook``:
 .. code-block:: python
 
     from mxdev import Hook
+    from mxdev import State
 
     class MyExtension(Hook):
         order = 0  # can be defined if working with multiple extensions
@@ -245,8 +248,8 @@ of your package:
         ...
         entry_points={
             'mxdev': [
-                'hook = myextension.MyExtension',
-            ],
+                'hook = myextension:MyExtension',
+            ]
         }
     )
 
