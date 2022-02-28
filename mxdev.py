@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from dataclasses import field
+from libvcs.shortcuts import create_repo_from_pip_url
 from pathlib import Path
 from pkg_resources import iter_entry_points
-from libvcs.shortcuts import create_repo_from_pip_url
 from urllib import parse
 from urllib import request
 
@@ -31,7 +31,9 @@ parser.add_argument(
     type=argparse.FileType("r"),
     required=True,
 )
-parser.add_argument("-n", "--no-fetch", help="Do not fetch sources", action="store_true")
+parser.add_argument(
+    "-n", "--no-fetch", help="Do not fetch sources", action="store_true"
+)
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
 parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
 
@@ -162,7 +164,7 @@ class Hook:
 
 
 def load_hooks() -> list:
-    return [ep.load() for ep in iter_entry_points('mxdev') if ep.name == "hook"]
+    return [ep.load() for ep in iter_entry_points("mxdev") if ep.name == "hook"]
 
 
 def process_line(
