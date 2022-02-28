@@ -1,5 +1,8 @@
-from pathlib import Path
+from dataclasses import dataclass
+from dataclasses import field
 from libvcs.shortcuts import create_repo_from_pip_url
+from pathlib import Path
+from pkg_resources import iter_entry_points
 from urllib import parse
 from urllib import request
 
@@ -28,8 +31,11 @@ parser.add_argument(
     type=argparse.FileType("r"),
     required=True,
 )
-parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
+parser.add_argument(
+    "-n", "--no-fetch", help="Do not fetch sources", action="store_true"
+)
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
+parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
 
 
 def setup_logger(level):
@@ -46,29 +52,31 @@ def setup_logger(level):
 
 
 class Configuration:
-    def __init__(self, tio: typing.TextIO) -> None:
+    settings: typing.Dict[str, str]
+    overrides: typing.Dict[str, str]
+    ignore_keys: typing.List[str]
+    packages: typing.Dict[str, typing.Dict[str, str]]
+    hooks: typing.Dict[str, typing.Dict[str, str]]
+
+    def __init__(self, tio: typing.TextIO, hooks: typing.List["Hook"]) -> None:
         logger.debug("Read configuration")
-        ini = configparser.ConfigParser(
+        data = configparser.ConfigParser(
             default_section="settings",
             interpolation=configparser.ExtendedInterpolation(),
         )
-        ini.read_file(tio)
-        self.infile: str = ini["settings"].get("requirements-in", "requirements.txt")
+        data.read_file(tio)
+        settings = self.settings = dict(data["settings"].items())
+
         logger.debug(f"infile={self.infile}")
-        self.out_requirements: str = ini["settings"].get(
-            "requirements-out", "requirements-mxdev.txt"
-        )
         logger.debug(f"out_requirements={self.out_requirements}")
-        self.out_constraints: str = ini["settings"].get(
-            "constraints-out", "constraints-mxdev.txt"
-        )
         logger.debug(f"out_constraints={self.out_constraints}")
-        target: str = ini["settings"].get("default-target", "sources")
-        mode: str = ini["settings"].get("default-install-mode", "direct")
+
+        mode = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:
             raise ValueError("default-install-mode must be one of 'direct' or 'skip'")
-        raw_overrides = ini["settings"].get("version-overrides", "").strip()
-        self.overrides: typing.Dict[str, str] = {}
+
+        raw_overrides = settings.get("version-overrides", "").strip()
+        self.overrides = {}
         for line in raw_overrides.split("\n"):
             try:
                 parsed = pkg_resources.Requirement.parse(line)
@@ -76,34 +84,55 @@ class Configuration:
                 logger.error(f"Can not parse override: {line}")
                 continue
             self.overrides[parsed.key] = line
-        raw_ignores = ini["settings"].get("ignores", "").strip()
-        self.ignore_keys: typing.List[str] = []
+
+        raw_ignores = settings.get("ignores", "").strip()
+        self.ignore_keys = []
         for line in raw_ignores.split("\n"):
             line.strip()
             if line:
                 self.ignore_keys.append(line)
 
-        self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
-        for name in ini.sections():
-            section = ini[name]
-            logger.debug(f"config section={name}")
-            url = section.get("url")
-            if not url:
+        def is_ns_member(name):
+            for hook in hooks:
+                if name.startswith(hook.namespace):
+                    return True
+            return False
+
+        self.hooks = {}
+        self.packages = {}
+        target = settings.get("default-target", "sources")
+        for name in data.sections():
+            section = data[name]
+            if is_ns_member(name):
+                logger.debug(f"Section '{name}' belongs to hook")
+                self.hooks[name] = dict(section.items())
+                continue
+            logger.debug(f"Section '{name}' belongs to package")
+            package = self.packages[name] = dict(section.items())
+            package.setdefault("branch", "main")
+            package.setdefault("extras", "")
+            package.setdefault("subdirectory", "")
+            package.setdefault("target", target)
+            package.setdefault("install-mode", mode)
+            if not package.get("url"):
                 raise ValueError(f"Section {name} has no URL set!")
-            pmode = section.get("install-mode", mode)
-            if pmode not in ["direct", "skip"]:
+            if package.get("install-mode") not in ["direct", "skip"]:
                 raise ValueError(
                     f"install-mode in [{name}] must be one of 'direct' or 'skip'"
                 )
-            self.packages[name] = {
-                "url": url,
-                "branch": section.get("branch", "main"),
-                "extras": section.get("extras", ""),
-                "subdir": section.get("subdirectory", ""),
-                "target": section.get("target", target),
-                "mode": pmode,
-            }
             logger.debug(f"config data={self.packages[name]}")
+
+    @property
+    def infile(self) -> str:
+        return self.settings.get("requirements-in", "requirements.txt")
+
+    @property
+    def out_requirements(self) -> str:
+        return self.settings.get("requirements-out", "requirements-mxdev.txt")
+
+    @property
+    def out_constraints(self) -> str:
+        return self.settings.get("constraints-out", "constraints-mxdev.txt")
 
     @property
     def package_keys(self) -> typing.List[str]:
@@ -112,6 +141,30 @@ class Configuration:
     @property
     def override_keys(self) -> typing.List[str]:
         return [k.lower() for k in self.overrides]
+
+
+@dataclass
+class State:
+    configuration: Configuration
+    requirements: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+
+
+class Hook:
+    """Entry point for hooking into mxdev."""
+
+    namespace = None
+    """The namespace for this hook."""
+
+    def read(state: State) -> None:
+        """Gets executed after mxdev read operation."""
+
+    def write(state: State) -> None:
+        """Gets executed after mxdev write operation."""
+
+
+def load_hooks() -> list:
+    return [ep.load() for ep in iter_entry_points("mxdev") if ep.name == "hook"]
 
 
 def process_line(
@@ -173,19 +226,17 @@ def process_io(
         constraints += new_constraints
 
 
-def read(
-    file_or_url: str,
-    package_keys: typing.List[str],
-    override_keys: typing.List[str],
-    ignore_keys: typing.List[str],
-    variety: str = "r",
-) -> typing.Tuple[typing.List[str], typing.List[str]]:
-
-    requirements: typing.List[str] = []
-    constraints: typing.List[str] = []
+def read(state: State, variety: str = "r") -> None:
+    cfg = state.configuration
+    file_or_url = cfg.infile
+    package_keys = cfg.package_keys
+    override_keys = cfg.override_keys
+    ignore_keys = cfg.ignore_keys
+    requirements = state.requirements
+    constraints = state.constraints
     if not file_or_url.strip():
         logger.info("mxdev is configured to run without input requirements!")
-        return (requirements, constraints)
+        return
     logger.info(f"Read [{variety}]: {file_or_url}")
     parsed = parse.urlparse(file_or_url)
     variety_verbose = "requirements" if variety == "r" else "constraints"
@@ -243,16 +294,14 @@ def read(
             + constraints
             + ["\n", f"# end constraints from: {file_or_url}\n", "#" * 79 + "\n\n"]
         )
-    return (requirements, constraints)
 
 
 def autocorrect_pip_url(pip_url: str) -> str:
-    """
-    do some autocorrection for pip urls, especially urls copy/pasted
+    """So some autocorrection for pip urls, especially urls copy/pasted
     from github as e.g. git@github.com:bluedynamics/mxdev.git
-    which should be git+ssh://git@github.com/bluedynamics/mxdev.git
+    which should be git+ssh://git@github.com/bluedynamics/mxdev.git.
 
-    when no correction necessary, return the original
+    If no correction necessary, return the original value.
     """
     if pip_url.startswith("git@"):
         return f"git+ssh://{pip_url.replace(':', '/')}"
@@ -260,17 +309,16 @@ def autocorrect_pip_url(pip_url: str) -> str:
         return f"git+{pip_url}"
     elif pip_url.startswith("https://"):
         return f"git+{pip_url}"
-
     return pip_url
 
 
-def fetch(packages) -> None:
+def fetch(state: State) -> None:
+    packages = state.configuration.packages
     logger.info("#" * 79)
     if not packages:
         logger.info("# No sources configured!")
         return
     logger.info("# Fetch sources from VCS")
-
     for name in packages:
         logger.info(f"Fetch or update {name}")
         package: dict = packages[name]
@@ -286,10 +334,10 @@ def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.An
     fio.write("# mxdev development sources\n")
     for name in packages:
         package = packages[name]
-        if package["mode"] == "skip":
+        if package["install-mode"] == "skip":
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
-        subdir = f"/{package['subdir']}" if package["subdir"] else ""
+        subdir = f"/{package['subdirectory']}" if package["subdirectory"] else ""
         install_options = ' --install-option="--pre"'
         editable = (
             f"""-e ./{package['target']}/{name}{subdir}{extras}{install_options}\n"""
@@ -314,11 +362,10 @@ def write_dev_overrides(
     fio.write("\n")
 
 
-def write(
-    requirements: typing.List[str],
-    constraints: typing.List[str],
-    cfg: Configuration,
-):
+def write(state: State) -> None:
+    requirements = state.requirements
+    constraints = state.constraints
+    cfg = state.configuration
     logger.info("#" * 79)
     logger.info("# Write outfiles")
     logger.info(f"Write [c]: {cfg.out_constraints}")
@@ -343,15 +390,21 @@ def main() -> None:
     elif not args.verbose and args.silent:
         loglevel = logging.WARNING
     setup_logger(loglevel)
-    cfg = Configuration(args.configuration)
     logger.info("#" * 79)
     logger.info("# Read infiles")
-    requirements, constraints = read(
-        cfg.infile, cfg.package_keys, cfg.override_keys, cfg.ignore_keys
-    )
-    fetch(cfg.packages)
-    write(requirements, constraints, cfg)
-    logger.info(f"🎂 You are now ready for: pip install -r {cfg.out_requirements}")
+    hooks = load_hooks()
+    configuration = Configuration(tio=args.configuration, hooks=hooks)
+    state = State(configuration=configuration)
+    read(state)
+    for hook in hooks:
+        hook.read(state)
+    if not args.no_fetch:
+        fetch(state)
+    write(state)
+    for hook in hooks:
+        hook.write(state)
+    out_requirements = state.configuration.out_requirements
+    logger.info(f"🎂 You are now ready for: pip install -r {out_requirements}")
     logger.info("   (path to pip may vary dependent on your installation method)")
 
 

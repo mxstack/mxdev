@@ -12,6 +12,7 @@ Other software following the same idea are `mr.developer <https://pypi.org/proje
 
 **mxdev 2.0 needs pip version 22 at minimum to work properly**
 
+
 Overview
 ========
 
@@ -24,12 +25,14 @@ mxdev procedure is:
 
 mxdev will **not** run *pip* for you!
 
+
 Configuration
 =============
 
 Given a ``requirements.txt`` (or similar named) file which itself references a ``constraints.txt`` file inside.
 
-Create an INI file, like `sources.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
+Create an INI file, like `mxdev.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
+
 
 Main section ``[settings]``
 ---------------------------
@@ -43,7 +46,6 @@ In the main sections the input and output files are defined.
     If given an empty value mxdev will only generate output from the information given in INI file itself.
 
     Default: ``requirements.txt``
-
 
 ``requirements-out``
     Output of the combined requirements including development sources to be used later with ``pip install``. Default: ``requirements-mxdev.txt``
@@ -65,7 +67,7 @@ In the main sections the input and output files are defined.
     Given, for some reason (like with my further developed sources), we need version 3.0.0 of above package.
     Then in this section this can be defined as:
 
-    .. code-block:: INI
+    .. code-block:: ini
 
         [settings]
         version-overrides =
@@ -83,13 +85,12 @@ In the main sections the input and output files are defined.
 
     This can be defined as:
 
-    .. code-block:: INI
+    .. code-block:: ini
 
         [settings]
         ignores =
             somefancypackage
             otherpackage
-
 
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
@@ -143,10 +144,13 @@ All other sections are defining the sources to be used.
 
     Defaults to default mode configured in main section ``[settings]`` ``default-install-mode =`` value.
 
+
 Usage
 =====
 
-Run ``mxdev -c sources.ini``.
+Run ``mxdev -c mxdev.ini``.
+
+Mxdev will **read** the configuration, **fetch** the packages defined in the config file and **write** a requirements and constraints file.
 
 Now, use the generated requirements and constraints files with i.e. ``pip install -r requirements-mxdev.txt``.
 
@@ -156,12 +160,12 @@ For more options run ``mxdev --help``.
 Example Configuration
 =====================
 
-Example ``sources.ini``
------------------------
+Example ``mxdev.ini``
+---------------------
 
 This looks like so:
 
-.. code-block:: INI
+.. code-block:: ini
 
     [settings]
     requirements-in = requirements.txt
@@ -188,11 +192,74 @@ This looks like so:
     branch = fix99
     extras = test,baz
 
+
 Examples at GitHub
 ------------------
 
 - `"new" plone.org backend <https://github.com/plone/plone.org/tree/main/backend>`_
 - (add more)
+
+
+Extending
+=========
+
+Functionality of mxdev can be extended by hooks.
+This is useful to generate additional scripts or files or automate any other setup steps related to mxdev's domain.
+
+Extension configuration settings end up in the ``mxdev.ini`` file.
+They can be added globally to the ``settings`` section, as dedicated config sections or package specific.
+To avoid naming conflicts, all hook related settings and config sections must be prefixed with a namespace.
+
+It is recommended to use the package name containing the hook as namespace.
+
+This looks like so:
+
+.. code-block:: ini
+
+    [settings]
+    myextension-global_setting = 1
+
+    [myextension-section]
+    setting = value
+
+    [foo.bar]
+    myextension-package_setting = 1
+
+The extension is implemented as subclass of ``mxdev.Hook``:
+
+.. code-block:: python
+
+    from mxdev import Hook
+    from mxdev import State
+
+    class MyExtension(Hook):
+
+        namespace = None
+        """The namespace for this hook."""
+
+        def read(state: State) -> None:
+            """Gets executed after mxdev read operation."""
+
+        def write(state: State) -> None:
+            """Gets executed after mxdev write operation."""
+
+The default settings section from the INI file is available at ``state.configuration.settings``.
+The package configuration is available at ``state.configuration.packages``.
+Hook related config sections are available at ``state.configuration.hooks``.
+
+The hook must be registered as entry point in the ``setup.py`` or ``setup.cfg`` of your package:
+
+.. code-block:: python
+
+    setup(
+        name='myextension',
+        ...
+        entry_points={
+            'mxdev': [
+                'hook = myextension:MyExtension',
+            ]
+        }
+    )
 
 
 Rationale
@@ -207,7 +274,7 @@ Idea
     A pre-processor fetches (as this can be an URL) and expands all ``-c SOMEOTHER_FILE_OR_URL`` and ``-r SOMEOTHER_FILE_OR_URL`` files into one, filtering out all packages given in a configuration file.
     For each of those packages a ``-e ...`` entry is generated instead and written to a new ``TARGET.txt``.
     Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
-    The configuration is read from a file ``sources.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
+    The configuration is read from a file ``mxdev.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
 
 Trivia
     Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.

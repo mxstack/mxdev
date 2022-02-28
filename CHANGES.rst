@@ -1,10 +1,21 @@
 Changes
 =======
 
-2.0.1 (unreleased)
+2.1.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add flag to skip fetching of repositories.
+  [rnix]
+
+- Add support for custom hooks.
+  [rnix]
+
+- Rename sources.ini to mxdev.ini in documentation.
+  [rnix]
+
+- Introduce state object and pass it to read/fetch/write. State object
+  contains all required runtime data.
+  [rnix]
 
 
 2.0.0 (2022-01-31)
