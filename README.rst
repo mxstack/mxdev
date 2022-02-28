@@ -206,8 +206,11 @@ Extending
 Functionality of mxdev can be extended by hooks.
 This is useful to generate additional scripts or files or automate any other setup steps related to mxdev's domain.
 
-Extension configuration ends up in the ``mxdev.ini`` file and can be added globally to the ``settings`` section or package specific.
-To avoid naming conflicts it is recommended to prefix options with an extension related namespace.
+Extension configuration settings end up in the ``mxdev.ini`` file.
+They can be added globally to the ``settings`` section, as dedicated config sections or package specific.
+To avoid naming conflicts, all hook related settings and config sections must be prefixed with a namespace.
+
+It is recommended to use the package name containing the hook as namespace.
 
 This looks like so:
 
@@ -216,11 +219,11 @@ This looks like so:
     [settings]
     myextension-global_setting = 1
 
+    [myextension-section]
+    setting = value
+
     [foo.bar]
     myextension-package_setting = 1
-
-By default, all config sections but the default section (settings) are considered package related sections.
-To reserve config sections for a hook, they must be declared on the hook class as shown below.
 
 The extension is implemented as subclass of ``mxdev.Hook``:
 
@@ -230,13 +233,9 @@ The extension is implemented as subclass of ``mxdev.Hook``:
     from mxdev import State
 
     class MyExtension(Hook):
-        order = 0
-        """Control hook execution order if working with multiple hooks."""
 
-        sections = ['myextension-section']
-        """List of config sections in the INI file which relates to this hook,
-        thus get ignored when parsing packages config.
-        """
+        namespace = None
+        """The namespace for this hook."""
 
         def read(state: State) -> None:
             """Gets executed after mxdev read operation."""
@@ -244,9 +243,9 @@ The extension is implemented as subclass of ``mxdev.Hook``:
         def write(state: State) -> None:
             """Gets executed after mxdev write operation."""
 
-The raw settings from the INI file are available at ``state.configuration.data`` as ``configparser.ConfigParser`` instance.
-When parsing package related settings from raw settings data, ``state.configuration.no_packages`` must be taken into account.
-The state object provides an ``annotations`` dict which can be used to carry extension related runtime data.
+The default settings section from the INI file is available at ``state.configuration.settings``.
+The package configuration is available at ``state.configuration.packages``.
+Hook related config sections are available at ``state.configuration.hooks``.
 
 The hook must be registered as entry point in the ``setup.py`` or ``setup.cfg`` of your package:
 

@@ -50,31 +50,31 @@ def setup_logger(level):
 
 
 class Configuration:
+    settings: typing.Dict[str, str]
+    overrides: typing.Dict[str, str]
+    ignore_keys: typing.List[str]
+    packages: typing.Dict[str, typing.Dict[str, str]]
+    hooks: typing.Dict[str, typing.Dict[str, str]]
 
     def __init__(self, tio: typing.TextIO, hooks: typing.List["Hook"]) -> None:
         logger.debug("Read configuration")
-        self.data: configparser.ConfigParser = configparser.ConfigParser(
+        data = configparser.ConfigParser(
             default_section="settings",
             interpolation=configparser.ExtendedInterpolation(),
         )
-        self.data.read_file(tio)
-        settings = self.data["settings"]
-        self.infile: str = settings.get("requirements-in", "requirements.txt")
+        data.read_file(tio)
+        settings = self.settings = dict(data["settings"].items())
+
         logger.debug(f"infile={self.infile}")
-        self.out_requirements: str = settings.get(
-            "requirements-out", "requirements-mxdev.txt"
-        )
         logger.debug(f"out_requirements={self.out_requirements}")
-        self.out_constraints: str = settings.get(
-            "constraints-out", "constraints-mxdev.txt"
-        )
         logger.debug(f"out_constraints={self.out_constraints}")
-        target: str = settings.get("default-target", "sources")
-        mode: str = settings.get("default-install-mode", "direct")
+
+        mode = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:
             raise ValueError("default-install-mode must be one of 'direct' or 'skip'")
+
         raw_overrides = settings.get("version-overrides", "").strip()
-        self.overrides: typing.Dict[str, str] = {}
+        self.overrides = {}
         for line in raw_overrides.split("\n"):
             try:
                 parsed = pkg_resources.Requirement.parse(line)
@@ -82,40 +82,55 @@ class Configuration:
                 logger.error(f"Can not parse override: {line}")
                 continue
             self.overrides[parsed.key] = line
+
         raw_ignores = settings.get("ignores", "").strip()
-        self.ignore_keys: typing.List[str] = []
+        self.ignore_keys = []
         for line in raw_ignores.split("\n"):
             line.strip()
             if line:
                 self.ignore_keys.append(line)
 
-        self.no_packages: typing.List[str] = list()
-        for hook in hooks:
-            self.no_packages += hook.sections
+        def is_ns_member(name):
+            for hook in hooks:
+                if name.startswith(hook.namespace):
+                    return True
+            return False
 
-        self.packages: typing.Dict[str, typing.Dict[str, str]] = {}
-        for name in self.data.sections():
-            if name in self.no_packages:
+        self.hooks = {}
+        self.packages = {}
+        target = settings.get("default-target", "sources")
+        for name in data.sections():
+            section = data[name]
+            if is_ns_member(name):
+                logger.debug(f"Section '{name}' belongs to hook")
+                self.hooks[name] = dict(section.items())
                 continue
-            section = self.data[name]
-            logger.debug(f"config section={name}")
-            url = section.get("url")
-            if not url:
+            logger.debug(f"Section '{name}' belongs to package")
+            package = self.packages[name] = dict(section.items())
+            package.setdefault("branch", "main")
+            package.setdefault("extras", "")
+            package.setdefault("subdirectory", "")
+            package.setdefault("target", target)
+            package.setdefault("install-mode", mode)
+            if not package.get("url"):
                 raise ValueError(f"Section {name} has no URL set!")
-            pmode = section.get("install-mode", mode)
-            if pmode not in ["direct", "skip"]:
+            if package.get("install-mode") not in ["direct", "skip"]:
                 raise ValueError(
                     f"install-mode in [{name}] must be one of 'direct' or 'skip'"
                 )
-            self.packages[name] = {
-                "url": url,
-                "branch": section.get("branch", "main"),
-                "extras": section.get("extras", ""),
-                "subdir": section.get("subdirectory", ""),
-                "target": section.get("target", target),
-                "mode": pmode
-            }
             logger.debug(f"config data={self.packages[name]}")
+
+    @property
+    def infile(self) -> str:
+        return self.settings.get("requirements-in", "requirements.txt")
+
+    @property
+    def out_requirements(self) -> str:
+        return self.settings.get("requirements-out", "requirements-mxdev.txt")
+
+    @property
+    def out_constraints(self) -> str:
+        return self.settings.get("constraints-out", "constraints-mxdev.txt")
 
     @property
     def package_keys(self) -> typing.List[str]:
@@ -131,19 +146,13 @@ class State:
     configuration: Configuration
     requirements: list[str] = field(default_factory=list)
     constraints: list[str] = field(default_factory=list)
-    annotations: dict = field(default_factory=dict)
 
 
 class Hook:
     """Entry point for hooking into mxdev."""
 
-    order = 0
-    """Control hook execution order if working with multiple hooks."""
-
-    sections = []
-    """List of config sections in the INI file which relates to this hook,
-    thus get ignored when parsing packages config.
-    """
+    namespace = None
+    """The namespace for this hook."""
 
     def read(state: State) -> None:
         """Gets executed after mxdev read operation."""
@@ -153,10 +162,7 @@ class Hook:
 
 
 def load_hooks() -> list:
-    return sorted(
-        [ep.load() for ep in iter_entry_points('mxdev') if ep.name == "hook"],
-        key=lambda x: x.order
-    )
+    return [ep.load() for ep in iter_entry_points('mxdev') if ep.name == "hook"]
 
 
 def process_line(
@@ -326,10 +332,10 @@ def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.An
     fio.write("# mxdev development sources\n")
     for name in packages:
         package = packages[name]
-        if package["mode"] == "skip":
+        if package["install-mode"] == "skip":
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
-        subdir = f"/{package['subdir']}" if package["subdir"] else ""
+        subdir = f"/{package['subdirectory']}" if package["subdirectory"] else ""
         install_options = ' --install-option="--pre"'
         editable = (
             f"""-e ./{package['target']}/{name}{subdir}{extras}{install_options}\n"""
