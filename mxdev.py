@@ -256,7 +256,7 @@ def read(state: State, variety: str = "r") -> None:
                 )
         else:
             logger.info(
-                f"Can not read {variety_verbose} file '{file_or_url}', it does not exist."
+                f"Can not read {variety_verbose} file '{file_or_url}', it does not exist. Empty file assumed."
             )
     else:
         with request.urlopen(file_or_url) as fio:
