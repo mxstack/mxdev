@@ -103,13 +103,12 @@ class Configuration:
         self.packages = {}
         target = settings.get("default-target", "sources")
         for name in data.sections():
-            section = data[name]
             if is_ns_member(name):
                 logger.debug(f"Section '{name}' belongs to hook")
-                self.hooks[name] = dict(section.items())
+                self.hooks[name] = self._read_section(data, name)
                 continue
             logger.debug(f"Section '{name}' belongs to package")
-            package = self.packages[name] = dict(section.items())
+            package = self.packages[name] = self._read_section(data, name)
             package.setdefault("branch", "main")
             package.setdefault("extras", "")
             package.setdefault("subdirectory", "")
@@ -122,6 +121,11 @@ class Configuration:
                     f"install-mode in [{name}] must be one of 'direct' or 'skip'"
                 )
             logger.debug(f"config data={self.packages[name]}")
+
+    def _read_section(self, data, name):
+        # read section without defaults.
+        defaults = data.defaults()
+        return dict([(k, v) for k, v in data[name].items() if k not in defaults])
 
     @property
     def infile(self) -> str:
