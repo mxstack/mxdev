@@ -4,6 +4,9 @@ Changes
 2.1.0 (unreleased)
 ------------------
 
+- Config parser options are now considered case sensitive.
+  [rnix]
+
 - Do not fail ``mxdev`` run if ``requirements.txt`` is missing.
   [rnix]
 

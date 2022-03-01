@@ -62,8 +62,9 @@ class Configuration:
         logger.debug("Read configuration")
         data = configparser.ConfigParser(
             default_section="settings",
-            interpolation=configparser.ExtendedInterpolation(),
+            interpolation=configparser.ExtendedInterpolation()
         )
+        data.optionxform = str
         data.read_file(tio)
         settings = self.settings = dict(data["settings"].items())
 
