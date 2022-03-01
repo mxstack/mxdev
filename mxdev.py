@@ -243,25 +243,20 @@ def read(state: State, variety: str = "r") -> None:
 
     if not parsed.scheme:
         requirements_in_file = Path(file_or_url)
-        if not requirements_in_file.exists():
-            logger.error(
-                f"Can not read {variety_verbose} file '{file_or_url}', it does not exist."
-            )
-            exit(1)
-        if not requirements_in_file.is_file():
-            logger.error(
-                f"Can not read {variety_verbose} file '{file_or_url}', it is not a file."
-            )
-            exit(1)
-        with requirements_in_file.open("r") as fio:
-            process_io(
-                fio,
-                requirements,
-                constraints,
-                package_keys,
-                override_keys,
-                ignore_keys,
-                variety,
+        if requirements_in_file.exists():
+            with requirements_in_file.open("r") as fio:
+                process_io(
+                    fio,
+                    requirements,
+                    constraints,
+                    package_keys,
+                    override_keys,
+                    ignore_keys,
+                    variety,
+                )
+        else:
+            logger.info(
+                f"Can not read {variety_verbose} file '{file_or_url}', it does not exist. Empty file assumed."
             )
     else:
         with request.urlopen(file_or_url) as fio:

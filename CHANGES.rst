@@ -4,6 +4,9 @@ Changes
 2.1.0 (unreleased)
 ------------------
 
+- Do not fail ``mxdev`` run if ``requirements.txt`` is missing.
+  [rnix]
+
 - Add flag to skip fetching of repositories.
   [rnix]
 
