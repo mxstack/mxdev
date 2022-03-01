@@ -146,8 +146,8 @@ class Configuration:
 @dataclass
 class State:
     configuration: Configuration
-    requirements: list[str] = field(default_factory=list)
-    constraints: list[str] = field(default_factory=list)
+    requirements: typing.List[str] = field(default_factory=list)
+    constraints: typing.List[str] = field(default_factory=list)
 
 
 class Hook:
@@ -156,15 +156,15 @@ class Hook:
     namespace = None
     """The namespace for this hook."""
 
-    def read(state: State) -> None:
+    def read(self, state: State) -> None:
         """Gets executed after mxdev read operation."""
 
-    def write(state: State) -> None:
+    def write(self, state: State) -> None:
         """Gets executed after mxdev write operation."""
 
 
 def load_hooks() -> list:
-    return [ep.load() for ep in iter_entry_points("mxdev") if ep.name == "hook"]
+    return [ep.load()() for ep in iter_entry_points("mxdev") if ep.name == "hook"]
 
 
 def process_line(

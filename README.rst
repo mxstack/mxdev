@@ -237,10 +237,10 @@ The extension is implemented as subclass of ``mxdev.Hook``:
         namespace = None
         """The namespace for this hook."""
 
-        def read(state: State) -> None:
+        def read(self, state: State) -> None:
             """Gets executed after mxdev read operation."""
 
-        def write(state: State) -> None:
+        def write(self, state: State) -> None:
             """Gets executed after mxdev write operation."""
 
 The default settings section from the INI file is available at ``state.configuration.settings``.
