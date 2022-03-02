@@ -391,10 +391,13 @@ def main() -> None:
         loglevel = logging.WARNING
     setup_logger(loglevel)
     logger.info("#" * 79)
-    logger.info("# Read infiles")
+    logger.info("# Load hooks")
     hooks = load_hooks()
+    logger.info("# Load configuration")
     configuration = Configuration(tio=args.configuration, hooks=hooks)
     state = State(configuration=configuration)
+    logger.info("#" * 79)
+    logger.info("# Read infiles")
     read(state)
     for hook in hooks:
         hook.read(state)
