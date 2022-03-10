@@ -10,6 +10,9 @@ Changes
 - Do not fail ``mxdev`` run if ``requirements.txt`` is missing.
   [rnix]
 
+- Add flag to only fetch repositories an skip generating files.
+  [rnix]
+
 - Add flag to skip fetching of repositories.
   [rnix]
 

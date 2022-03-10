@@ -34,6 +34,9 @@ parser.add_argument(
 parser.add_argument(
     "-n", "--no-fetch", help="Do not fetch sources", action="store_true"
 )
+parser.add_argument(
+    "-o", "--only-fetch", help="Only fetch sources", action="store_true"
+)
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
 parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
 
@@ -391,7 +394,6 @@ def main() -> None:
         loglevel = logging.WARNING
     setup_logger(loglevel)
     logger.info("#" * 79)
-    logger.info("# Load hooks")
     hooks = load_hooks()
     logger.info("# Load configuration")
     configuration = Configuration(tio=args.configuration, hooks=hooks)
@@ -399,10 +401,13 @@ def main() -> None:
     logger.info("#" * 79)
     logger.info("# Read infiles")
     read(state)
-    for hook in hooks:
-        hook.read(state)
+    if not args.only_fetch:
+        for hook in hooks:
+            hook.read(state)
     if not args.no_fetch:
         fetch(state)
+    if args.only_fetch:
+        return
     write(state)
     for hook in hooks:
         hook.write(state)
