@@ -5,7 +5,6 @@ from pathlib import Path
 from pkg_resources import iter_entry_points
 from urllib import parse
 from urllib import request
-
 import argparse
 import configparser
 import logging
@@ -37,11 +36,15 @@ parser.add_argument(
 parser.add_argument(
     "-o", "--only-fetch", help="Only fetch sources", action="store_true"
 )
-parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
-parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
+parser.add_argument(
+    "-s", "--silent", help="Reduce verbosity", action="store_true"
+)
+parser.add_argument(
+    "-v", "--verbose", help="Increase verbosity", action="store_true"
+)
 
 
-def setup_logger(level):
+def setup_logger(level: int) -> None:
     root = logging.getLogger()
     root.setLevel(level)
     handler = logging.StreamHandler(sys.stdout)
@@ -161,7 +164,7 @@ class State:
 class Hook:
     """Entry point for hooking into mxdev."""
 
-    namespace = None
+    namespace: str
     """The namespace for this hook."""
 
     def read(self, state: State) -> None:
@@ -324,9 +327,9 @@ def fetch(state: State) -> None:
     logger.info("# Fetch sources from VCS")
     for name in packages:
         logger.info(f"Fetch or update {name}")
-        package: dict = packages[name]
-        repo_dir: str = os.path.abspath(f"{package['target']}/{name}")
-        pip_url: str = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
+        package = packages[name]
+        repo_dir = os.path.abspath(f"{package['target']}/{name}")
+        pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
         logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
         repo = create_repo_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
         repo.update_repo()
@@ -385,6 +388,16 @@ def write(state: State) -> None:
         fio.writelines(requirements)
 
 
+def read_hooks(state: State, hooks: typing.List[Hook]) -> None:
+    for hook in hooks:
+        hook.read(state)
+
+
+def write_hooks(state: State, hooks: typing.List[Hook]) -> None:
+    for hook in hooks:
+        hook.write(state)
+
+
 def main() -> None:
     args = parser.parse_args()
     loglevel = logging.INFO
@@ -402,15 +415,13 @@ def main() -> None:
     logger.info("# Read infiles")
     read(state)
     if not args.only_fetch:
-        for hook in hooks:
-            hook.read(state)
+        read_hooks(state, hooks)
     if not args.no_fetch:
         fetch(state)
     if args.only_fetch:
         return
     write(state)
-    for hook in hooks:
-        hook.write(state)
+    write_hooks(state, hooks)
     out_requirements = state.configuration.out_requirements
     logger.info(f"🎂 You are now ready for: pip install -r {out_requirements}")
     logger.info("   (path to pip may vary dependent on your installation method)")
