@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from dataclasses import field
-from libvcs.shortcuts import create_repo_from_pip_url
 from pathlib import Path
 from pkg_resources import iter_entry_points
 from urllib import parse
@@ -12,6 +11,13 @@ import os
 import pkg_resources
 import sys
 import typing
+
+try:
+    # libvcs 0.12+
+    from libvcs.shortcuts import create_project_from_pip_url
+except ImportError:
+    # BBB for libvcs 0.11-
+    from libvcs.shortcuts import create_repo_from_pip_url as create_project_from_pip_url
 
 
 logger = logging.getLogger("mxdev")
@@ -331,7 +337,7 @@ def fetch(state: State) -> None:
         repo_dir = os.path.abspath(f"{package['target']}/{name}")
         pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
         logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
-        repo = create_repo_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
+        repo = create_project_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
         repo.update_repo()
 
 

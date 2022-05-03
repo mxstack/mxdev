@@ -4,6 +4,9 @@ Changes
 2.1.0 (unreleased)
 ------------------
 
+- Fixed incompatibility with libvcs 0.12+.
+  [maurits]
+
 - Config parser options are now considered case sensitive.
   [rnix]
 
