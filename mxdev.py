@@ -4,6 +4,7 @@ from pathlib import Path
 from pkg_resources import iter_entry_points
 from urllib import parse
 from urllib import request
+
 import argparse
 import configparser
 import logging
@@ -11,6 +12,7 @@ import os
 import pkg_resources
 import sys
 import typing
+
 
 try:
     # libvcs 0.12+
