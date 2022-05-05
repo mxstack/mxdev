@@ -42,12 +42,8 @@ parser.add_argument(
 parser.add_argument(
     "-o", "--only-fetch", help="Only fetch sources", action="store_true"
 )
-parser.add_argument(
-    "-s", "--silent", help="Reduce verbosity", action="store_true"
-)
-parser.add_argument(
-    "-v", "--verbose", help="Increase verbosity", action="store_true"
-)
+parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
+parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
 
 
 def setup_logger(level: int) -> None:
@@ -74,7 +70,7 @@ class Configuration:
         logger.debug("Read configuration")
         data = configparser.ConfigParser(
             default_section="settings",
-            interpolation=configparser.ExtendedInterpolation()
+            interpolation=configparser.ExtendedInterpolation(),
         )
         data.optionxform = str
         data.read_file(tio)
