@@ -4,15 +4,15 @@ import pkg_resources
 import platform
 import queue
 import re
-import subprocess
 import sys
 import threading
+import typing
 
 
 logger = logging.getLogger("mxdev")
 
 
-def print_stderr(s):
+def print_stderr(s: str):
     sys.stderr.write(s)
     sys.stderr.write("\n")
     sys.stderr.flush()
@@ -20,7 +20,7 @@ def print_stderr(s):
 
 # shameless copy from
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-def which(name_root, default=None):
+def which(name_root: str, default: str = None) -> str:
     def is_exe(fpath):
         return os.path.exists(fpath) and os.access(fpath, os.X_OK)
 
@@ -45,7 +45,7 @@ def which(name_root, default=None):
     sys.exit(1)
 
 
-def version_sorted(inp, *args, **kwargs):
+def version_sorted(inp: typing.List, *args, **kwargs) -> typing.List:
     """
     Sorts components versions, it means that numeric parts of version
     treats as numeric and string as string.
@@ -87,12 +87,12 @@ class WCError(Exception):
 
 
 class BaseWorkingCopy:
-    def __init__(self, source):
-        self._output = []
+    def __init__(self, source: typing.Dict[str, typing.Any]):
+        self._output: typing.List = []
         self.output = self._output.append
         self.source = source
 
-    def should_update(self, **kwargs):
+    def should_update(self, **kwargs) -> bool:
         offline = kwargs.get("offline", False)
         if offline:
             return False
@@ -107,10 +107,12 @@ class BaseWorkingCopy:
         return update
 
 
-def yesno(question, default=True, all=True):
+def yesno(
+    question: str, default: bool = True, all: bool = True
+) -> typing.Union[str, bool]:
     if default:
         question = "%s [Yes/no" % question
-        answers = {
+        answers: typing.Dict[typing.Union[str, bool], typing.Tuple] = {
             False: ("n", "no"),
             True: ("", "y", "yes"),
         }
@@ -138,106 +140,59 @@ def yesno(question, default=True, all=True):
 
 main_lock = input_lock = output_lock = threading.RLock()
 
-
-def worker(working_copies, the_queue):
-    while True:
-        if working_copies.errors:
-            return
-        try:
-            wc, action, kwargs = the_queue.get_nowait()
-        except queue.Empty:
-            return
-        try:
-            output = action(**kwargs)
-        except WCError:
-            output_lock.acquire()
-            for lvl, msg in wc._output:
-                lvl(msg)
-            for line in sys.exc_info()[1].args[0].split("\n"):
-                logger.error(line)
-            working_copies.errors = True
-            output_lock.release()
-        else:
-            output_lock.acquire()
-            for lvl, msg in wc._output:
-                lvl(msg)
-            if kwargs.get("verbose", False) and output is not None and output.strip():
-                if isinstance(output, bytes):
-                    output = output.decode("utf8")
-                print(output)
-            output_lock.release()
+_workingcopytypes: typing.Dict[str, BaseWorkingCopy] = {}
 
 
-_workingcopytypes = None
-
-
-def get_workingcopytypes():
-    global _workingcopytypes
+def get_workingcopytypes() -> typing.Dict[str, BaseWorkingCopy]:
     if _workingcopytypes is not None:
         return _workingcopytypes
     group = "mxdev.workingcopytypes"
-    _workingcopytypes = {}
     addons = {}
     for entrypoint in pkg_resources.iter_entry_points(group=group):
         key = entrypoint.name
         workingcopytype = entrypoint.load()
         if entrypoint.dist.project_name == "mxdev":
             _workingcopytypes[key] = workingcopytype
-        else:
-            if key in addons:
-                logger.error(
-                    "There already is a working copy type addon registered for '%s'.",
-                    key,
-                )
-                sys.exit(1)
-            logger.info(
-                "Overwriting '%s' with addon from '%s'.",
-                key,
-                entrypoint.dist.project_name,
+            continue
+        if key in addons:
+            logger.error(
+                f"There already is a working copy type addon registered for '{key}'."
             )
-            addons[key] = workingcopytype
+            sys.exit(1)
+        logger.info(
+            f"Overwriting '{key}' with addon from '{entrypoint.dist.project_name}'."
+        )
+        addons[key] = workingcopytype
     _workingcopytypes.update(addons)
     return _workingcopytypes
 
 
 class WorkingCopies:
-    def __init__(self, sources, threads=5):
+    def __init__(self, sources: typing.Dict[str, typing.Dict], threads=5):
         self.sources = sources
         self.threads = threads
         self.errors = False
         self.workingcopytypes = get_workingcopytypes()
 
-    def process(self, the_queue):
+    def process(self, the_queue: queue.Queue) -> None:
         if self.threads < 2:
             worker(self, the_queue)
-        else:
-            if sys.version_info < (2, 6):
-                # work around a race condition in subprocess
-                _old_subprocess_cleanup = subprocess._cleanup
+            return
+        threads = []
 
-                def _cleanup():
-                    pass
-
-                subprocess._cleanup = _cleanup
-
-            threads = []
-
-            for i in range(self.threads):
-                thread = threading.Thread(target=worker, args=(self, the_queue))
-                thread.start()
-                threads.append(thread)
-            for thread in threads:
-                thread.join()
-            if sys.version_info < (2, 6):
-                subprocess._cleanup = _old_subprocess_cleanup
-                subprocess._cleanup()
+        for i in range(self.threads):
+            thread = threading.Thread(target=worker, args=(self, the_queue))
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join()
 
         if self.errors:
             logger.error("There have been errors, see messages above.")
             sys.exit(1)
 
-    def checkout(self, packages, **kwargs):
-        the_queue = queue.Queue()
+    def checkout(self, packages: typing.List[str], **kwargs) -> None:
+        the_queue: queue.Queue = queue.Queue()
         if "update" in kwargs:
             if isinstance(kwargs["update"], bool):
                 pass
@@ -294,7 +249,7 @@ class WorkingCopies:
             the_queue.put_nowait((wc, wc.checkout, kw))
         self.process(the_queue)
 
-    def matches(self, source):
+    def matches(self, source: typing.Dict[str, str]) -> None:
         name = source["name"]
         if name not in self.sources:
             logger.error("Checkout failed. No source defined for '%s'." % name)
@@ -312,7 +267,9 @@ class WorkingCopies:
                 logger.error(line)
             sys.exit(1)
 
-    def status(self, source, **kwargs):
+    def status(
+        self, source: typing.Dict[str, str], **kwargs
+    ) -> typing.Union[str, typing.Tuple[str, str]]:
         name = source["name"]
         if name not in self.sources:
             logger.error("Status failed. No source defined for '%s'." % name)
@@ -330,8 +287,8 @@ class WorkingCopies:
                 logger.error(line)
             sys.exit(1)
 
-    def update(self, packages, **kwargs):
-        the_queue = queue.Queue()
+    def update(self, packages: typing.Dict[str, typing.Dict], **kwargs) -> None:
+        the_queue: queue.Queue = queue.Queue()
         for name in packages:
             kw = kwargs.copy()
             if name not in self.sources:
@@ -357,3 +314,32 @@ class WorkingCopies:
             logger.info("Queued '%s' for update.", name)
             the_queue.put_nowait((wc, wc.update, kw))
         self.process(the_queue)
+
+
+def worker(working_copies: WorkingCopies, the_queue: queue.Queue) -> None:
+    while True:
+        if working_copies.errors:
+            return
+        try:
+            wc, action, kwargs = the_queue.get_nowait()
+        except queue.Empty:
+            return
+        try:
+            output = action(**kwargs)
+        except WCError:
+            output_lock.acquire()
+            for lvl, msg in wc._output:
+                lvl(msg)
+            for line in sys.exc_info()[1].args[0].split("\n"):
+                logger.error(line)
+            working_copies.errors = True
+            output_lock.release()
+        else:
+            output_lock.acquire()
+            for lvl, msg in wc._output:
+                lvl(msg)
+            if kwargs.get("verbose", False) and output is not None and output.strip():
+                if isinstance(output, bytes):
+                    output = output.decode("utf8")
+                print(output)
+            output_lock.release()

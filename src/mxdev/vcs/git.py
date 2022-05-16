@@ -1,9 +1,11 @@
 from . import common
+from ctypes import Union
 
 import os
 import re
 import subprocess
 import sys
+import typing
 
 
 logger = common.logger
@@ -23,7 +25,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
     # should make master and a lot of other conventional stuff configurable
     _upstream_name = "origin"
 
-    def __init__(self, source):
+    def __init__(self, source: typing.Dict[str, str]):
         self.git_executable = common.which("git")
         if "rev" in source and "revision" in source:
             raise ValueError(
@@ -46,7 +48,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         super().__init__(source)
 
     @common.memoize
-    def git_version(self):
+    def git_version(self) -> typing.Tuple[int, ...]:
         cmd = self.run_git(["--version"])
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
@@ -82,13 +84,11 @@ class GitWorkingCopy(common.BaseWorkingCopy):
 
     @property
     def _remote_branch_prefix(self):
-        version = self.git_version()
-        if version < (1, 6, 3):
+        if self.git_version() < (1, 6, 3):
             return self._upstream_name
-        else:
-            return "remotes/%s" % self._upstream_name
+        return "remotes/%s" % self._upstream_name
 
-    def run_git(self, commands, **kwargs):
+    def run_git(self, commands: typing.List[str], **kwargs) -> subprocess.Popen:
         commands.insert(0, self.git_executable)
         kwargs["stdout"] = subprocess.PIPE
         kwargs["stderr"] = subprocess.PIPE
@@ -98,7 +98,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         kwargs["universal_newlines"] = True
         return subprocess.Popen(commands, **kwargs)
 
-    def git_merge_rbranch(self, stdout_in, stderr_in, accept_missing=False):
+    def git_merge_rbranch(
+        self, stdout_in: str, stderr_in: str, accept_missing: bool = False
+    ) -> typing.Tuple[str, str]:
         path = self.source["path"]
         branch = self.source.get("branch", "master")
 
@@ -115,9 +117,8 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             if accept_missing:
                 logger.info("No such branch %r", branch)
                 return (stdout_in, stderr_in)
-            else:
-                logger.error("No such branch %r", branch)
-                sys.exit(1)
+            logger.error("No such branch %r", branch)
+            sys.exit(1)
 
         rbp = self._remote_branch_prefix
         cmd = self.run_git(["merge", f"{rbp}/{branch}"], cwd=path)
@@ -128,7 +129,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             )
         return (stdout_in + stdout, stderr_in + stderr)
 
-    def git_checkout(self, **kwargs):
+    def git_checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         url = self.source["url"]
@@ -136,7 +137,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             self.output(
                 (logger.info, "Skipped cloning of existing package '%s'." % name)
             )
-            return
+            return None
         msg = "Cloned '%s' with git" % name
         if "branch" in self.source:
             msg += " using branch '%s'" % self.source["branch"]
@@ -177,7 +178,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         if kwargs.get("verbose", False):
             return stdout
 
-    def git_switch_branch(self, stdout_in, stderr_in, accept_missing=False):
+    def git_switch_branch(
+        self, stdout_in: str, stderr_in: str, accept_missing: bool = False
+    ) -> typing.Tuple[str, str]:
         """Switch branches.
 
         If accept_missing is True, we do not switch the branch if it
@@ -220,7 +223,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             raise GitError(f"git checkout of branch '{branch}' failed.\n{stderr}")
         return (stdout_in + stdout, stderr_in + stderr)
 
-    def git_update(self, **kwargs):
+    def git_update(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         self.output((logger.info, "Updated '%s' with git." % name))
@@ -261,29 +264,29 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         if kwargs.get("verbose", False):
             return stdout
 
-    def checkout(self, **kwargs):
+    def checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         update = self.should_update(**kwargs)
-        if os.path.exists(path):
-            if update:
-                return self.update(**kwargs)
-            elif self.matches():
-                self.output(
-                    (logger.info, "Skipped checkout of existing package '%s'." % name)
-                )
-            else:
-                self.output(
-                    (
-                        logger.warning,
-                        "Checkout URL for existing package '%s' differs. Expected '%s'."
-                        % (name, self.source["url"]),
-                    )
-                )
-        else:
+        if not os.path.exists(path):
             return self.git_checkout(**kwargs)
 
-    def status(self, **kwargs):
+        if update:
+            return self.update(**kwargs)
+        elif self.matches():
+            self.output(
+                (logger.info, "Skipped checkout of existing package '%s'." % name)
+            )
+        else:
+            self.output(
+                (
+                    logger.warning,
+                    "Checkout URL for existing package '%s' differs. Expected '%s'."
+                    % (name, self.source["url"]),
+                )
+            )
+
+    def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
         path = self.source["path"]
         cmd = self.run_git(["status", "-s", "-b"], cwd=path)
         stdout, stderr = cmd.communicate()
@@ -297,10 +300,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             status = "dirty"
         if kwargs.get("verbose", False):
             return status, stdout
-        else:
-            return status
+        return status
 
-    def matches(self):
+    def matches(self) -> bool:
         name = self.source["name"]
         path = self.source["path"]
         # This is the old matching code: it does not work on 1.5 due to the
@@ -311,7 +313,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             raise GitError(f"git remote of '{name}' failed.\n{stderr}")
         return self.source["url"] in stdout.split()
 
-    def update(self, **kwargs):
+    def update(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         if not self.matches():
             self.output(
@@ -324,7 +326,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             raise GitError("Can't update package '%s' because it's dirty." % name)
         return self.git_update(**kwargs)
 
-    def git_set_pushurl(self, stdout_in, stderr_in):
+    def git_set_pushurl(self, stdout_in, stderr_in) -> typing.Tuple[str, str]:
         cmd = self.run_git(
             [
                 "config",
@@ -342,7 +344,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             )
         return (stdout_in + stdout, stderr_in + stderr)
 
-    def git_init_submodules(self, stdout_in, stderr_in):
+    def git_init_submodules(
+        self, stdout_in, stderr_in
+    ) -> typing.Tuple[str, str, typing.List]:
         cmd = self.run_git(["submodule", "init"], cwd=self.source["path"])
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
@@ -353,7 +357,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         initialized_submodules = re.findall(r'\s+[\'"](.*?)[\'"]\s+\(.+\)', output)
         return (stdout_in + stdout, stderr_in + stderr, initialized_submodules)
 
-    def git_update_submodules(self, stdout_in, stderr_in, submodule="all"):
+    def git_update_submodules(
+        self, stdout_in, stderr_in, submodule="all"
+    ) -> typing.Tuple[str, str]:
         params = ["submodule", "update"]
         if submodule != "all":
             params.append(submodule)
