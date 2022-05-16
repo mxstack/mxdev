@@ -74,7 +74,7 @@ class Configuration:
             default_section="settings",
             interpolation=configparser.ExtendedInterpolation(),
         )
-        data.optionxform = str
+        data.optionxform = str  # type: ignore
         data.read_file(tio)
         settings = self.settings = dict(data["settings"].items())
 
@@ -193,7 +193,7 @@ def process_line(
         line = line.decode("utf8")
     logger.debug(f"Process Line [{variety}]: {line.strip()}")
     if line.startswith("-c"):
-        return read(
+        return resolve_dependencies(
             line.split(" ")[1].strip(),
             package_keys=package_keys,
             override_keys=override_keys,
@@ -201,7 +201,7 @@ def process_line(
             variety="c",
         )
     elif line.startswith("-r"):
-        return read(
+        return resolve_dependencies(
             line.split(" ")[1].strip(),
             package_keys=package_keys,
             override_keys=override_keys,
@@ -241,17 +241,18 @@ def process_io(
         constraints += new_constraints
 
 
-def read(state: State, variety: str = "r") -> None:
-    cfg = state.configuration
-    file_or_url = cfg.infile
-    package_keys = cfg.package_keys
-    override_keys = cfg.override_keys
-    ignore_keys = cfg.ignore_keys
-    requirements = state.requirements
-    constraints = state.constraints
+def resolve_dependencies(
+    file_or_url: str,
+    package_keys: typing.List[str],
+    override_keys: typing.List[str],
+    ignore_keys: typing.List[str],
+    variety: str = "r",
+) -> typing.Tuple[typing.List[str], typing.List[str]]:
+    requirements: typing.List[str] = []
+    constraints: typing.List[str] = []
     if not file_or_url.strip():
         logger.info("mxdev is configured to run without input requirements!")
-        return
+        return ([], [])
     logger.info(f"Read [{variety}]: {file_or_url}")
     parsed = parse.urlparse(file_or_url)
     variety_verbose = "requirements" if variety == "r" else "constraints"
@@ -304,6 +305,17 @@ def read(state: State, variety: str = "r") -> None:
             + constraints
             + ["\n", f"# end constraints from: {file_or_url}\n", "#" * 79 + "\n\n"]
         )
+    return (requirements, constraints)
+
+
+def read(state: State, variety: str = "r") -> None:
+    cfg = state.configuration
+    state.requirements, state.constraints = resolve_dependencies(
+        file_or_url=cfg.infile,
+        package_keys=cfg.package_keys,
+        override_keys=cfg.override_keys,
+        ignore_keys=cfg.ignore_keys,
+    )
 
 
 def autocorrect_pip_url(pip_url: str) -> str:

@@ -14,7 +14,7 @@ jobs:
         python-version: 3.9
     - name: Install Dependencies
       run: |
-        pip install mypy
+        pip install mypy types-setuptools
     - name: mypy
       run: |
         mypy .
