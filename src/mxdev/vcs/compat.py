@@ -2,6 +2,7 @@ import sys
 
 
 if sys.version_info < (3, 0):
+
     def b(x):
         return x
 
@@ -9,6 +10,7 @@ if sys.version_info < (3, 0):
         return x
 
 else:
+
     def b(x):
         return bytes(x, "utf-8")
 

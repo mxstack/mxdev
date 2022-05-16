@@ -1,5 +1,7 @@
-from subprocess import Popen, PIPE
 from mxdev.vcs.compat import s
+from subprocess import PIPE
+from subprocess import Popen
+
 import os
 import sys
 import threading
@@ -87,14 +89,7 @@ def popen(cmd, echo=True, echo2=True, env=None, cwd=None):
         else:
             echo2 = Off()
 
-    process = Popen(
-        cmd,
-        shell=True,
-        stdout=PIPE,
-        stderr=PIPE,
-        env=env,
-        cwd=cwd
-    )
+    process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, env=env, cwd=cwd)
 
     bt = background_thread(tee2, (process, echo2))
     bt.__enter__()
@@ -152,11 +147,12 @@ class MockConfig(object):
 class MockDevelop(object):
     def __init__(self):
         from mxdev.vcs.develop import ArgumentParser
+
         self.always_accept_server_certificate = True
         self.always_checkout = False
-        self.auto_checkout = ''
-        self.update_git_submodules = 'always'
-        self.develeggs = ''
+        self.auto_checkout = ""
+        self.update_git_submodules = "always"
+        self.develeggs = ""
         self.config = MockConfig()
         self.parser = ArgumentParser()
         self.parsers = self.parser.add_subparsers(title="commands", metavar="")
@@ -166,7 +162,7 @@ class MockDevelop(object):
 class GitRepo(object):
     def __init__(self, base):
         self.base = base
-        self.url = 'file:///%s' % self.base
+        self.url = "file:///%s" % self.base
         self.process = Process(cwd=self.base)
 
     def __call__(self, cmd, **kw):

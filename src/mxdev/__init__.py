@@ -1,10 +1,10 @@
+from .vcs.common import WorkingCopies
 from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 from pkg_resources import iter_entry_points
 from urllib import parse
 from urllib import request
-from .vcs.common import WorkingCopies
 
 import argparse
 import configparser
@@ -137,10 +137,10 @@ class Configuration:
                     f"install-mode in [{name}] must be one of 'direct' or 'skip'"
                 )
 
-            #repo_dir = os.path.abspath(f"{package['target']}/{name}")
-            #pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
-            #logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
-            #repo = create_project_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
+            # repo_dir = os.path.abspath(f"{package['target']}/{name}")
+            # pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
+            # logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
+            # repo = create_project_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
 
             logger.debug(f"config data={self.packages[name]}")
 
@@ -369,11 +369,10 @@ def fetch(state: State) -> None:
         sorted(packages),
         verbose=True,
         update=True,
-        submodules='always',
+        submodules="always",
         always_accept_server_certificate=True,
-        offline=False
+        offline=False,
     )
-
 
 
 def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.Any]]):

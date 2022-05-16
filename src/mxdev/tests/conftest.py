@@ -9,14 +9,14 @@ class Path(str):
         return Path(os.path.join(self, name))
 
     def create_file(self, *content):
-        f = open(self, 'w')
-        f.write('\n'.join(content))
+        f = open(self, "w")
+        f.write("\n".join(content))
         f.close()
 
 
 @pytest.fixture
 def src(tempdir):
-    base = tempdir['src']
+    base = tempdir["src"]
     os.mkdir(base)
     return base
 
@@ -51,6 +51,7 @@ def mkgitrepo(tempdir):
 @pytest.fixture
 def develop(src):
     from mxdev.vcs.tests.utils import MockDevelop
+
     develop = MockDevelop()
     develop.sources_dir = src
     return develop

@@ -1,6 +1,6 @@
-import unittest
 import doctest
 import mxdev.vcs.cvs
+import unittest
 
 
 def test_suite():
