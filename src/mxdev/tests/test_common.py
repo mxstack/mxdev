@@ -1,8 +1,7 @@
-from mxdev.vcs.common import Config
-from mxdev.vcs.common import get_commands
-from mxdev.vcs.common import parse_buildout_args
-from mxdev.vcs.common import Rewrite
-from mxdev.vcs.common import version_sorted
+from ..vcs.common import Config
+from ..vcs.common import get_commands
+from ..vcs.common import parse_buildout_args
+from ..vcs.common import version_sorted
 
 import pytest
 
@@ -53,60 +52,6 @@ def test_buildout_args_key_is_str(tempdir):
     )
     read_config = config.read_config(config_file)
     assert type(read_config.get("buildout", "args")) == str
-
-
-class TestRewrites:
-    def testMissingSubstitute(self):
-        pytest.raises(ValueError, Rewrite, ("url ~ foo"))
-
-    def testInvalidOptions(self):
-        pytest.raises(ValueError, Rewrite, ("name ~ foo\nbar"))
-        pytest.raises(ValueError, Rewrite, ("path ~ foo\nbar"))
-
-    def testPartialSubstitute(self):
-        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1")
-        source = dict(url="https://github.com/bluedynamics/mxdev.git")
-        rewrite(source)
-        assert source["url"] == "https://github.com/me/mxdev.git"
-
-    def testExactMatch(self):
-        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1\nkind = git")
-        sources = [
-            dict(url="https://github.com/bluedynamics/mxdev.git", kind="git"),
-            dict(url="https://github.com/bluedynamics/mxdev.git", kind="gitsvn"),
-            dict(url="https://github.com/bluedynamics/mxdev.git", kind="svn"),
-        ]
-        for source in sources:
-            rewrite(source)
-        assert sources[0]["url"] == "https://github.com/me/mxdev.git"
-        assert sources[1]["url"] == "https://github.com/bluedynamics/mxdev.git"
-        assert sources[2]["url"] == "https://github.com/bluedynamics/mxdev.git"
-
-    def testRegexpMatch(self):
-        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1\nkind ~= git")
-        sources = [
-            dict(url="https://github.com/bluedynamics/mxdev.git", kind="git"),
-            dict(url="https://github.com/bluedynamics/mxdev.git", kind="gitsvn"),
-            dict(url="https://github.com/bluedynamics/mxdev.git", kind="svn"),
-        ]
-        for source in sources:
-            rewrite(source)
-        assert sources[0]["url"] == "https://github.com/me/mxdev.git"
-        assert sources[1]["url"] == "https://github.com/me/mxdev.git"
-        assert sources[2]["url"] == "https://github.com/bluedynamics/mxdev.git"
-
-    def testRegexpMatchAndSubstitute(self):
-        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1\nurl ~= ^http:")
-        sources = [
-            dict(url="http://github.com/bluedynamics/mxdev.git"),
-            dict(url="https://github.com/bluedynamics/mxdev.git"),
-            dict(url="https://github.com/bluedynamics/mxdev.git"),
-        ]
-        for source in sources:
-            rewrite(source)
-        assert sources[0]["url"] == "http://github.com/me/mxdev.git"
-        assert sources[1]["url"] == "https://github.com/bluedynamics/mxdev.git"
-        assert sources[2]["url"] == "https://github.com/bluedynamics/mxdev.git"
 
 
 def test_version_sorted():

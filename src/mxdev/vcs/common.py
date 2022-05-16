@@ -2,24 +2,11 @@ import logging
 import os
 import pkg_resources
 import platform
-
-
-try:
-    import queue
-except ImportError:
-    import Queue as queue
-
+import queue
 import re
-import six
 import subprocess
 import sys
 import threading
-
-
-if sys.version_info < (3,):
-    from ConfigParser import RawConfigParser
-else:
-    from configparser import RawConfigParser
 
 
 logger = logging.getLogger("mxdev")
@@ -29,20 +16,6 @@ def print_stderr(s):
     sys.stderr.write(s)
     sys.stderr.write("\n")
     sys.stderr.flush()
-
-
-try:
-    advance_iterator = next
-except NameError:
-
-    def advance_iterator(it):
-        return it.next()
-
-
-try:
-    raw_input = raw_input
-except NameError:
-    raw_input = input
 
 
 # shameless copy from
@@ -153,7 +126,7 @@ def yesno(question, default=True, all=True):
     else:
         question = "%s] " % question
     while 1:
-        answer = raw_input(question).lower()
+        answer = input(question).lower()
         for option in answers:
             if answer in answers[option]:
                 return option
@@ -189,7 +162,7 @@ def worker(working_copies, the_queue):
             for lvl, msg in wc._output:
                 lvl(msg)
             if kwargs.get("verbose", False) and output is not None and output.strip():
-                if six.PY3 and isinstance(output, six.binary_type):
+                if isinstance(output, bytes):
                     output = output.decode("utf8")
                 print(output)
             output_lock.release()
@@ -385,69 +358,3 @@ class WorkingCopies(object):
             the_queue.put_nowait((wc, wc.update, kw))
         self.process(the_queue)
 
-
-class Rewrite(object):
-    _matcher = re.compile(r"(?P<option>^\w+) (?P<operator>[~=]{1,2}) (?P<value>.+)$")
-
-    def _iter_prog_lines(self, prog):
-        for line in prog.split("\n"):
-            line = line.strip()
-            if line:
-                yield line
-
-    def __init__(self, prog):
-        self.rewrites = {}
-        lines = self._iter_prog_lines(prog)
-        for line in lines:
-            match = self._matcher.match(line)
-            matchdict = match.groupdict()
-            option = matchdict["option"]
-            if option in ("name", "path"):
-                raise ValueError(
-                    "Option '%s' not allowed in rewrite:\n%s" % (option, prog)
-                )
-            operator = matchdict["operator"]
-            rewrites = self.rewrites.setdefault(option, [])
-            if operator == "~":
-                try:
-                    substitute = advance_iterator(lines)
-                except StopIteration:
-                    raise ValueError(
-                        "Missing substitution for option '%s' in rewrite:\n%s"
-                        % (option, prog)
-                    )
-                rewrites.append((operator, re.compile(matchdict["value"]), substitute))
-            elif operator == "=":
-                rewrites.append((operator, matchdict["value"]))
-            elif operator == "~=":
-                rewrites.append((operator, re.compile(matchdict["value"])))
-
-    def __call__(self, source):
-        for option, operations in self.rewrites.items():
-            for operation in operations:
-                operator = operation[0]
-                if operator == "~":
-                    if operation[1].search(source.get(option, "")) is None:
-                        return
-                elif operator == "=":
-                    if operation[1] != source.get(option, ""):
-                        return
-                elif operator == "~=":
-                    if operation[1].search(source.get(option, "")) is None:
-                        return
-        for option, operations in self.rewrites.items():
-            for operation in operations:
-                operator = operation[0]
-                if operator == "~":
-                    orig = source.get(option, "")
-                    source[option] = operation[1].sub(operation[2], orig)
-                    if source[option] != orig:
-                        logger.debug(
-                            "Rewrote option '%s' from '%s' to '%s'."
-                            % (option, orig, source[option])
-                        )
-
-
-class LegacyRewrite(Rewrite):
-    def __init__(self, prefix, substitution):
-        Rewrite.__init__(self, "url ~ ^%s\n%s" % (prefix, substitution))
