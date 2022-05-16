@@ -17,7 +17,7 @@ else:
     from configparser import RawConfigParser
 
 
-logger = logging.getLogger("mr.developer")
+logger = logging.getLogger("mxdev")
 
 
 def print_stderr(s):
@@ -194,13 +194,13 @@ def get_workingcopytypes():
     global _workingcopytypes
     if _workingcopytypes is not None:
         return _workingcopytypes
-    group = 'mr.developer.workingcopytypes'
+    group = 'mxdev.workingcopytypes'
     _workingcopytypes = {}
     addons = {}
     for entrypoint in pkg_resources.iter_entry_points(group=group):
         key = entrypoint.name
         workingcopytype = entrypoint.load()
-        if entrypoint.dist.project_name == 'mr.developer':
+        if entrypoint.dist.project_name == 'mxdev':
             _workingcopytypes[key] = workingcopytype
         else:
             if key in addons:
@@ -210,26 +210,6 @@ def get_workingcopytypes():
             addons[key] = workingcopytype
     _workingcopytypes.update(addons)
     return _workingcopytypes
-
-
-def get_commands():
-    commands = {}
-    group = 'mr.developer.commands'
-    addons = {}
-    for entrypoint in pkg_resources.iter_entry_points(group=group):
-        key = entrypoint.name
-        command = entrypoint.load()
-        if entrypoint.dist.project_name == 'mr.developer':
-            commands[key] = command
-        else:
-            if key in addons:
-                logger.error('There already is a command addon registered for "%s".', key)
-                sys.exit(1)
-            logger.info('Overwriting "%s" with addon from "%s".',
-                        key, entrypoint.dist.project_name)
-            addons[key] = command
-    commands.update(addons)
-    return commands.values()
 
 
 class WorkingCopies(object):
@@ -294,13 +274,13 @@ class WorkingCopies(object):
                 logger.error("Checkout failed. No source defined for '%s'." % name)
                 sys.exit(1)
             source = self.sources[name]
-            kind = source['kind']
-            wc = self.workingcopytypes.get(kind)(source)
+            vcs = source['vcs']
+            wc = self.workingcopytypes.get(vcs)(source)
             if wc is None:
-                logger.error("Unknown repository type '%s'." % kind)
+                logger.error("Unknown repository type '%s'." % vcs)
                 sys.exit(1)
             update = wc.should_update(**kwargs)
-            if not source.exists():
+            if not os.path.exists(source['path']):
                 pass
             elif os.path.islink(source['path']):
                 logger.info("Skipped update of linked '%s'." % name)
@@ -326,10 +306,10 @@ class WorkingCopies(object):
             sys.exit(1)
         source = self.sources[name]
         try:
-            kind = source['kind']
-            wc = self.workingcopytypes.get(kind)(source)
+            vcs = source['vcs']
+            wc = self.workingcopytypes.get(vcs)(source)
             if wc is None:
-                logger.error("Unknown repository type '%s'." % kind)
+                logger.error("Unknown repository type '%s'." % vcs)
                 sys.exit(1)
             return wc.matches()
         except WCError:
@@ -344,10 +324,10 @@ class WorkingCopies(object):
             sys.exit(1)
         source = self.sources[name]
         try:
-            kind = source['kind']
-            wc = self.workingcopytypes.get(kind)(source)
+            vcs = source['vcs']
+            wc = self.workingcopytypes.get(vcs)(source)
             if wc is None:
-                logger.error("Unknown repository type '%s'." % kind)
+                logger.error("Unknown repository type '%s'." % vcs)
                 sys.exit(1)
             return wc.status(**kwargs)
         except WCError:
@@ -362,10 +342,10 @@ class WorkingCopies(object):
             if name not in self.sources:
                 continue
             source = self.sources[name]
-            kind = source['kind']
-            wc = self.workingcopytypes.get(kind)(source)
+            vcs = source['vcs']
+            wc = self.workingcopytypes.get(vcs)(source)
             if wc is None:
-                logger.error("Unknown repository type '%s'." % kind)
+                logger.error("Unknown repository type '%s'." % vcs)
                 sys.exit(1)
             if wc.status() != 'clean' and not kw.get('force', False):
                 print_stderr("The package '%s' is dirty." % name)
@@ -380,91 +360,6 @@ class WorkingCopies(object):
             logger.info("Queued '%s' for update.", name)
             the_queue.put_nowait((wc, wc.update, kw))
         self.process(the_queue)
-
-
-def parse_buildout_args(args):
-    settings = dict(
-        config_file='buildout.cfg',
-        verbosity=0,
-        options=[],
-        windows_restart=False,
-        user_defaults=True,
-        debug=False,
-    )
-    options = []
-    version = pkg_resources.get_distribution("zc.buildout").version
-    if tuple(version.split('.')[:2]) <= ('1', '4'):
-        option_str = 'vqhWUoOnNDA'
-    else:
-        option_str = 'vqhWUoOnNDAs'
-    while args:
-        if args[0][0] == '-':
-            op = orig_op = args.pop(0)
-            op = op[1:]
-            while op and op[0] in option_str:
-                if op[0] == 'v':
-                    settings['verbosity'] = settings['verbosity'] + 10
-                elif op[0] == 'q':
-                    settings['verbosity'] = settings['verbosity'] - 10
-                elif op[0] == 'W':
-                    settings['windows_restart'] = True
-                elif op[0] == 'U':
-                    settings['user_defaults'] = False
-                elif op[0] == 'o':
-                    options.append(('buildout', 'offline', 'true'))
-                elif op[0] == 'O':
-                    options.append(('buildout', 'offline', 'false'))
-                elif op[0] == 'n':
-                    options.append(('buildout', 'newest', 'true'))
-                elif op[0] == 'N':
-                    options.append(('buildout', 'newest', 'false'))
-                elif op[0] == 'D':
-                    settings['debug'] = True
-                elif op[0] == 's':
-                    settings['ignore_broken_dash_s'] = True
-                else:
-                    raise ValueError("Unkown option '%s'." % op[0])
-                op = op[1:]
-
-            if op[:1] in ('c', 't'):
-                op_ = op[:1]
-                op = op[1:]
-
-                if op_ == 'c':
-                    if op:
-                        settings['config_file'] = op
-                    else:
-                        if args:
-                            settings['config_file'] = args.pop(0)
-                        else:
-                            raise ValueError("No file name specified for option", orig_op)
-                elif op_ == 't':
-                    try:
-                        int(args.pop(0))
-                    except IndexError:
-                        raise ValueError("No timeout value specified for option", orig_op)
-                    except ValueError:
-                        raise ValueError("No timeout value must be numeric", orig_op)
-                    settings['socket_timeout'] = op
-            elif op:
-                if orig_op == '--help':
-                    return 'help'
-                raise ValueError("Invalid option", '-' + op[0])
-        elif '=' in args[0]:
-            option, value = args.pop(0).split('=', 1)
-            parts = option.split(':')
-            if len(parts) == 2:
-                section, option = parts
-            elif len(parts) == 1:
-                section = 'buildout'
-            else:
-                raise ValueError('Invalid option:', option)
-            options.append((section.strip(), option.strip(), value.strip()))
-        else:
-            # We've run out of command-line options and option assignnemnts
-            # The rest should be commands, so we'll stop here
-            break
-    return options, settings, args
 
 
 class Rewrite(object):
@@ -527,105 +422,3 @@ class Rewrite(object):
 class LegacyRewrite(Rewrite):
     def __init__(self, prefix, substitution):
         Rewrite.__init__(self, "url ~ ^%s\n%s" % (prefix, substitution))
-
-
-class Config(object):
-    def read_config(self, path):
-        config = RawConfigParser()
-        config.optionxform = lambda s: s
-        config.read(path)
-        return config
-
-    def check_invalid_sections(self, path, name):
-        config = self.read_config(path)
-        for section in ('buildout', 'develop'):
-            if config.has_section(section):
-                raise ValueError(
-                    "The '%s' section is not allowed in '%s'" %
-                    (section, name))
-
-    def __init__(self, buildout_dir):
-        global_cfg_name = os.path.join('~', '.buildout', 'mr.developer.cfg')
-        options_cfg_name = '.mr.developer-options.cfg'
-        self.global_cfg_path = os.path.expanduser(global_cfg_name)
-        self.options_cfg_path = os.path.join(buildout_dir, options_cfg_name)
-        self.cfg_path = os.path.join(buildout_dir, '.mr.developer.cfg')
-        self.check_invalid_sections(self.global_cfg_path, global_cfg_name)
-        self.check_invalid_sections(self.options_cfg_path, options_cfg_name)
-        self._config = self.read_config((
-            self.global_cfg_path, self.options_cfg_path, self.cfg_path))
-        self.develop = {}
-        self.buildout_args = []
-        self._legacy_rewrites = []
-        self.rewrites = []
-        self.threads = 5
-        if self._config.has_section('develop'):
-            for package, value in self._config.items('develop'):
-                value = value.lower()
-                if value == 'true':
-                    self.develop[package] = True
-                elif value == 'false':
-                    self.develop[package] = False
-                elif value == 'auto':
-                    self.develop[package] = 'auto'
-                else:
-                    raise ValueError("Invalid value in 'develop' section of '%s'" % self.cfg_path)
-        if self._config.has_option('buildout', 'args'):
-            args = self._config.get('buildout', 'args').split("\n")
-            for arg in args:
-                arg = arg.strip()
-                if arg.startswith("'") and arg.endswith("'"):
-                    arg = arg[1:-1].replace("\\'", "'")
-                elif arg.startswith('"') and arg.endswith('"'):
-                    arg = arg[1:-1].replace('\\"', '"')
-                self.buildout_args.append(arg)
-        (self.buildout_options, self.buildout_settings, _) = \
-            parse_buildout_args(self.buildout_args[1:])
-        if self._config.has_option('mr.developer', 'rewrites'):
-            for rewrite in self._config.get('mr.developer', 'rewrites').split('\n'):
-                if not rewrite.strip():
-                    continue
-                rewrite_parts = rewrite.split()
-                if len(rewrite_parts) != 2:
-                    raise ValueError("Invalid legacy rewrite '%s'. Each rewrite must have two parts separated by a space." % rewrite)
-                self._legacy_rewrites.append(rewrite_parts)
-                self.rewrites.append(LegacyRewrite(*rewrite_parts))
-        if self._config.has_option('mr.developer', 'threads'):
-            try:
-                threads = int(self._config.get('mr.developer', 'threads'))
-                if threads < 1:
-                    raise ValueError
-                self.threads = threads
-            except ValueError:
-                logger.warning(
-                    "Invalid value '%s' for 'threads' option, must be a positive number. Using default value of %s.",
-                    self._config.get('mr.developer', 'threads'),
-                    self.threads)
-        if self._config.has_section('rewrites'):
-            for name, rewrite in self._config.items('rewrites'):
-                self.rewrites.append(Rewrite(rewrite))
-
-    def save(self):
-        self._config.remove_section('develop')
-        self._config.add_section('develop')
-        for package in sorted(self.develop):
-            state = self.develop[package]
-            if state == 'auto':
-                self._config.set('develop', package, 'auto')
-            elif state is True:
-                self._config.set('develop', package, 'true')
-            elif state is False:
-                self._config.set('develop', package, 'false')
-
-        if not self._config.has_section('buildout'):
-            self._config.add_section('buildout')
-        options, settings, args = parse_buildout_args(self.buildout_args[1:])
-        # don't store the options when a command was in there
-        if not len(args):
-            self._config.set('buildout', 'args', "\n".join(repr(x) for x in self.buildout_args))
-
-        if not self._config.has_section('mr.developer'):
-            self._config.add_section('mr.developer')
-        self._config.set('mr.developer', 'rewrites', "\n".join(" ".join(x) for x in self._legacy_rewrites))
-
-        self._config.write(open(self.cfg_path, "w"))

@@ -3,15 +3,15 @@ import os
 import pytest
 from mock import patch
 
-from mr.developer.extension import Source
-from mr.developer.tests.utils import Process
-from mr.developer.compat import b
+from mxdev.vcs.extension import Source
+from mxdev.vcs.tests.utils import Process
+from mxdev.vcs.compat import b
 
 
 class TestMercurial:
     def testUpdateWithoutRevisionPin(self, develop, src, tempdir):
-        from mr.developer.commands import CmdCheckout
-        from mr.developer.commands import CmdUpdate
+        from mxdev.vcs.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdUpdate
         repository = tempdir['repository']
         os.mkdir(repository)
         process = Process(cwd=repository)
@@ -31,7 +31,7 @@ class TestMercurial:
                 name='egg',
                 url='%s' % repository,
                 path=os.path.join(src, 'egg'))}
-        _log = patch('mr.developer.mercurial.logger')
+        _log = patch('mxdev.vcs.mercurial.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -46,8 +46,8 @@ class TestMercurial:
             _log.__exit__(None, None, None)
 
     def testUpdateWithRevisionPin(self, develop, src, tempdir):
-        from mr.developer.commands import CmdCheckout
-        from mr.developer.commands import CmdUpdate
+        from mxdev.vcs.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdUpdate
         repository = tempdir['repository']
         os.mkdir(repository)
         process = Process(cwd=repository)

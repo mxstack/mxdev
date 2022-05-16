@@ -1,7 +1,7 @@
 from copy import deepcopy
 from mock import patch
-from mr.developer.extension import Extension
-from mr.developer.tests.utils import MockConfig
+from mxdev.vcs.extension import Extension
+from mxdev.vcs.tests.utils import MockConfig
 from zc.buildout.buildout import MissingSection
 import os
 import pytest
@@ -53,7 +53,7 @@ class TestExtensionClass:
 
     @pytest.fixture
     def extension(self, buildout):
-        from mr.developer.extension import memoize
+        from mxdev.vcs.extension import memoize
 
         class MockExtension(Extension):
             @memoize
@@ -67,13 +67,13 @@ class TestExtensionClass:
         return MockExtension(buildout)
 
     def testPartAdded(self, buildout, extension):
-        assert '_mr.developer' not in buildout['buildout']['parts']
+        assert '_mxdev.vcs' not in buildout['buildout']['parts']
         extension()
-        assert '_mr.developer' in buildout
-        assert '_mr.developer' in buildout['buildout']['parts']
+        assert '_mxdev.vcs' in buildout
+        assert '_mxdev.vcs' in buildout['buildout']['parts']
 
     def testPartExists(self, buildout, extension):
-        buildout._raw['_mr.developer'] = {}
+        buildout._raw['_mxdev.vcs'] = {}
         pytest.raises(SystemExit, extension)
 
     def testArgsIgnoredIfNotBuildout(self, extension):
@@ -118,7 +118,7 @@ class TestExtensionClass:
         wcs._events[0][1] == ['pkg.bar', 'pkg.foo']
 
     def testRewriteSources(self, buildout, extension):
-        from mr.developer.common import LegacyRewrite
+        from mxdev.vcs.common import LegacyRewrite
         buildout['sources'].update({
             'pkg.foo': 'svn dummy://pkg.foo',
             'pkg.bar': 'svn baz://pkg.bar',
@@ -306,14 +306,14 @@ class TestExtensionClass:
 
 class TestExtension:
     def testConfigCreated(self, tempdir):
-        from mr.developer.extension import extension
+        from mxdev.vcs.extension import extension
         buildout = MockBuildout(dict(
             buildout=dict(
                 directory=tempdir,
                 parts=''),
             sources={}))
         extension(buildout)
-        assert '.mr.developer.cfg' in os.listdir(tempdir)
+        assert '.mxdev.vcs.cfg' in os.listdir(tempdir)
 
 
 class TestSourcesDir:

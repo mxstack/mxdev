@@ -4,6 +4,7 @@ from pathlib import Path
 from pkg_resources import iter_entry_points
 from urllib import parse
 from urllib import request
+from .vcs.common import WorkingCopies
 
 import argparse
 import configparser
@@ -119,17 +120,28 @@ class Configuration:
                 continue
             logger.debug(f"Section '{name}' belongs to package")
             package = self.packages[name] = self._read_section(data, name)
+            # XXX: name should not be necessary in WorkingCopies
+            package["name"] = name
             package.setdefault("branch", "main")
             package.setdefault("extras", "")
             package.setdefault("subdirectory", "")
             package.setdefault("target", target)
             package.setdefault("install-mode", mode)
+            package.setdefault("vcs", "git")
+            # XXX: path should not be necessary in WorkingCopies
+            package.setdefault("path", os.path.join(target, name))
             if not package.get("url"):
                 raise ValueError(f"Section {name} has no URL set!")
             if package.get("install-mode") not in ["direct", "skip"]:
                 raise ValueError(
                     f"install-mode in [{name}] must be one of 'direct' or 'skip'"
                 )
+
+            #repo_dir = os.path.abspath(f"{package['target']}/{name}")
+            #pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
+            #logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
+            #repo = create_project_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
+
             logger.debug(f"config data={self.packages[name]}")
 
     def _read_section(self, data, name):
@@ -340,15 +352,28 @@ def fetch(state: State) -> None:
     if not packages:
         logger.info("# No sources configured!")
         return
+
     logger.info("# Fetch sources from VCS")
-    for name in packages:
-        logger.info(f"Fetch or update {name}")
-        package = packages[name]
-        repo_dir = os.path.abspath(f"{package['target']}/{name}")
-        pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
-        logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
-        repo = create_project_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
-        repo.update_repo()
+
+    # for name in packages:
+    #     logger.info(f"Fetch or update {name}")
+    #     package = packages[name]
+    #     repo_dir = os.path.abspath(f"{package['target']}/{name}")
+    #     pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
+    #     logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
+    #     repo = create_project_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
+    #     repo.update_repo()
+
+    workingcopies = WorkingCopies(packages, threads=1)
+    workingcopies.checkout(
+        sorted(packages),
+        verbose=True,
+        update=True,
+        submodules='always',
+        always_accept_server_certificate=True,
+        offline=False
+    )
+
 
 
 def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.Any]]):

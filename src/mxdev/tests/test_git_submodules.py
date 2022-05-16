@@ -1,6 +1,6 @@
 from mock import patch
-from mr.developer.extension import Source
-from mr.developer.tests.utils import GitRepo
+from mxdev.vcs.extension import Source
+from mxdev.vcs.tests.utils import GitRepo
 import os
 
 
@@ -9,7 +9,7 @@ class TestGitSubmodules:
         """
             Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
         """
-        from mr.developer.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdCheckout
         submodule_name = 'submodule_a'
         submodule_a = mkgitrepo(submodule_name)
         submodule_a.add_file('foo')
@@ -23,7 +23,7 @@ class TestGitSubmodules:
                 name='egg',
                 url=egg.url,
                 path=src['egg'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -40,7 +40,7 @@ class TestGitSubmodules:
             Tests the checkout of a module 'egg' with a submodule 'submodule_a'
             and a submodule 'submodule_b' in it.
         """
-        from mr.developer.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdCheckout
         submodule_name = 'submodule_a'
         submodule = mkgitrepo(submodule_name)
         submodule_b_name = 'submodule_b'
@@ -59,7 +59,7 @@ class TestGitSubmodules:
                 name='egg',
                 url=egg.url,
                 path=src['egg'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -78,7 +78,7 @@ class TestGitSubmodules:
             Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
             Add a new 'submodule_b' to 'egg' and check it succesfully initializes.
         """
-        from mr.developer.commands import CmdCheckout, CmdUpdate
+        from mxdev.vcs.commands import CmdCheckout, CmdUpdate
         submodule_name = 'submodule_a'
         submodule = mkgitrepo(submodule_name)
         submodule.add_file('foo')
@@ -92,7 +92,7 @@ class TestGitSubmodules:
                 name='egg',
                 url=egg.url,
                 path=src['egg'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -127,7 +127,7 @@ class TestGitSubmodules:
             without initializing the submodule, restricted by global 'never'
         """
 
-        from mr.developer.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdCheckout
         submodule_name = 'submodule_a'
         submodule_a = mkgitrepo(submodule_name)
         submodule_a.add_file('foo')
@@ -142,7 +142,7 @@ class TestGitSubmodules:
                 name='egg',
                 url=egg.url,
                 path=src['egg'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -160,7 +160,7 @@ class TestGitSubmodules:
             on egg that has the 'always' option
         """
 
-        from mr.developer.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdCheckout
         submodule_name = 'submodule_a'
         submodule_a = mkgitrepo(submodule_name)
         submodule_a.add_file('foo')
@@ -185,7 +185,7 @@ class TestGitSubmodules:
                 name='egg2',
                 url=egg2.url,
                 path=src['egg2'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -208,7 +208,7 @@ class TestGitSubmodules:
             on egg2 that has the 'never' option
 
         """
-        from mr.developer.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdCheckout
         submodule_name = 'submodule_a'
         submodule_a = mkgitrepo(submodule_name)
         submodule_a.add_file('foo')
@@ -232,7 +232,7 @@ class TestGitSubmodules:
                 url=egg2.url,
                 path=src['egg2'],
                 submodules='never')}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -253,7 +253,7 @@ class TestGitSubmodules:
             Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
             Add a new 'submodule_b' to 'egg' and check it doesn't get initialized.
         """
-        from mr.developer.commands import CmdCheckout, CmdUpdate
+        from mxdev.vcs.commands import CmdCheckout, CmdUpdate
         submodule_name = 'submodule_a'
         submodule = mkgitrepo(submodule_name)
         submodule.add_file('foo')
@@ -268,7 +268,7 @@ class TestGitSubmodules:
                 url=egg.url,
                 path=src['egg'],
                 submodules='checkout')}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -302,7 +302,7 @@ class TestGitSubmodules:
             Commits changes in the detached submodule, and checks update didn't break
             the changes.
         """
-        from mr.developer.commands import CmdCheckout, CmdUpdate
+        from mxdev.vcs.commands import CmdCheckout, CmdUpdate
         submodule_name = 'submodule_a'
         submodule = mkgitrepo(submodule_name)
         submodule.add_file('foo')
@@ -316,7 +316,7 @@ class TestGitSubmodules:
                 name='egg',
                 url=egg.url,
                 path=src['egg'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))

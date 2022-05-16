@@ -4,8 +4,8 @@ import shutil
 import pytest
 from mock import patch
 
-from mr.developer.extension import Source
-from mr.developer.tests.utils import Process
+from mxdev.vcs.extension import Source
+from mxdev.vcs.tests.utils import Process
 
 
 class TestGit:
@@ -27,9 +27,9 @@ class TestGit:
         return rev
 
     def testUpdateWithRevisionPin(self, develop, mkgitrepo, src):
-        from mr.developer.commands import CmdCheckout
-        from mr.developer.commands import CmdUpdate
-        from mr.developer.commands import CmdStatus
+        from mxdev.vcs.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdUpdate
+        from mxdev.vcs.commands import CmdStatus
         repository = mkgitrepo('repository')
         rev = self.createDefaultContent(repository)
 
@@ -106,9 +106,9 @@ class TestGit:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
 
     def testUpdateWithoutRevisionPin(self, develop, mkgitrepo, src, capsys):
-        from mr.developer.commands import CmdCheckout
-        from mr.developer.commands import CmdUpdate
-        from mr.developer.commands import CmdStatus
+        from mxdev.vcs.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdUpdate
+        from mxdev.vcs.commands import CmdStatus
         repository = mkgitrepo('repository')
         repository.add_file('foo')
         repository.add_file('bar')
@@ -119,7 +119,7 @@ class TestGit:
                 name='egg',
                 url=repository.url,
                 path=src['egg'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -142,9 +142,9 @@ class TestGit:
             _log.__exit__(None, None, None)
 
     def testUpdateVerbose(self, develop, mkgitrepo, src, capsys):
-        from mr.developer.commands import CmdCheckout
-        from mr.developer.commands import CmdUpdate
-        from mr.developer.commands import CmdStatus
+        from mxdev.vcs.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdUpdate
+        from mxdev.vcs.commands import CmdStatus
         repository = mkgitrepo('repository')
         repository.add_file('foo')
         repository.add_file('bar')
@@ -155,7 +155,7 @@ class TestGit:
                 name='egg',
                 url=repository.url,
                 path=src['egg'])}
-        _log = patch('mr.developer.git.logger')
+        _log = patch('mxdev.vcs.git.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg', '-v']))
@@ -181,7 +181,7 @@ class TestGit:
             _log.__exit__(None, None, None)
 
     def testDepthOption(self, mkgitrepo, src, tempdir):
-        from mr.developer.develop import develop
+        from mxdev.vcs.develop import develop
 
         # create repository and make two commits on it
         repository = mkgitrepo('repository')
@@ -189,10 +189,10 @@ class TestGit:
 
         tempdir['buildout.cfg'].create_file(
             '[buildout]',
-            'mr.developer-threads = 1',
+            'mxdev.vcs-threads = 1',
             '[sources]',
             'egg = git %s' % repository.url)
-        tempdir['.mr.developer.cfg'].create_file()
+        tempdir['.mxdev.vcs.cfg'].create_file()
         # os.chdir(self.tempdir)
         develop('co', 'egg')
 
@@ -207,7 +207,7 @@ class TestGit:
 
         tempdir['buildout.cfg'].create_file(
             '[buildout]',
-            'mr.developer-threads = 1',
+            'mxdev.vcs-threads = 1',
             '[sources]',
             'egg = git %s depth=1' % repository.url)
         develop('co', 'egg')
@@ -222,7 +222,7 @@ class TestGit:
 
         tempdir['buildout.cfg'].create_file(
             '[buildout]',
-            'mr.developer-threads = 1',
+            'mxdev.vcs-threads = 1',
             'git-clone-depth = 1',
             '[sources]',
             'egg = git %s' % repository.url)
@@ -242,7 +242,7 @@ class TestGit:
         shutil.rmtree(src['egg'])
         tempdir['buildout.cfg'].create_file(
             '[buildout]',
-            'mr.developer-threads = 1',
+            'mxdev.vcs-threads = 1',
             'git-clone-depth = 1',
             '[sources]',
             'egg = git %s branch=test' % repository.url)

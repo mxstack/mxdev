@@ -1,5 +1,5 @@
 from subprocess import Popen, PIPE
-from mr.developer.compat import s
+from mxdev.vcs.compat import s
 import os
 import sys
 import threading
@@ -151,7 +151,7 @@ class MockConfig(object):
 
 class MockDevelop(object):
     def __init__(self):
-        from mr.developer.develop import ArgumentParser
+        from mxdev.vcs.develop import ArgumentParser
         self.always_accept_server_certificate = True
         self.always_checkout = False
         self.auto_checkout = ''

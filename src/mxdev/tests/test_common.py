@@ -1,5 +1,5 @@
-from mr.developer.common import Config, Rewrite
-from mr.developer.common import get_commands, parse_buildout_args, version_sorted
+from mxdev.vcs.common import Config, Rewrite
+from mxdev.vcs.common import get_commands, parse_buildout_args, version_sorted
 import pytest
 
 
@@ -60,46 +60,46 @@ class TestRewrites:
         pytest.raises(ValueError, Rewrite, ("path ~ foo\nbar"))
 
     def testPartialSubstitute(self):
-        rewrite = Rewrite("url ~ fschulze(/mr.developer.git)\nme\\1")
-        source = dict(url="https://github.com/fschulze/mr.developer.git")
+        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1")
+        source = dict(url="https://github.com/bluedynamics/mxdev.git")
         rewrite(source)
-        assert source['url'] == "https://github.com/me/mr.developer.git"
+        assert source['url'] == "https://github.com/me/mxdev.git"
 
     def testExactMatch(self):
-        rewrite = Rewrite("url ~ fschulze(/mr.developer.git)\nme\\1\nkind = git")
+        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1\nkind = git")
         sources = [
-            dict(url="https://github.com/fschulze/mr.developer.git", kind='git'),
-            dict(url="https://github.com/fschulze/mr.developer.git", kind='gitsvn'),
-            dict(url="https://github.com/fschulze/mr.developer.git", kind='svn')]
+            dict(url="https://github.com/bluedynamics/mxdev.git", kind='git'),
+            dict(url="https://github.com/bluedynamics/mxdev.git", kind='gitsvn'),
+            dict(url="https://github.com/bluedynamics/mxdev.git", kind='svn')]
         for source in sources:
             rewrite(source)
-        assert sources[0]['url'] == "https://github.com/me/mr.developer.git"
-        assert sources[1]['url'] == "https://github.com/fschulze/mr.developer.git"
-        assert sources[2]['url'] == "https://github.com/fschulze/mr.developer.git"
+        assert sources[0]['url'] == "https://github.com/me/mxdev.git"
+        assert sources[1]['url'] == "https://github.com/bluedynamics/mxdev.git"
+        assert sources[2]['url'] == "https://github.com/bluedynamics/mxdev.git"
 
     def testRegexpMatch(self):
-        rewrite = Rewrite("url ~ fschulze(/mr.developer.git)\nme\\1\nkind ~= git")
+        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1\nkind ~= git")
         sources = [
-            dict(url="https://github.com/fschulze/mr.developer.git", kind='git'),
-            dict(url="https://github.com/fschulze/mr.developer.git", kind='gitsvn'),
-            dict(url="https://github.com/fschulze/mr.developer.git", kind='svn')]
+            dict(url="https://github.com/bluedynamics/mxdev.git", kind='git'),
+            dict(url="https://github.com/bluedynamics/mxdev.git", kind='gitsvn'),
+            dict(url="https://github.com/bluedynamics/mxdev.git", kind='svn')]
         for source in sources:
             rewrite(source)
-        assert sources[0]['url'] == "https://github.com/me/mr.developer.git"
-        assert sources[1]['url'] == "https://github.com/me/mr.developer.git"
-        assert sources[2]['url'] == "https://github.com/fschulze/mr.developer.git"
+        assert sources[0]['url'] == "https://github.com/me/mxdev.git"
+        assert sources[1]['url'] == "https://github.com/me/mxdev.git"
+        assert sources[2]['url'] == "https://github.com/bluedynamics/mxdev.git"
 
     def testRegexpMatchAndSubstitute(self):
-        rewrite = Rewrite("url ~ fschulze(/mr.developer.git)\nme\\1\nurl ~= ^http:")
+        rewrite = Rewrite("url ~ bluedynamics(/mxdev.git)\nme\\1\nurl ~= ^http:")
         sources = [
-            dict(url="http://github.com/fschulze/mr.developer.git"),
-            dict(url="https://github.com/fschulze/mr.developer.git"),
-            dict(url="https://github.com/fschulze/mr.developer.git")]
+            dict(url="http://github.com/bluedynamics/mxdev.git"),
+            dict(url="https://github.com/bluedynamics/mxdev.git"),
+            dict(url="https://github.com/bluedynamics/mxdev.git")]
         for source in sources:
             rewrite(source)
-        assert sources[0]['url'] == "http://github.com/me/mr.developer.git"
-        assert sources[1]['url'] == "https://github.com/fschulze/mr.developer.git"
-        assert sources[2]['url'] == "https://github.com/fschulze/mr.developer.git"
+        assert sources[0]['url'] == "http://github.com/me/mxdev.git"
+        assert sources[1]['url'] == "https://github.com/bluedynamics/mxdev.git"
+        assert sources[2]['url'] == "https://github.com/bluedynamics/mxdev.git"
 
 
 def test_version_sorted():

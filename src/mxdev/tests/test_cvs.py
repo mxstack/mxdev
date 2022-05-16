@@ -1,7 +1,7 @@
 import unittest
 import doctest
-import mr.developer.cvs
+import mxdev.vcs.cvs
 
 
 def test_suite():
-    return unittest.TestSuite([doctest.DocTestSuite(mr.developer.cvs)])
+    return unittest.TestSuite([doctest.DocTestSuite(mxdev.vcs.cvs)])

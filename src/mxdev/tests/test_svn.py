@@ -1,6 +1,6 @@
 from mock import patch
-from mr.developer.extension import Source
-from mr.developer.tests.utils import Process
+from mxdev.vcs.extension import Source
+from mxdev.vcs.tests.utils import Process
 import os
 import pytest
 
@@ -8,12 +8,12 @@ import pytest
 class TestSVN:
     @pytest.fixture(autouse=True)
     def clear_svn_caches(self):
-        from mr.developer.svn import SVNWorkingCopy
+        from mxdev.vcs.svn import SVNWorkingCopy
         SVNWorkingCopy._clear_caches()
 
     def testUpdateWithoutRevisionPin(self, develop, src, tempdir):
-        from mr.developer.commands import CmdCheckout
-        from mr.developer.commands import CmdUpdate
+        from mxdev.vcs.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdUpdate
         process = Process()
         repository = tempdir['repository']
         process.check_call("svnadmin create %s" % repository)
@@ -35,7 +35,7 @@ class TestSVN:
                 name='egg',
                 url='file://%s' % repository,
                 path=src['egg'])}
-        _log = patch('mr.developer.svn.logger')
+        _log = patch('mxdev.vcs.svn.logger')
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(['co', 'egg']))
@@ -49,8 +49,8 @@ class TestSVN:
             _log.__exit__(None, None, None)
 
     def testUpdateWithRevisionPin(self, develop, src, tempdir):
-        from mr.developer.commands import CmdCheckout
-        from mr.developer.commands import CmdUpdate
+        from mxdev.vcs.commands import CmdCheckout
+        from mxdev.vcs.commands import CmdUpdate
         process = Process()
         repository = tempdir['repository']
         process.check_call("svnadmin create %s" % repository)
