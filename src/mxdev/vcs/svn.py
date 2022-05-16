@@ -2,19 +2,13 @@ from . import common
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 
-
-try:
-    import xml.etree.ElementTree as etree
-
-    etree  # shutup pyflakes
-except ImportError:
-    import elementtree.ElementTree as etree
-
 import getpass
 import os
 import re
 import subprocess
 import sys
+import typing
+import xml.etree.ElementTree as etree
 
 
 logger = common.logger
@@ -40,9 +34,9 @@ _svn_version_warning = False
 
 
 class SVNWorkingCopy(common.BaseWorkingCopy):
-    _svn_info_cache = {}
-    _svn_auth_cache = {}
-    _svn_cert_cache = {}
+    _svn_info_cache: typing.Dict = {}
+    _svn_auth_cache: typing.Dict = {}
+    _svn_cert_cache: typing.Dict = {}
 
     @classmethod
     def _clear_caches(klass):

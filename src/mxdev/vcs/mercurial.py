@@ -230,8 +230,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
                 status = "ahead"
         if kwargs.get("verbose", False):
             return status, stdout
-        else:
-            return status
+        return status
 
     def update(self, **kwargs):
         name = self.source["name"]

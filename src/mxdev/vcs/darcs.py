@@ -54,20 +54,19 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
         name = self.source["name"]
         path = self.source["path"]
         update = self.should_update(**kwargs)
-        if os.path.exists(path):
-            if update:
-                self.update(**kwargs)
-            elif self.matches():
-                self.output(
-                    (logger.info, "Skipped checkout of existing package '%s'." % name)
-                )
-            else:
-                raise DarcsError(
-                    "Checkout URL for existing package '%s' differs. Expected '%s'."
-                    % (name, self.source["url"])
-                )
-        else:
+        if not os.path.exists(path):
             return self.darcs_checkout(**kwargs)
+        if update:
+            self.update(**kwargs)
+        elif self.matches():
+            self.output(
+                (logger.info, "Skipped checkout of existing package '%s'." % name)
+            )
+        else:
+            raise DarcsError(
+                "Checkout URL for existing package '%s' differs. Expected '%s'."
+                % (name, self.source["url"])
+            )
 
     def _darcs_related_repositories(self):
         name = self.source["name"]

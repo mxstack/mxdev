@@ -60,7 +60,6 @@ class GitSVNWorkingCopy(SVNWorkingCopy):
         svn_status = super().status(**kwargs)
         if svn_status == "clean":
             return common.get_workingcopytypes()["git"](self.source).status(**kwargs)
-        else:
-            if kwargs.get("verbose", False):
-                return svn_status, ""
-            return svn_status
+        if kwargs.get("verbose", False):
+            return svn_status, ""
+        return svn_status

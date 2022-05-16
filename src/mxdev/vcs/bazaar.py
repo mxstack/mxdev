@@ -109,8 +109,7 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
         status = stdout and "dirty" or "clean"
         if kwargs.get("verbose", False):
             return status, stdout
-        else:
-            return status
+        return status
 
     def update(self, **kwargs):
         name = self.source["name"]
