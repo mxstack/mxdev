@@ -246,7 +246,8 @@ def resolve_dependencies(
     package_keys: typing.List[str],
     override_keys: typing.List[str],
     ignore_keys: typing.List[str],
-    variety: str = "r") -> typing.Tuple[typing.List[str], typing.List[str]]:
+    variety: str = "r",
+) -> typing.Tuple[typing.List[str], typing.List[str]]:
     requirements: typing.List[str] = []
     constraints: typing.List[str] = []
     if not file_or_url.strip():
@@ -313,7 +314,7 @@ def read(state: State, variety: str = "r") -> None:
         file_or_url=cfg.infile,
         package_keys=cfg.package_keys,
         override_keys=cfg.override_keys,
-        ignore_keys=cfg.ignore_keys
+        ignore_keys=cfg.ignore_keys,
     )
 
 
