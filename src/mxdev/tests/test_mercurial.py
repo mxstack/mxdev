@@ -1,7 +1,7 @@
-from mock import patch
 from mxdev.vcs.compat import b
 from mxdev.vcs.extension import Source
 from mxdev.vcs.tests.utils import Process
+from unittest.mock import patch
 
 import os
 import pytest
@@ -37,13 +37,9 @@ class TestMercurial:
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))
-            assert set(os.listdir(os.path.join(src, "egg"))) == set(
-                (".hg", "bar", "foo")
-            )
+            assert set(os.listdir(os.path.join(src, "egg"))) == {".hg", "bar", "foo"}
             CmdUpdate(develop)(develop.parser.parse_args(["up", "egg"]))
-            assert set(os.listdir(os.path.join(src, "egg"))) == set(
-                (".hg", "bar", "foo")
-            )
+            assert set(os.listdir(os.path.join(src, "egg"))) == {".hg", "bar", "foo"}
             assert log.method_calls == [
                 ("info", ("Cloned 'egg' with mercurial.",), {}),
                 ("info", ("Updated 'egg' with mercurial.",), {}),
@@ -97,9 +93,9 @@ class TestMercurial:
             )
         }
         CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))
-        assert set(os.listdir(os.path.join(src, "egg"))) == set((".hg", "foo"))
+        assert set(os.listdir(os.path.join(src, "egg"))) == {".hg", "foo"}
         CmdUpdate(develop)(develop.parser.parse_args(["up", "egg"]))
-        assert set(os.listdir(os.path.join(src, "egg"))) == set((".hg", "foo"))
+        assert set(os.listdir(os.path.join(src, "egg"))) == {".hg", "foo"}
 
         # check branch
         develop.sources = {
@@ -112,9 +108,9 @@ class TestMercurial:
             )
         }
         CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))
-        assert set(os.listdir(os.path.join(src, "egg"))) == set((".hg", "foo"))
+        assert set(os.listdir(os.path.join(src, "egg"))) == {".hg", "foo"}
         CmdUpdate(develop)(develop.parser.parse_args(["up", "egg"]))
-        assert set(os.listdir(os.path.join(src, "egg"))) == set((".hg", "foo"))
+        assert set(os.listdir(os.path.join(src, "egg"))) == {".hg", "foo"}
 
         # we can't use both rev and branch
         with pytest.raises(SystemExit):

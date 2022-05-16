@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from . import common
 
 import os
@@ -45,7 +43,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
                 source["name"],
             )
             sys.exit(1)
-        super(GitWorkingCopy, self).__init__(source)
+        super().__init__(source)
 
     @common.memoize
     def git_version(self):
@@ -53,13 +51,13 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
             logger.error("Could not determine git version")
-            logger.error("'git --version' output was:\n%s\n%s" % (stdout, stderr))
+            logger.error(f"'git --version' output was:\n{stdout}\n{stderr}")
             sys.exit(1)
 
         m = re.search(r"git version (\d+)\.(\d+)(\.\d+)?(\.\d+)?", stdout)
         if m is None:
             logger.error("Unable to parse git version output")
-            logger.error("'git --version' output was:\n%s\n%s" % (stdout, stderr))
+            logger.error(f"'git --version' output was:\n{stdout}\n{stderr}")
             sys.exit(1)
         version = m.groups()
 
@@ -122,11 +120,11 @@ class GitWorkingCopy(common.BaseWorkingCopy):
                 sys.exit(1)
 
         rbp = self._remote_branch_prefix
-        cmd = self.run_git(["merge", "%s/%s" % (rbp, branch)], cwd=path)
+        cmd = self.run_git(["merge", f"{rbp}/{branch}"], cwd=path)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
             raise GitError(
-                "git merge of remote branch 'origin/%s' failed.\n%s" % (branch, stderr)
+                f"git merge of remote branch 'origin/{branch}' failed.\n{stderr}"
             )
         return (stdout_in + stdout, stderr_in + stderr)
 
@@ -153,7 +151,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         cmd = self.run_git(args)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise GitError("git cloning of '%s' failed.\n%s" % (name, stderr))
+            raise GitError(f"git cloning of '{name}' failed.\n{stderr}")
         if "rev" in self.source:
             stdout, stderr = self.git_switch_branch(stdout, stderr)
         if "pushurl" in self.source:
@@ -206,7 +204,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             "^  " + re.escape(rbp) + r"\/" + re.escape(branch) + "$", stdout, re.M
         ):
             # the branch is not local, normal checkout won't work here
-            rbranch = "%s/%s" % (rbp, branch)
+            rbranch = f"{rbp}/{branch}"
             argv = ["checkout", "-b", branch, rbranch]
             self.output((logger.info, "Switching to remote branch '%s'." % rbranch))
         elif accept_missing:
@@ -219,7 +217,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         cmd = self.run_git(argv, cwd=path)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise GitError("git checkout of branch '%s' failed.\n%s" % (branch, stderr))
+            raise GitError(f"git checkout of branch '{branch}' failed.\n{stderr}")
         return (stdout_in + stdout, stderr_in + stderr)
 
     def git_update(self, **kwargs):
@@ -231,7 +229,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         cmd = self.run_git(argv, cwd=path)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise GitError("git fetch of '%s' failed.\n%s" % (name, stderr))
+            raise GitError(f"git fetch of '{name}' failed.\n{stderr}")
         if "rev" in self.source:
             stdout, stderr = self.git_switch_branch(stdout, stderr)
         elif "branch" in self.source:
@@ -310,7 +308,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         cmd = self.run_git(["remote", "show", "-n", self._upstream_name], cwd=path)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise GitError("git remote of '%s' failed.\n%s" % (name, stderr))
+            raise GitError(f"git remote of '{name}' failed.\n{stderr}")
         return self.source["url"] in stdout.split()
 
     def update(self, **kwargs):

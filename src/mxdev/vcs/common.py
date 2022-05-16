@@ -61,7 +61,7 @@ def version_sorted(inp, *args, **kwargs):
             return val
 
     def split_item(item):
-        return tuple([int_str(j) for j in num_reg.split(item)])
+        return tuple(int_str(j) for j in num_reg.split(item))
 
     def join_item(item):
         return "".join([str(j) for j in item])
@@ -86,7 +86,7 @@ class WCError(Exception):
     """A working copy error."""
 
 
-class BaseWorkingCopy(object):
+class BaseWorkingCopy:
     def __init__(self, source):
         self._output = []
         self.output = self._output.append
@@ -200,7 +200,7 @@ def get_workingcopytypes():
     return _workingcopytypes
 
 
-class WorkingCopies(object):
+class WorkingCopies:
     def __init__(self, sources, threads=5):
         self.sources = sources
         self.threads = threads
@@ -357,4 +357,3 @@ class WorkingCopies(object):
             logger.info("Queued '%s' for update.", name)
             the_queue.put_nowait((wc, wc.update, kw))
         self.process(the_queue)
-

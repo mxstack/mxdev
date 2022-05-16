@@ -15,14 +15,6 @@ import sys
 import typing
 
 
-try:
-    # libvcs 0.12+
-    from libvcs.shortcuts import create_project_from_pip_url
-except ImportError:
-    # BBB for libvcs 0.11-
-    from libvcs.shortcuts import create_repo_from_pip_url as create_project_from_pip_url
-
-
 logger = logging.getLogger("mxdev")
 
 
@@ -147,7 +139,7 @@ class Configuration:
     def _read_section(self, data, name):
         # read section without defaults.
         defaults = data.defaults()
-        return dict([(k, v) for k, v in data[name].items() if k not in defaults])
+        return {k: v for k, v in data[name].items() if k not in defaults}
 
     @property
     def infile(self) -> str:

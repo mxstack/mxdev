@@ -1,6 +1,6 @@
-from mock import patch
 from mxdev.vcs.extension import Source
 from mxdev.vcs.tests.utils import Process
+from unittest.mock import patch
 
 import os
 import pytest
@@ -21,9 +21,7 @@ class TestSVN:
         repository = tempdir["repository"]
         process.check_call("svnadmin create %s" % repository)
         checkout = tempdir["checkout"]
-        process.check_call(
-            "svn checkout file://%s %s" % (repository, checkout), echo=False
-        )
+        process.check_call(f"svn checkout file://{repository} {checkout}", echo=False)
         foo = checkout["foo"]
         foo.create_file("foo")
         process.check_call("svn add %s" % foo, echo=False)
@@ -41,9 +39,9 @@ class TestSVN:
         log = _log.__enter__()
         try:
             CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))
-            assert set(os.listdir(src["egg"])) == set((".svn", "bar", "foo"))
+            assert set(os.listdir(src["egg"])) == {".svn", "bar", "foo"}
             CmdUpdate(develop)(develop.parser.parse_args(["up", "egg"]))
-            assert set(os.listdir(src["egg"])) == set((".svn", "bar", "foo"))
+            assert set(os.listdir(src["egg"])) == {".svn", "bar", "foo"}
             assert log.method_calls == [
                 ("info", ("Checked out 'egg' with subversion.",), {}),
                 ("info", ("Updated 'egg' with subversion.",), {}),
@@ -59,9 +57,7 @@ class TestSVN:
         repository = tempdir["repository"]
         process.check_call("svnadmin create %s" % repository)
         checkout = tempdir["checkout"]
-        process.check_call(
-            "svn checkout file://%s %s" % (repository, checkout), echo=False
-        )
+        process.check_call(f"svn checkout file://{repository} {checkout}", echo=False)
         foo = checkout["foo"]
         foo.create_file("foo")
         process.check_call("svn add %s" % foo, echo=False)
@@ -76,6 +72,6 @@ class TestSVN:
             )
         }
         CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))
-        assert set(os.listdir(src["egg"])) == set((".svn", "foo"))
+        assert set(os.listdir(src["egg"])) == {".svn", "foo"}
         CmdUpdate(develop)(develop.parser.parse_args(["up", "egg"]))
-        assert set(os.listdir(src["egg"])) == set((".svn", "foo"))
+        assert set(os.listdir(src["egg"])) == {".svn", "foo"}

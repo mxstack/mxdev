@@ -1,4 +1,3 @@
-from mxdev.vcs.compat import s
 from subprocess import PIPE
 from subprocess import Popen
 
@@ -24,7 +23,7 @@ def tee(process, filter_func):
         if line:
             stripped_line = line.rstrip()
             if filter_func(stripped_line):
-                sys.stdout.write(s(line))
+                sys.stdout.write(line.decode("utf8"))
             lines.append(stripped_line)
         elif process.poll() is not None:
             break
@@ -43,12 +42,12 @@ def tee2(process, filter_func):
         if line:
             stripped_line = line.rstrip()
             if filter_func(stripped_line):
-                sys.stderr.write(s(line))
+                sys.stderr.write(line.decode("utf8"))
         elif process.poll() is not None:
             break
 
 
-class background_thread(object):
+class background_thread:
     """Context manager to start and stop a background thread."""
 
     def __init__(self, target, args):
@@ -100,21 +99,21 @@ def popen(cmd, echo=True, echo2=True, env=None, cwd=None):
     return process.returncode, lines
 
 
-class On(object):
+class On:
     """A tee filter printing all lines."""
 
     def __call__(self, line):
         return True
 
 
-class Off(object):
+class Off:
     """A tee filter suppressing all lines."""
 
     def __call__(self, line):
         return False
 
 
-class Process(object):
+class Process:
     """Process related functions using the tee module."""
 
     def __init__(self, quiet=False, env=None, cwd=None):
@@ -134,7 +133,7 @@ class Process(object):
         return lines
 
 
-class MockConfig(object):
+class MockConfig:
     def __init__(self):
         self.buildout_args = []
         self.develop = {}
@@ -144,7 +143,7 @@ class MockConfig(object):
         pass
 
 
-class MockDevelop(object):
+class MockDevelop:
     def __init__(self):
         from mxdev.vcs.develop import ArgumentParser
 
@@ -159,7 +158,7 @@ class MockDevelop(object):
         self.threads = 1
 
 
-class GitRepo(object):
+class GitRepo:
     def __init__(self, base):
         self.base = base
         self.url = "file:///%s" % self.base
@@ -182,11 +181,11 @@ class GitRepo(object):
         self("git add %s" % repo_file, echo=False)
         if msg is None:
             msg = fname
-        self("git commit %s -m %s" % (repo_file, msg), echo=False)
+        self(f"git commit {repo_file} -m {msg}", echo=False)
 
     def add_submodule(self, submodule, submodule_name):
         assert isinstance(submodule, GitRepo)
-        self("git submodule add %s %s" % (submodule.url, submodule_name))
+        self(f"git submodule add {submodule.url} {submodule_name}")
         self("git add .gitmodules")
         self("git add %s" % submodule_name)
         self("git commit -m 'Add submodule %s'" % submodule_name)

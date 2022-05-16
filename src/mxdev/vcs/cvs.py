@@ -62,7 +62,7 @@ def build_cvs_command(command, name, url, tag="", cvs_root="", tag_file=None):
 
 class CVSWorkingCopy(common.BaseWorkingCopy):
     def __init__(self, source):
-        super(CVSWorkingCopy, self).__init__(source)
+        super().__init__(source)
         if self.source.get("newest_tag", "").lower() in ["1", "true", "yes"]:
             self.source["tag"] = self._get_newest_tag()
 
@@ -74,7 +74,7 @@ class CVSWorkingCopy(common.BaseWorkingCopy):
 
         cvs_root = self.source.get("cvs_root")
         tag_file = self.source.get("tag_file")
-        self.output((logger.info, "Running %s %r from CVS." % (command, name)))
+        self.output((logger.info, f"Running {command} {name!r} from CVS."))
         cmd = build_cvs_command(command, name, url, tag, cvs_root, tag_file)
 
         # because CVS can not work on absolute paths, we must execute cvs commands
@@ -91,7 +91,7 @@ class CVSWorkingCopy(common.BaseWorkingCopy):
             os.chdir(old_cwd)
 
         if cmd.returncode != 0:
-            raise CVSError("CVS %s for %r failed.\n%s" % (command, name, stderr))
+            raise CVSError(f"CVS {command} for {name!r} failed.\n{stderr}")
         if command == "tags":
             return self._format_tags_list(stdout)
         if kwargs.get("verbose", False):

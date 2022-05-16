@@ -13,7 +13,7 @@ class DarcsError(common.WCError):
 
 class DarcsWorkingCopy(common.BaseWorkingCopy):
     def __init__(self, source):
-        super(DarcsWorkingCopy, self).__init__(source)
+        super().__init__(source)
         self.darcs_executable = common.which("darcs")
 
     def darcs_checkout(self, **kwargs):
@@ -30,7 +30,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
         cmd = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise DarcsError("darcs get for '%s' failed.\n%s" % (name, stderr))
+            raise DarcsError(f"darcs get for '{name}' failed.\n{stderr}")
         if kwargs.get("verbose", False):
             return stdout
 
@@ -46,7 +46,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise DarcsError("darcs pull for '%s' failed.\n%s" % (name, stderr))
+            raise DarcsError(f"darcs pull for '{name}' failed.\n{stderr}")
         if kwargs.get("verbose", False):
             return stdout
 
@@ -86,7 +86,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             stdout, stderr = cmd.communicate()
             if cmd.returncode != 0:
                 self.output(
-                    (logger.error, "darcs info for '%s' failed.\n%s" % (name, stderr))
+                    (logger.error, f"darcs info for '{name}' failed.\n{stderr}")
                 )
                 return
 

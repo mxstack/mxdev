@@ -1,5 +1,4 @@
 from . import common
-from .compat import b
 
 import os
 import re
@@ -18,7 +17,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         self.hg_executable = common.which("hg")
         source.setdefault("branch", "default")
         source.setdefault("rev")
-        super(MercurialWorkingCopy, self).__init__(source)
+        super().__init__(source)
 
     def hg_clone(self, **kwargs):
         name = self.source["name"]
@@ -49,7 +48,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise MercurialError("hg clone for %r failed.\n%s" % (name, stderr))
+            raise MercurialError(f"hg clone for {name!r} failed.\n{stderr}")
         if kwargs.get("verbose", False):
             return stdout
 
@@ -85,8 +84,8 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode:
-            raise MercurialError("hg update for %r failed.\n%s" % (name, stderr))
-        self.output((logger.info, "Switched %r to %s." % (name, rev)))
+            raise MercurialError(f"hg update for {name!r} failed.\n{stderr}")
+        self.output((logger.info, f"Switched {name!r} to {rev}."))
         return stdout
 
     def _get_tags(self):
@@ -106,7 +105,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
             return []
         stdout, stderr = cmd.communicate()
         if cmd.returncode:
-            raise MercurialError("hg update for %r failed.\n%s" % (name, stderr))
+            raise MercurialError(f"hg update for {name!r} failed.\n{stderr}")
 
         tag_line_re = re.compile(r"([^\s]+)[\s]*.*")
 
@@ -133,7 +132,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         self.output(
             (
                 logger.info,
-                "Picked newest tag for %r from Mercurial: %r." % (name, newest_tag),
+                f"Picked newest tag for {name!r} from Mercurial: {newest_tag!r}.",
             )
         )
         return newest_tag
@@ -159,7 +158,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
             # hg v2.1 pull returns non-zero return code in case of
             # no remote changes.
             if "no changes found" not in stdout:
-                raise MercurialError("hg pull for %r failed.\n%s" % (name, stderr))
+                raise MercurialError(f"hg pull for {name!r} failed.\n{stderr}")
         # to find newest_tag hg pull is needed before
         rev = self.get_rev()
         if rev:
@@ -200,9 +199,9 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise MercurialError("hg showconfig for %r failed.\n%s" % (name, stderr))
+            raise MercurialError(f"hg showconfig for {name!r} failed.\n{stderr}")
         # now check that the working branch is the same
-        return b(self.source["url"] + "\n") == stdout
+        return bytes(self.source["url"] + "\n", "utf-8") == stdout
 
     def status(self, **kwargs):
         path = self.source["path"]
@@ -226,7 +225,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
                 stderr=subprocess.PIPE,
             )
             outgoing_stdout, stderr = cmd.communicate()
-            stdout += b("\n") + outgoing_stdout
+            stdout += b"\n" + outgoing_stdout
             if cmd.returncode == 0:
                 status = "ahead"
         if kwargs.get("verbose", False):
