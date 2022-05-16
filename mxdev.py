@@ -74,7 +74,7 @@ class Configuration:
             default_section="settings",
             interpolation=configparser.ExtendedInterpolation(),
         )
-        data.optionxform = str
+        data.optionxform = str  # type: ignore
         data.read_file(tio)
         settings = self.settings = dict(data["settings"].items())
 
