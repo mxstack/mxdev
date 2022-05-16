@@ -2,6 +2,7 @@ from . import common
 
 import os
 import subprocess
+import typing
 
 
 logger = common.logger
@@ -12,29 +13,31 @@ class DarcsError(common.WCError):
 
 
 class DarcsWorkingCopy(common.BaseWorkingCopy):
-    def __init__(self, source):
+    def __init__(self, source: typing.Dict[str, typing.Any]):
         super().__init__(source)
         self.darcs_executable = common.which("darcs")
 
-    def darcs_checkout(self, **kwargs):
+    def darcs_checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         url = self.source["url"]
         if os.path.exists(path):
-            self.output(
-                (logger.info, "Skipped getting of existing package '%s'." % name)
-            )
-            return
-        self.output((logger.info, "Getting '%s' with darcs." % name))
-        cmd = [self.darcs_executable, "get", "--quiet", "--lazy", url, path]
-        cmd = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.output("Skipped getting of existing package '{name}'.")
+            return None
+        self.output(f"Getting '{name}' with darcs.")
+        cmd = subprocess.Popen(
+            [self.darcs_executable, "get", "--quiet", "--lazy", url, path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise DarcsError(f"darcs get for '{name}' failed.\n{stderr}")
+            raise DarcsError(f"darcs get for '{name}' failed.\n{stderr.decode('utf8')}")
         if kwargs.get("verbose", False):
-            return stdout
+            return stdout.decode("utf8")
+        return None
 
-    def darcs_update(self, **kwargs):
+    def darcs_update(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         self.output((logger.info, "Updating '%s' with darcs." % name))
@@ -46,11 +49,14 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise DarcsError(f"darcs pull for '{name}' failed.\n{stderr}")
+            raise DarcsError(
+                f"darcs pull for '{name}' failed.\n{stderr.decode('utf8')}"
+            )
         if kwargs.get("verbose", False):
-            return stdout
+            return stdout.decode("utf8")
+        return None
 
-    def checkout(self, **kwargs):
+    def checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         update = self.should_update(**kwargs)
@@ -58,17 +64,15 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             return self.darcs_checkout(**kwargs)
         if update:
             self.update(**kwargs)
-        elif self.matches():
-            self.output(
-                (logger.info, "Skipped checkout of existing package '%s'." % name)
-            )
-        else:
-            raise DarcsError(
-                "Checkout URL for existing package '%s' differs. Expected '%s'."
-                % (name, self.source["url"])
-            )
+            return None
+        if self.matches():
+            self.output(f"Skipped checkout of existing package '{name}'.")
+            return None
+        raise DarcsError(
+            f"Checkout URL for existing package '{name}' differs. Expected '{self.source['url']}'."
+        )
 
-    def _darcs_related_repositories(self):
+    def _darcs_related_repositories(self) -> typing.Generator:
         name = self.source["name"]
         path = self.source["path"]
         repos = os.path.join(path, "_darcs", "prefs", "repos")
@@ -84,12 +88,10 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             )
             stdout, stderr = cmd.communicate()
             if cmd.returncode != 0:
-                self.output(
-                    (logger.error, f"darcs info for '{name}' failed.\n{stderr}")
-                )
+                self.output(f"darcs info for '{name}' failed.\n{stderr.decode('utf8')}")
                 return
 
-            lines = stdout.splitlines()
+            lines = stdout.decode("utf8").splitlines()
             for line in lines:
                 k, v = line.split(":", 1)
                 k = k.strip()
@@ -101,10 +103,10 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
                         if cache.startswith("repo:"):
                             yield cache[5:]
 
-    def matches(self):
+    def matches(self) -> bool:
         return self.source["url"] in self._darcs_related_repositories()
 
-    def status(self, **kwargs):
+    def status(self, **kwargs) -> typing.Union[str, typing.Tuple[str, str]]:
         path = self.source["path"]
         cmd = subprocess.Popen(
             [self.darcs_executable, "whatsnew"],
@@ -113,17 +115,16 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             stderr=subprocess.PIPE,
         )
         stdout, stderr = cmd.communicate()
-        lines = stdout.strip().split("\n")
+        lines = stdout.decode("utf8").strip().split("\n")
         if "No changes" in lines[-1]:
             status = "clean"
         else:
             status = "dirty"
         if kwargs.get("verbose", False):
-            return status, stdout
-        else:
-            return status
+            return status, stdout.decode("utf8")
+        return status
 
-    def update(self, **kwargs):
+    def update(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         if not self.matches():
             raise DarcsError(

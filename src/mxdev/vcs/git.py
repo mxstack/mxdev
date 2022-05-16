@@ -127,7 +127,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             raise GitError(
                 f"git merge of remote branch 'origin/{branch}' failed.\n{stderr}"
             )
-        return (stdout_in + stdout, stderr_in + stderr)
+        return stdout_in + stdout, stderr_in + stderr
 
     def git_checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
@@ -177,6 +177,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
 
         if kwargs.get("verbose", False):
             return stdout
+        return None
 
     def git_switch_branch(
         self, stdout_in: str, stderr_in: str, accept_missing: bool = False
@@ -263,6 +264,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
 
         if kwargs.get("verbose", False):
             return stdout
+        return None
 
     def checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
@@ -285,6 +287,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
                     % (name, self.source["url"]),
                 )
             )
+        return None
 
     def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
         path = self.source["path"]

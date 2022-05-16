@@ -140,10 +140,10 @@ def yesno(
 
 main_lock = input_lock = output_lock = threading.RLock()
 
-_workingcopytypes: typing.Dict[str, BaseWorkingCopy] = {}
+_workingcopytypes: typing.Dict[str, typing.Type[BaseWorkingCopy]] = {}
 
 
-def get_workingcopytypes() -> typing.Dict[str, BaseWorkingCopy]:
+def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
     if _workingcopytypes is not None:
         return _workingcopytypes
     group = "mxdev.workingcopytypes"
@@ -223,18 +223,22 @@ class WorkingCopies:
                 sys.exit(1)
             source = self.sources[name]
             vcs = source["vcs"]
-            wc = self.workingcopytypes.get(vcs)(source)
+            wc_class = self.workingcopytypes.get(vcs)
+            if not wc_class:
+                logger.error(f"Unregistered repository type {vcs}")
+                continue
+            wc = wc_class(source)
             if wc is None:
-                logger.error("Unknown repository type '%s'." % vcs)
+                logger.error(f"Unknown repository type '{vcs}'.")
                 sys.exit(1)
             update = wc.should_update(**kwargs)
             if not os.path.exists(source["path"]):
                 pass
             elif os.path.islink(source["path"]):
-                logger.info("Skipped update of linked '%s'." % name)
+                logger.info(f"Skipped update of linked '{name}'.")
                 continue
-            elif update and wc.status() != "clean" and not kw.get("force", False):
-                print_stderr("The package '%s' is dirty." % name)
+            elif update and not kw.get("force", False) and wc.status() != "clean":
+                print_stderr(f"The package '{name}' is dirty.")
                 answer = yesno(
                     "Do you want to update it anyway?", default=False, all=True
                 )
@@ -257,14 +261,17 @@ class WorkingCopies:
         source = self.sources[name]
         try:
             vcs = source["vcs"]
-            wc = self.workingcopytypes.get(vcs)(source)
+            wc_class = self.workingcopytypes.get(vcs)
+            if not wc_class:
+                logger.error(f"Unregistered repository type {vcs}")
+                sys.exit(1)
+            wc = wc_class(source)
             if wc is None:
-                logger.error("Unknown repository type '%s'." % vcs)
+                logger.error(f"Unknown repository type '{vcs}'.")
                 sys.exit(1)
             return wc.matches()
         except WCError:
-            for line in sys.exc_info()[1].args[0].split("\n"):
-                logger.error(line)
+            logger.exception("Can not get matches!")
             sys.exit(1)
 
     def status(
@@ -277,14 +284,17 @@ class WorkingCopies:
         source = self.sources[name]
         try:
             vcs = source["vcs"]
-            wc = self.workingcopytypes.get(vcs)(source)
+            wc_class = self.workingcopytypes.get(vcs)
+            if not wc_class:
+                logger.error(f"Unregistered repository type {vcs}")
+                sys.exit(1)
+            wc = wc_class(source)
             if wc is None:
                 logger.error("Unknown repository type '%s'." % vcs)
                 sys.exit(1)
             return wc.status(**kwargs)
         except WCError:
-            for line in sys.exc_info()[1].args[0].split("\n"):
-                logger.error(line)
+            logger.exception("Can not get status!")
             sys.exit(1)
 
     def update(self, packages: typing.Dict[str, typing.Dict], **kwargs) -> None:
@@ -295,7 +305,11 @@ class WorkingCopies:
                 continue
             source = self.sources[name]
             vcs = source["vcs"]
-            wc = self.workingcopytypes.get(vcs)(source)
+            wc_class = self.workingcopytypes.get(vcs)
+            if not wc_class:
+                logger.error(f"Unregistered repository type {vcs}")
+                sys.exit(1)
+            wc = wc_class(source)
             if wc is None:
                 logger.error("Unknown repository type '%s'." % vcs)
                 sys.exit(1)
@@ -330,8 +344,7 @@ def worker(working_copies: WorkingCopies, the_queue: queue.Queue) -> None:
             output_lock.acquire()
             for lvl, msg in wc._output:
                 lvl(msg)
-            for line in sys.exc_info()[1].args[0].split("\n"):
-                logger.error(line)
+            logger.exception("Can not execute action!")
             working_copies.errors = True
             output_lock.release()
         else:
