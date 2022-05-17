@@ -4,6 +4,7 @@ from .vcs.common import WorkingCopies
 from pathlib import Path
 from urllib import parse
 from urllib import request
+
 import pkg_resources
 import typing
 

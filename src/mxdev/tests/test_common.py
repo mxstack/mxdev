@@ -1,6 +1,7 @@
 from ..vcs import common
 
 
+
 def test_version_sorted():
     expected = ["version-1-0-1", "version-1-0-2", "version-1-0-10"]
     actual = common.version_sorted(["version-1-0-10", "version-1-0-2", "version-1-0-1"])
