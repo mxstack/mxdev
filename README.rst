@@ -278,3 +278,10 @@ Idea
 
 Trivia
     Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.
+
+
+Misc
+====
+
+The VCS related code is taken from `mr.developer <https://github.com/fschulze/mr.developer>`_.
+Thanks to Florian Schulze and Contributors.
