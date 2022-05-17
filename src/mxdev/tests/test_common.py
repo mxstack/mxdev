@@ -1,6 +1,8 @@
 from .. import vcs
 from ..vcs import common
 from unittest import mock
+import logging
+import os
 import pytest
 import queue
 import typing
@@ -60,19 +62,23 @@ def test_BaseWorkingCopy():
     assert bwc.should_update(update="true") is False
 
 
-def test_yesno(mocker):
-    class Input:
-        question = ""
-        answer = ""
-        def __call__(self, question):
-            self.question = question
-            answer = self.answer
-            if answer == "invalid":
-                self.answer = ""
-            return answer
+class Input:
 
+    def __init__(self):
+        self.question = ""
+        self.answer = ""
+
+    def __call__(self, question):
+        self.question = question
+        answer = self.answer
+        if answer == "invalid":
+            self.answer = ""
+        return answer
+
+
+def test_yesno(mocker):
     input_ = mocker.patch("mxdev.vcs.common.input", new_callable=Input)
-    print_stderr_ = mocker.patch("mxdev.vcs.common.print_stderr")
+    print_stderr = mocker.patch("mxdev.vcs.common.print_stderr")
 
     common.yesno(question="Really?")
     assert input_.question == "Really? [Yes/no/all] "
@@ -100,13 +106,13 @@ def test_yesno(mocker):
 
     input_.answer = "invalid"
     common.yesno(question="")
-    print_stderr_.assert_called_with(
+    print_stderr.assert_called_with(
         "You have to answer with y, yes, n, no, a or all."
     )
 
     input_.answer = "invalid"
     common.yesno(question="", all=False)
-    print_stderr_.assert_called_with(
+    print_stderr.assert_called_with(
         "You have to answer with y, yes, n or no."
     )
 
@@ -145,7 +151,9 @@ def test_WorkingCopies_process(mocker, caplog):
     assert caplog.messages == ["There have been errors, see messages above."]
 
 
-def test_WorkingCopies_checkout(mocker, caplog):
+def test_WorkingCopies_checkout(mocker, caplog, tmpdir):
+    caplog.set_level(logging.INFO)
+
     class SysExit(Exception):
         ...
 
@@ -155,11 +163,24 @@ def test_WorkingCopies_checkout(mocker, caplog):
 
     mocker.patch("sys.exit", new_callable=Exit)
 
-    class TestWorkingCopies(common.WorkingCopies):
-        def process(self, the_queue):
+    class TestWorkingCopy(common.BaseWorkingCopy):
+        package_status = "clean"
+        def checkout(self, **kwargs) -> typing.Union[str, None]:
+            common.logger.info(f"Checkout called with: {kwargs}")
+        def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
+            return self.package_status
+        def matches(self) -> bool:
+            ...
+        def update(self, **kwargs) -> typing.Union[str, None]:
             ...
 
-    wc = TestWorkingCopies(sources={})
+    class WCT(dict):
+        def __init__(self):
+            self['wct'] = TestWorkingCopy
+
+    mocker.patch("mxdev.vcs.common._workingcopytypes", new_callable=WCT)
+
+    wc = common.WorkingCopies(sources={})
 
     with pytest.raises(SysExit):
         wc.checkout(packages=[], update='invalid')
@@ -182,10 +203,58 @@ def test_WorkingCopies_checkout(mocker, caplog):
     ]
     caplog.clear()
 
-    wc = TestWorkingCopies(sources=dict(
+    wc = common.WorkingCopies(sources=dict(
         package=dict(vcs="invalid")
     ))
     wc.checkout(packages=['package'])
     assert caplog.messages == [
         "Unregistered repository type invalid"
     ]
+    caplog.clear()
+
+    wc = common.WorkingCopies(sources=dict(
+        package=dict(
+            vcs="wct",
+            path=tmpdir.join('package').strpath
+        )
+    ), threads=1)
+    wc.checkout(packages=['package'], update=True)
+    assert caplog.messages == [
+        "Queued 'package' for checkout.",
+        "Checkout called with: {'update': True, 'submodules': 'always'}"
+    ]
+    caplog.clear()
+
+    package_dir = tmpdir.mkdir("package_dir")
+    os.symlink(
+        package_dir.strpath,
+        tmpdir.join('package').strpath,
+        target_is_directory=True
+    )
+    wc.checkout(packages=['package'], update=True)
+    assert caplog.messages == [
+        "Skipped update of linked 'package'."
+    ]
+    caplog.clear()
+    tmpdir.join('package').remove()
+    package_dir.remove()
+
+    input_ = mocker.patch("mxdev.vcs.common.input", new_callable=Input)
+    print_stderr = mocker.patch("mxdev.vcs.common.print_stderr")
+
+    TestWorkingCopy.package_status = "dirty"
+    package_dir = tmpdir.mkdir("package")
+    wc.checkout(packages=['package'], update=True)
+    print_stderr.assert_called_with("The package 'package' is dirty.")
+    assert caplog.messages == [
+        "Skipped update of 'package'."
+    ]
+    caplog.clear()
+
+    wc.checkout(packages=['package'], update="force")
+    print_stderr.assert_called_with("The package 'package' is dirty.")
+    assert caplog.messages == [
+        "Queued 'package' for checkout.",
+        "Checkout called with: {'update': True, 'force': True, 'submodules': 'always'}"
+    ]
+    caplog.clear()
