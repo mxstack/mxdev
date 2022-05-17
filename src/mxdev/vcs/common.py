@@ -97,19 +97,19 @@ class BaseWorkingCopy(abc.ABC):
 
     @abc.abstractmethod
     def checkout(self, **kwargs) -> typing.Union[str, None]:
-        pass
+        ...
 
     @abc.abstractmethod
     def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
-        pass
+        ...
 
     @abc.abstractmethod
     def matches(self) -> bool:
-        pass
+        ...
 
     @abc.abstractmethod
     def update(self, **kwargs) -> typing.Union[str, None]:
-        pass
+        ...
 
 
 def yesno(
@@ -156,6 +156,8 @@ def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
     for entrypoint in pkg_resources.iter_entry_points(group=group):
         key = entrypoint.name
         workingcopytype = entrypoint.load()
+        if not entrypoint.dist:
+            continue
         if entrypoint.dist.project_name == "mxdev":
             _workingcopytypes[key] = workingcopytype
             continue
@@ -258,7 +260,7 @@ class WorkingCopies:
             the_queue.put_nowait((wc, wc.checkout, kw))
         self.process(the_queue)
 
-    def matches(self, source: typing.Dict[str, str]) -> None:
+    def matches(self, source: typing.Dict[str, str]) -> bool:
         name = source["name"]
         if name not in self.sources:
             logger.error("Checkout failed. No source defined for '%s'." % name)
