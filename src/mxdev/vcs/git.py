@@ -1,5 +1,4 @@
 from . import common
-from ctypes import Union
 
 import functools
 import os
