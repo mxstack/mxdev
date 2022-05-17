@@ -6,6 +6,10 @@ import pkg_resources
 import typing
 
 
+if typing.TYPE_CHECKING:
+    from .hooks import Hook
+
+
 class Configuration:
     settings: typing.Dict[str, str]
     overrides: typing.Dict[str, str]
@@ -13,7 +17,7 @@ class Configuration:
     packages: typing.Dict[str, typing.Dict[str, str]]
     hooks: typing.Dict[str, typing.Dict[str, str]]
 
-    def __init__(self, tio: typing.TextIO, hooks: typing.List["mxdev.hooks.Hook"]) -> None:
+    def __init__(self, tio: typing.TextIO, hooks: typing.List["Hook"]) -> None:
         logger.debug("Read configuration")
         data = configparser.ConfigParser(
             default_section="settings",
