@@ -167,6 +167,7 @@ def test_WorkingCopies_checkout(mocker, caplog, tmpdir):
         package_status = "clean"
         def checkout(self, **kwargs) -> typing.Union[str, None]:
             common.logger.info(f"Checkout called with: {kwargs}")
+            return None
         def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
             return self.package_status
         def matches(self) -> bool:
