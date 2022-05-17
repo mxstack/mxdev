@@ -1,6 +1,7 @@
 from . import common
 
 import os
+import typing
 
 
 logger = common.logger
@@ -11,7 +12,7 @@ class FilesystemError(common.WCError):
 
 
 class FilesystemWorkingCopy(common.BaseWorkingCopy):
-    def checkout(self, **kwargs):
+    def checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         if os.path.exists(path):

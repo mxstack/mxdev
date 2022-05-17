@@ -1,3 +1,4 @@
+import abc
 import logging
 import os
 import pkg_resources
@@ -7,7 +8,6 @@ import re
 import sys
 import threading
 import typing
-import abc
 
 
 logger = logging.getLogger("mxdev")

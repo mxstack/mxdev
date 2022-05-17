@@ -61,6 +61,11 @@ In the main sections the input and output files are defined.
     Allowed values: ``direct`` or ``skip``
     Default: ``direct``
 
+``offline``
+    Do not update sources.
+    Handy if working offline.
+    Default: False
+
 ``version-overrides``
     Override package versions which already defined in a dependent constraints file.
     I.e. an upstream *constraints.txt* contains already ``somefancypackage==2.0.3``.
