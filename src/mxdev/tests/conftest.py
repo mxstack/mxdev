@@ -37,7 +37,7 @@ def tempdir():
 
 @pytest.fixture
 def mkgitrepo(tempdir):
-    from mxdev.vcs.tests.utils import GitRepo
+    from mxdev.tests.utils import GitRepo
 
     def mkgitrepo(name):
         repository = GitRepo(tempdir[name])
@@ -50,7 +50,7 @@ def mkgitrepo(tempdir):
 
 @pytest.fixture
 def develop(src):
-    from mxdev.vcs.tests.utils import MockDevelop
+    from mxdev.tests.utils import MockDevelop
 
     develop = MockDevelop()
     develop.sources_dir = src

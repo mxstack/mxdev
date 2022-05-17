@@ -1,5 +1,4 @@
-from mxdev.vcs.extension import Source
-from mxdev.vcs.tests.utils import Process
+from mxdev.tests.utils import Process
 from unittest.mock import patch
 
 import os
@@ -35,7 +34,7 @@ class TestGit:
 
         # check rev
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="git",
                 name="egg",
                 rev=rev,
@@ -52,7 +51,7 @@ class TestGit:
 
         # check branch
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="git",
                 name="egg",
                 branch="test",
@@ -68,7 +67,7 @@ class TestGit:
 
         # switch implicitly to master branch
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="git", name="egg", url="%s" % repository.base, path=src["egg"]
             )
         }
@@ -77,7 +76,7 @@ class TestGit:
 
         # Switch to specific revision, then switch back to master branch.
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="git",
                 name="egg",
                 rev=rev,
@@ -88,7 +87,7 @@ class TestGit:
         CmdUpdate(develop)(develop.parser.parse_args(["up", "egg"]))
         assert set(os.listdir(src["egg"])) == {".git", "foo", "foo2"}
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="git", name="egg", url="%s" % repository.base, path=src["egg"]
             )
         }
@@ -100,7 +99,7 @@ class TestGit:
         # we can't use both rev and branch
         with pytest.raises(SystemExit):
             develop.sources = {
-                "egg": Source(
+                "egg": dict(
                     kind="git",
                     name="egg",
                     branch="test",
@@ -121,7 +120,7 @@ class TestGit:
         repository.add_file("bar")
         repository.add_branch("develop")
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=repository.url, path=src["egg"])
+            "egg": dict(kind="git", name="egg", url=repository.url, path=src["egg"])
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()
@@ -156,7 +155,7 @@ class TestGit:
         repository.add_file("bar")
         repository.add_branch("develop")
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=repository.url, path=src["egg"])
+            "egg": dict(kind="git", name="egg", url=repository.url, path=src["egg"])
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()

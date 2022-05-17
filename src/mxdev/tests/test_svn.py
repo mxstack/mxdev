@@ -1,5 +1,4 @@
-from mxdev.vcs.extension import Source
-from mxdev.vcs.tests.utils import Process
+from mxdev.tests.utils import Process
 from unittest.mock import patch
 
 import os
@@ -31,7 +30,7 @@ class TestSVN:
         process.check_call("svn add %s" % bar, echo=False)
         process.check_call("svn commit %s -m bar" % bar, echo=False)
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="svn", name="egg", url="file://%s" % repository, path=src["egg"]
             )
         }
@@ -67,7 +66,7 @@ class TestSVN:
         process.check_call("svn add %s" % bar, echo=False)
         process.check_call("svn commit %s -m bar" % bar, echo=False)
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="svn", name="egg", url="file://%s@1" % repository, path=src["egg"]
             )
         }

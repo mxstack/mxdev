@@ -1,5 +1,4 @@
-from mxdev.vcs.extension import Source
-from mxdev.vcs.tests.utils import GitRepo
+from mxdev.tests.utils import GitRepo
 from unittest.mock import patch
 
 import os
@@ -20,7 +19,7 @@ class TestGitSubmodules:
         egg.add_submodule(submodule_a, submodule_name)
 
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=egg.url, path=src["egg"])
+            "egg": dict(kind="git", name="egg", url=egg.url, path=src["egg"])
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()
@@ -64,7 +63,7 @@ class TestGitSubmodules:
         egg.add_submodule(submodule_b, submodule_b_name)
 
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=egg.url, path=src["egg"])
+            "egg": dict(kind="git", name="egg", url=egg.url, path=src["egg"])
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()
@@ -117,7 +116,7 @@ class TestGitSubmodules:
         egg.add_submodule(submodule, submodule_name)
 
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=egg.url, path=src["egg"])
+            "egg": dict(kind="git", name="egg", url=egg.url, path=src["egg"])
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()
@@ -192,7 +191,7 @@ class TestGitSubmodules:
 
         develop.update_git_submodules = "never"
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=egg.url, path=src["egg"])
+            "egg": dict(kind="git", name="egg", url=egg.url, path=src["egg"])
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()
@@ -235,14 +234,14 @@ class TestGitSubmodules:
 
         develop.update_git_submodules = "never"
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="git",
                 name="egg",
                 url=egg.url,
                 path=src["egg"],
                 submodules="always",
             ),
-            "egg2": Source(kind="git", name="egg2", url=egg2.url, path=src["egg2"]),
+            "egg2": dict(kind="git", name="egg2", url=egg2.url, path=src["egg2"]),
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()
@@ -298,8 +297,8 @@ class TestGitSubmodules:
         egg2.add_submodule(submodule_a, submodule_name)
 
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=egg.url, path=src["egg"]),
-            "egg2": Source(
+            "egg": dict(kind="git", name="egg", url=egg.url, path=src["egg"]),
+            "egg2": dict(
                 kind="git",
                 name="egg2",
                 url=egg2.url,
@@ -354,7 +353,7 @@ class TestGitSubmodules:
         egg.add_submodule(submodule, submodule_name)
 
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="git",
                 name="egg",
                 url=egg.url,
@@ -426,7 +425,7 @@ class TestGitSubmodules:
         egg.add_submodule(submodule, submodule_name)
 
         develop.sources = {
-            "egg": Source(kind="git", name="egg", url=egg.url, path=src["egg"])
+            "egg": dict(kind="git", name="egg", url=egg.url, path=src["egg"])
         }
         _log = patch("mxdev.vcs.git.logger")
         log = _log.__enter__()

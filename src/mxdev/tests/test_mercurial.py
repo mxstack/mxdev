@@ -1,6 +1,4 @@
-from mxdev.vcs.compat import b
-from mxdev.vcs.extension import Source
-from mxdev.vcs.tests.utils import Process
+from mxdev.tests.utils import Process
 from unittest.mock import patch
 
 import os
@@ -26,7 +24,7 @@ class TestMercurial:
         process.check_call("hg add %s" % bar, echo=False)
         process.check_call("hg commit %s -m bar -u test" % bar, echo=False)
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="hg",
                 name="egg",
                 url="%s" % repository,
@@ -84,7 +82,7 @@ class TestMercurial:
 
         # check rev
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="hg",
                 name="egg",
                 rev=rev,
@@ -99,7 +97,7 @@ class TestMercurial:
 
         # check branch
         develop.sources = {
-            "egg": Source(
+            "egg": dict(
                 kind="hg",
                 name="egg",
                 branch="test",
@@ -115,7 +113,7 @@ class TestMercurial:
         # we can't use both rev and branch
         with pytest.raises(SystemExit):
             develop.sources = {
-                "egg": Source(
+                "egg": dict(
                     kind="hg",
                     name="egg",
                     branch="test",

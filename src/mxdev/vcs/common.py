@@ -144,7 +144,7 @@ _workingcopytypes: typing.Dict[str, typing.Type[BaseWorkingCopy]] = {}
 
 
 def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
-    if _workingcopytypes is not None:
+    if _workingcopytypes:
         return _workingcopytypes
     group = "mxdev.workingcopytypes"
     addons = {}
