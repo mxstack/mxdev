@@ -143,6 +143,7 @@ def yesno(
             print_stderr("You have to answer with y, yes, n or no.")
 
 
+# XXX: one lock, one name
 input_lock = output_lock = threading.RLock()
 
 _workingcopytypes: typing.Dict[str, typing.Type[BaseWorkingCopy]] = {}
@@ -200,10 +201,8 @@ class WorkingCopies:
 
     def checkout(self, packages: typing.List[str], **kwargs) -> None:
         the_queue: queue.Queue = queue.Queue()
-        if "update" in kwargs:
-            if isinstance(kwargs["update"], bool):
-                pass
-            elif kwargs["update"].lower() in ("true", "yes", "on", "force"):
+        if "update" in kwargs and not isinstance(kwargs["update"], bool):
+            if kwargs["update"].lower() in ("true", "yes", "on", "force"):
                 if kwargs["update"].lower() == "force":
                     kwargs["force"] = True
                 kwargs["update"] = True
@@ -215,9 +214,8 @@ class WorkingCopies:
                 )
                 sys.exit(1)
         kwargs.setdefault("submodules", "always")
-        if kwargs["submodules"] in ["always", "never", "checkout"]:
-            pass
-        else:
+        # XXX: submodules is git related, move to GitWorkingCopy
+        if kwargs["submodules"] not in ["always", "never", "checkout"]:
             logger.error(
                 "Unknown value '%s' for update-git-submodules option."
                 % kwargs["submodules"]
@@ -351,7 +349,11 @@ def worker(working_copies: WorkingCopies, the_queue: queue.Queue) -> None:
             with output_lock:
                 for lvl, msg in wc._output:
                     lvl(msg)
-                if kwargs.get("verbose", False) and output is not None and output.strip():
+                if (
+                    kwargs.get("verbose", False)
+                    and output is not None
+                    and output.strip()
+                ):
                     if isinstance(output, bytes):
                         output = output.decode("utf8")
                     print(output)

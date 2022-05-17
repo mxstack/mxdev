@@ -110,6 +110,7 @@ def test_yesno(mocker):
         "You have to answer with y, yes, n or no."
     )
 
+
 def test_get_workingcopytypes():
     assert common._workingcopytypes == dict()
     workingcopytypes = common.get_workingcopytypes()
@@ -141,7 +142,50 @@ def test_WorkingCopies_process(mocker, caplog):
     wc.errors = True
     wc.process(queue.Queue())
     assert exit.call_count == 1
-    assert caplog.text == (
-        "ERROR    mxdev:common.py:198 There have "
-        "been errors, see messages above.\n"
-    )
+    assert caplog.messages == ["There have been errors, see messages above."]
+
+
+def test_WorkingCopies_checkout(mocker, caplog):
+    class SysExit(Exception):
+        ...
+
+    class Exit:
+        def __call__(self, code):
+            raise SysExit(code)
+
+    mocker.patch("sys.exit", new_callable=Exit)
+
+    class TestWorkingCopies(common.WorkingCopies):
+        def process(self, the_queue):
+            ...
+
+    wc = TestWorkingCopies(sources={})
+
+    with pytest.raises(SysExit):
+        wc.checkout(packages=[], update='invalid')
+    assert caplog.messages == [
+        "Unknown value 'invalid' for always-checkout option."
+    ]
+    caplog.clear()
+
+    with pytest.raises(SysExit):
+        wc.checkout(packages=[], submodules='invalid')
+    assert caplog.messages == [
+        "Unknown value 'invalid' for update-git-submodules option."
+    ]
+    caplog.clear()
+
+    with pytest.raises(SysExit):
+        wc.checkout(packages=['invalid'])
+    assert caplog.messages == [
+        "Checkout failed. No source defined for 'invalid'."
+    ]
+    caplog.clear()
+
+    wc = TestWorkingCopies(sources=dict(
+        package=dict(vcs="invalid")
+    ))
+    wc.checkout(packages=['package'])
+    assert caplog.messages == [
+        "Unregistered repository type invalid"
+    ]
