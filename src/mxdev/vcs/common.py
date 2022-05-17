@@ -19,7 +19,7 @@ def print_stderr(s: str):
     sys.stderr.flush()
 
 
-# shameless copy from
+# taken from
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(name_root: str, default: str = None) -> str:
     def is_exe(fpath):
