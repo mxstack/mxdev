@@ -1,6 +1,7 @@
 from . import common
 from ctypes import Union
 
+import functools
 import os
 import re
 import subprocess
@@ -47,7 +48,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             sys.exit(1)
         super().__init__(source)
 
-    @common.memoize
+    @functools.lru_cache(maxsize=4096)
     def git_version(self) -> typing.Tuple[int, ...]:
         cmd = self.run_git(["--version"])
         stdout, stderr = cmd.communicate()

@@ -70,18 +70,6 @@ def version_sorted(inp: typing.List, *args, **kwargs) -> typing.List:
     return [join_item(i) for i in sorted(output, *args, **kwargs)]
 
 
-def memoize(f, _marker=[]):
-    def g(*args, **kwargs):
-        name = "_memoize_%s" % f.__name__
-        value = getattr(args[0], name, _marker)
-        if value is _marker:
-            value = f(*args, **kwargs)
-            setattr(args[0], name, value)
-        return value
-
-    return g
-
-
 class WCError(Exception):
     """A working copy error."""
 
