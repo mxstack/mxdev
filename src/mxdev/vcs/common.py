@@ -7,6 +7,7 @@ import re
 import sys
 import threading
 import typing
+import abc
 
 
 logger = logging.getLogger("mxdev")
@@ -74,7 +75,7 @@ class WCError(Exception):
     """A working copy error."""
 
 
-class BaseWorkingCopy:
+class BaseWorkingCopy(abc.ABC):
     def __init__(self, source: typing.Dict[str, typing.Any]):
         self._output: typing.List = []
         self.output = self._output.append
@@ -93,6 +94,22 @@ class BaseWorkingCopy:
             else:
                 raise ValueError("Unknown value for 'update': %s" % update)
         return update
+
+    @abc.abstractmethod
+    def checkout(self, **kwargs) -> typing.Union[str, None]:
+        pass
+
+    @abc.abstractmethod
+    def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
+        pass
+
+    @abc.abstractmethod
+    def matches(self) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def update(self, **kwargs) -> typing.Union[str, None]:
+        pass
 
 
 def yesno(

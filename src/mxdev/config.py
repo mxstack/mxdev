@@ -70,6 +70,8 @@ class Configuration:
             package = self.packages[name] = self._read_section(data, name)
             # XXX: name should not be necessary in WorkingCopies
             package["name"] = name
+            # XXX:
+            #  * include update
             package.setdefault("branch", "main")
             package.setdefault("extras", "")
             package.setdefault("subdirectory", "")
