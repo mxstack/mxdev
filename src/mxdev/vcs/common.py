@@ -143,7 +143,7 @@ def yesno(
             print_stderr("You have to answer with y, yes, n or no.")
 
 
-main_lock = input_lock = output_lock = threading.RLock()
+input_lock = output_lock = threading.RLock()
 
 _workingcopytypes: typing.Dict[str, typing.Type[BaseWorkingCopy]] = {}
 
@@ -235,9 +235,6 @@ class WorkingCopies:
                 logger.error(f"Unregistered repository type {vcs}")
                 continue
             wc = wc_class(source)
-            if wc is None:
-                logger.error(f"Unknown repository type '{vcs}'.")
-                sys.exit(1)
             update = wc.should_update(**kwargs)
             if not os.path.exists(source["path"]):
                 pass
@@ -317,9 +314,6 @@ class WorkingCopies:
                 logger.error(f"Unregistered repository type {vcs}")
                 sys.exit(1)
             wc = wc_class(source)
-            if wc is None:
-                logger.error("Unknown repository type '%s'." % vcs)
-                sys.exit(1)
             if wc.status() != "clean" and not kw.get("force", False):
                 print_stderr("The package '%s' is dirty." % name)
                 answer = yesno(
@@ -348,18 +342,16 @@ def worker(working_copies: WorkingCopies, the_queue: queue.Queue) -> None:
         try:
             output = action(**kwargs)
         except WCError:
-            output_lock.acquire()
-            for lvl, msg in wc._output:
-                lvl(msg)
-            logger.exception("Can not execute action!")
-            working_copies.errors = True
-            output_lock.release()
+            with output_lock:
+                for lvl, msg in wc._output:
+                    lvl(msg)
+                logger.exception("Can not execute action!")
+                working_copies.errors = True
         else:
-            output_lock.acquire()
-            for lvl, msg in wc._output:
-                lvl(msg)
-            if kwargs.get("verbose", False) and output is not None and output.strip():
-                if isinstance(output, bytes):
-                    output = output.decode("utf8")
-                print(output)
-            output_lock.release()
+            with output_lock:
+                for lvl, msg in wc._output:
+                    lvl(msg)
+                if kwargs.get("verbose", False) and output is not None and output.strip():
+                    if isinstance(output, bytes):
+                        output = output.decode("utf8")
+                    print(output)

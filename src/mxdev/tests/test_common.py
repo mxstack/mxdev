@@ -1,6 +1,8 @@
+from .. import vcs
 from ..vcs import common
 from unittest import mock
 import pytest
+import queue
 import typing
 
 
@@ -28,13 +30,13 @@ def test_BaseWorkingCopy():
 
     class TestWorkingCopy(common.BaseWorkingCopy):
         def checkout(self, **kwargs) -> typing.Union[str, None]:
-            pass
+            ...
         def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
-            pass
+            ...
         def matches(self) -> bool:
-            pass
+            ...
         def update(self, **kwargs) -> typing.Union[str, None]:
-            pass
+            ...
 
     bwc = TestWorkingCopy(source=dict(url="https://tld.com/repo.git"))
     assert bwc._output == []
@@ -66,7 +68,7 @@ def test_yesno(mocker):
             self.question = question
             answer = self.answer
             if answer == "invalid":
-                self.answer = "y"
+                self.answer = ""
             return answer
 
     input_ = mocker.patch("mxdev.vcs.common.input", new_callable=Input)
@@ -106,4 +108,40 @@ def test_yesno(mocker):
     common.yesno(question="", all=False)
     print_stderr_.assert_called_with(
         "You have to answer with y, yes, n or no."
+    )
+
+def test_get_workingcopytypes():
+    assert common._workingcopytypes == dict()
+    workingcopytypes = common.get_workingcopytypes()
+    assert workingcopytypes == {
+        'bzr': vcs.bazaar.BazaarWorkingCopy,
+        'darcs': vcs.darcs.DarcsWorkingCopy,
+        'fs': vcs.filesystem.FilesystemWorkingCopy,
+        'git': vcs.git.GitWorkingCopy,
+        'gitsvn': vcs.gitsvn.GitSVNWorkingCopy,
+        'hg': vcs.mercurial.MercurialWorkingCopy,
+        'svn': vcs.svn.SVNWorkingCopy
+    }
+    assert workingcopytypes is common._workingcopytypes
+
+
+def test_WorkingCopies_process(mocker, caplog):
+    exit = mocker.patch("sys.exit")
+    worker = mocker.patch("mxdev.vcs.common.worker")
+
+    wc = common.WorkingCopies(sources={}, threads=1)
+    wc.process(queue.Queue())
+    assert worker.call_count == 1
+
+    wc.threads = 5
+    wc.process(queue.Queue())
+    assert worker.call_count == 6
+
+    wc.threads = 2
+    wc.errors = True
+    wc.process(queue.Queue())
+    assert exit.call_count == 1
+    assert caplog.text == (
+        "ERROR    mxdev:common.py:198 There have "
+        "been errors, see messages above.\n"
     )
