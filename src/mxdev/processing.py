@@ -182,7 +182,7 @@ def fetch(state: State) -> None:
     workingcopies = WorkingCopies(packages, threads=1)
     workingcopies.checkout(
         sorted(packages),
-        verbose=True,
+        verbose=False,
         update=True,
         submodules="always",
         always_accept_server_certificate=True,
