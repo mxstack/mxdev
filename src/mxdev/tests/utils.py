@@ -133,29 +133,7 @@ class Process:
         return lines
 
 
-class MockConfig:
-    def __init__(self):
-        self.buildout_args = []
-        self.develop = {}
-        self.rewrites = []
 
-    def save(self):
-        pass
-
-
-class MockDevelop:
-    def __init__(self):
-        from mxdev.vcs.develop import ArgumentParser
-
-        self.always_accept_server_certificate = True
-        self.always_checkout = False
-        self.auto_checkout = ""
-        self.update_git_submodules = "always"
-        self.develeggs = ""
-        self.config = MockConfig()
-        self.parser = ArgumentParser()
-        self.parsers = self.parser.add_subparsers(title="commands", metavar="")
-        self.threads = 1
 
 
 class GitRepo:

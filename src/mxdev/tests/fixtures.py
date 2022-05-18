@@ -14,12 +14,6 @@ class Path(str):
         f.close()
 
 
-@pytest.fixture
-def src(tempdir):
-    base = tempdir["src"]
-    os.mkdir(base)
-    return base
-
 
 @pytest.fixture
 def tempdir():
@@ -33,6 +27,14 @@ def tempdir():
             os.chdir(cwd)
     finally:
         shutil.rmtree(tempdir)
+
+
+@pytest.fixture
+def src(tempdir):
+    base = tempdir["src"]
+    os.mkdir(base)
+    return base
+
 
 
 @pytest.fixture
