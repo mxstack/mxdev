@@ -203,19 +203,19 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         elif re.search(r"^(\*| ) %s$" % re.escape(branch), stdout, re.M):
             # the branch is local, normal checkout will work
             argv = ["checkout", branch]
-            self.output((logger.info, "Switching to branch '%s'." % branch))
+            self.output((logger.info, f"Switching to branch '{branch}'."))
         elif re.search(
             "^  " + re.escape(rbp) + r"\/" + re.escape(branch) + "$", stdout, re.M
         ):
             # the branch is not local, normal checkout won't work here
             rbranch = f"{rbp}/{branch}"
             argv = ["checkout", "-b", branch, rbranch]
-            self.output((logger.info, "Switching to remote branch '%s'." % rbranch))
+            self.output((logger.info, f"Switching to remote branch '{branch}'."))
         elif accept_missing:
-            self.output((logger.info, "No such branch %r", branch))
+            self.output((logger.info, f"No such branch {branch}"))
             return (stdout_in + stdout, stderr_in + stderr)
         else:
-            self.output((logger.error, "No such branch %r", branch))
+            self.output((logger.error, f"No such branch {branch}"))
             sys.exit(1)
         # runs the checkout with predetermined arguments
         cmd = self.run_git(argv, cwd=path)

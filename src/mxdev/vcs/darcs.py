@@ -22,9 +22,9 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
         path = self.source["path"]
         url = self.source["url"]
         if os.path.exists(path):
-            self.output("Skipped getting of existing package '{name}'.")
+            self.output((logger.info, "Skipped getting of existing package '{name}'."))
             return None
-        self.output(f"Getting '{name}' with darcs.")
+        self.output((logger.info, f"Getting '{name}' with darcs."))
         cmd = subprocess.Popen(
             [self.darcs_executable, "get", "--quiet", "--lazy", url, path],
             stdout=subprocess.PIPE,
@@ -66,7 +66,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             self.update(**kwargs)
             return None
         if self.matches():
-            self.output(f"Skipped checkout of existing package '{name}'.")
+            self.output((logger.info, f"Skipped checkout of existing package '{name}'."))
             return None
         raise DarcsError(
             f"Checkout URL for existing package '{name}' differs. Expected '{self.source['url']}'."
@@ -88,7 +88,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             )
             stdout, stderr = cmd.communicate()
             if cmd.returncode != 0:
-                self.output(f"darcs info for '{name}' failed.\n{stderr.decode('utf8')}")
+                self.output((logger.info, f"darcs info for '{name}' failed.\n{stderr.decode('utf8')}"))
                 return
 
             lines = stdout.decode("utf8").splitlines()

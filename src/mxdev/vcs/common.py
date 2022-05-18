@@ -74,7 +74,7 @@ class WCError(Exception):
 
 class BaseWorkingCopy(abc.ABC):
     def __init__(self, source: typing.Dict[str, typing.Any]):
-        self._output: typing.List = []
+        self._output: typing.List[typing.Tuple[typing.Any, str]] = []
         self.output = self._output.append
         self.source = source
 
