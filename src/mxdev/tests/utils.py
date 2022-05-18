@@ -4,6 +4,9 @@ from subprocess import Popen
 import os
 import sys
 import threading
+from typing import Any, Dict, Iterable
+
+from mxdev.vcs.common import WorkingCopies
 
 
 def tee(process, filter_func):
@@ -133,9 +136,6 @@ class Process:
         return lines
 
 
-
-
-
 class GitRepo:
     def __init__(self, base):
         self.base = base
@@ -170,3 +170,48 @@ class GitRepo:
 
     def add_branch(self, bname, msg=None):
         self("git checkout -b %s" % bname)
+
+
+def vcs_checkout(
+    sources: Dict[str, Any],
+    packages: Iterable[str],
+    verbose,
+    update_git_submodules: str = "always",
+    always_accept_server_certificate: bool = True,
+    **kw
+):
+    workingcopies = WorkingCopies(sources=sources, threads=1)
+    workingcopies.checkout(
+        sorted(packages),
+        verbose=verbose,
+        submodules=update_git_submodules,
+        always_accept_server_certificate=always_accept_server_certificate,
+        **kw
+    )
+
+
+def vcs_update(
+    sources: Dict[str, Any],
+    packages: Iterable[str],
+    verbose,
+    update_git_submodules: str = "always",
+    always_accept_server_certificate: bool = True,
+    **kw
+):
+    workingcopies = WorkingCopies(sources=sources, threads=1)
+    workingcopies.update(
+        sorted(packages),
+        verbose=verbose,
+        submodules=update_git_submodules,
+        always_accept_server_certificate=always_accept_server_certificate,
+        **kw
+    )
+
+
+def vcs_status(sources: Dict[str, Any], verbose=False):
+    workingcopies = WorkingCopies(sources=sources, threads=1)
+    res = {}
+    for k in sources:
+        res[k] = workingcopies.status(sources[k], verbose=verbose)
+
+    return res

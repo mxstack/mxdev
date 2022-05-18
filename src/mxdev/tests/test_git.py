@@ -1,7 +1,7 @@
 # pylint: disable=redefined-outer-name
 from logging import Logger, getLogger
-from typing import Any, Dict
-from mxdev.tests.utils import Process
+from typing import Any, Dict, Iterable
+from mxdev.tests.utils import Process, vcs_checkout, vcs_status, vcs_update
 from unittest.mock import patch
 
 from mxdev.vcs.common import WorkingCopies
@@ -33,31 +33,6 @@ def create_default_content(repository):
     return rev
 
 
-def vcs_checkout(sources, packages, verbose, update_git_submodules:str = "always", always_accept_server_certificate:bool = True):
-    workingcopies = WorkingCopies(sources=sources, threads=1)
-    workingcopies.checkout(sorted(packages),
-                            verbose=verbose,
-                            submodules=update_git_submodules,
-                            always_accept_server_certificate=always_accept_server_certificate)
-
-
-def vcs_update(sources: Dict[str, Any], packages, verbose, update_git_submodules:str = "always", always_accept_server_certificate:bool = True):
-    workingcopies = WorkingCopies(sources=sources, threads=1)
-    workingcopies.update(sorted(packages),
-                            verbose=verbose,
-                            submodules=update_git_submodules,
-                            always_accept_server_certificate=always_accept_server_certificate)
-
-
-def vcs_status(sources: Dict[str, Any], verbose=False):
-    workingcopies = WorkingCopies(sources=sources, threads=1)
-    res = {}
-    for k in sources:
-        res[k] = workingcopies.status(sources[k], verbose=verbose)
-
-    return res
-
-
 def test_update_with_revision_pin(mkgitrepo, src):
     repository = mkgitrepo("repository")
     rev = create_default_content(repository)
@@ -73,12 +48,12 @@ def test_update_with_revision_pin(mkgitrepo, src):
         )
     }
 
-    packages = ['egg']
+    packages = ["egg"]
     verbose = False
 
-    assert not os.path.exists(src['egg'])
+    assert not os.path.exists(src["egg"])
     vcs_checkout(sources, packages, verbose)
-    assert set(os.listdir(src['egg'])) == set(('.git', 'foo', 'foo2'))
+    assert set(os.listdir(src["egg"])) == set((".git", "foo", "foo2"))
 
     vcs_checkout(sources, packages, verbose)
     assert set(os.listdir(src["egg"])) == {".git", "foo", "foo2"}
@@ -106,9 +81,11 @@ def test_update_with_revision_pin(mkgitrepo, src):
     # switch implicitly to master branch
     sources = {
         "egg": dict(
-            vcs="git", name="egg", 
-            branch="master", 
-            url="%s" % repository.base, path=src["egg"]
+            vcs="git",
+            name="egg",
+            branch="master",
+            url="%s" % repository.base,
+            path=src["egg"],
         )
     }
     vcs_update(sources, packages, verbose)
@@ -128,9 +105,7 @@ def test_update_with_revision_pin(mkgitrepo, src):
 
     assert set(os.listdir(src["egg"])) == {".git", "foo", "foo2"}
     sources = {
-        "egg": dict(
-            vcs="git", name="egg", url="%s" % repository.base, path=src["egg"]
-        )
+        "egg": dict(vcs="git", name="egg", url="%s" % repository.base, path=src["egg"])
     }
     vcs_update(sources, packages, verbose)
 
@@ -157,14 +132,10 @@ def test_update_without_revision_pin(mkgitrepo, src, capsys):
     repository.add_file("foo")
     repository.add_file("bar")
     repository.add_branch("develop")
-    packages = ['egg']
+    packages = ["egg"]
 
-    sources = {
-        "egg": dict(vcs="git", name="egg", url=repository.url, path=src["egg"])
-    }
-    _log = patch("mxdev.vcs.git.logger")
-    log = _log.__enter__()
-    try:
+    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=src["egg"])}
+    with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, packages, verbose=False)
         assert set(os.listdir(src["egg"])) == {".git", "bar", "foo"}
         captured = capsys.readouterr()
@@ -181,10 +152,7 @@ def test_update_without_revision_pin(mkgitrepo, src, capsys):
         assert captured.out == ""
         status = vcs_status(sources, verbose=True)
         captured = capsys.readouterr()
-        assert status == {'egg': ('clean', '## master...origin/master\n')}
-
-    finally:
-        _log.__exit__(None, None, None)
+        assert status == {"egg": ("clean", "## master...origin/master\n")}
 
 
 def test_update_verbose(mkgitrepo, src, capsys):
@@ -192,12 +160,8 @@ def test_update_verbose(mkgitrepo, src, capsys):
     repository.add_file("foo")
     repository.add_file("bar")
     repository.add_branch("develop")
-    sources = {
-        "egg": dict(vcs="git", name="egg", url=repository.url, path=src["egg"])
-    }
-    _log = patch("mxdev.vcs.git.logger")
-    log = _log.__enter__()
-    try:
+    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=src["egg"])}
+    with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False)
         assert set(os.listdir(src["egg"])) == {".git", "bar", "foo"}
         captured = capsys.readouterr()
@@ -215,7 +179,4 @@ def test_update_verbose(mkgitrepo, src, capsys):
         # git output varies between versions...
         assert captured.out in [older, newer]
         status = vcs_status(sources, verbose=True)
-        assert status == {'egg': ('clean', '## master...origin/master\n')}
-
-    finally:
-        _log.__exit__(None, None, None)
+        assert status == {"egg": ("clean", "## master...origin/master\n")}
