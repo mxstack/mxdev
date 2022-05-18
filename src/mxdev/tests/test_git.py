@@ -4,14 +4,9 @@ from .fixtures import src
 from .fixtures import tempdir
 from logging import getLogger
 from logging import Logger
-from mxdev.tests.utils import Process
 from mxdev.tests.utils import vcs_checkout
 from mxdev.tests.utils import vcs_status
 from mxdev.tests.utils import vcs_update
-from mxdev.vcs.common import WorkingCopies
-from typing import Any
-from typing import Dict
-from typing import Iterable
 from unittest.mock import patch
 
 import os
@@ -134,7 +129,7 @@ def test_update_with_revision_pin(mkgitrepo, src):
         vcs_checkout(sources, packages, verbose)
 
 
-def test_update_without_revision_pin(mkgitrepo, src, capsys):
+def test_update_without_revision_pin(mkgitrepo, src, capsys, caplog):
     repository = mkgitrepo("repository")
     repository.add_file("foo")
     repository.add_file("bar")
@@ -153,7 +148,7 @@ def test_update_without_revision_pin(mkgitrepo, src, capsys):
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % repository.url,), {}),
             ("info", ("Updated 'egg' with git.",), {}),
-            ("info", ("Switching to remote branch 'remotes/origin/master'.",), {}),
+            ("info", ("Switching to remote branch 'master'.",), {}),
         ]
         captured = capsys.readouterr()
         assert captured.out == ""
@@ -178,12 +173,10 @@ def test_update_verbose(mkgitrepo, src, capsys):
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % repository.url,), {}),
             ("info", ("Updated 'egg' with git.",), {}),
-            ("info", ("Switching to remote branch 'remotes/origin/master'.",), {}),
+            ("info", ("Switching to remote branch 'master'.",), {}),
         ]
         captured = capsys.readouterr()
-        older = "* develop\n  remotes/origin/HEAD -> origin/develop\n  remotes/origin/develop\n  remotes/origin/master\nBranch master set up to track remote branch master from origin.\n  develop\n* master\n  remotes/origin/HEAD -> origin/develop\n  remotes/origin/develop\n  remotes/origin/master\nAlready up-to-date.\n\n"
-        newer = "* develop\n  remotes/origin/HEAD -> origin/develop\n  remotes/origin/develop\n  remotes/origin/master\nBranch 'master' set up to track remote branch 'master' from 'origin'.\n  develop\n* master\n  remotes/origin/HEAD -> origin/develop\n  remotes/origin/develop\n  remotes/origin/master\nAlready up to date.\n\n"
         # git output varies between versions...
-        assert captured.out in [older, newer]
+        assert "Already up to date" in captured.out.replace("-"," ")
         status = vcs_status(sources, verbose=True)
         assert status == {"egg": ("clean", "## master...origin/master\n")}

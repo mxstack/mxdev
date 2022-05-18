@@ -1,0 +1,9 @@
+{
+    "esbonio.sphinx.confDir": "",
+    "python.testing.pytestArgs": [
+        "src"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.formatting.provider": "black"
+}
