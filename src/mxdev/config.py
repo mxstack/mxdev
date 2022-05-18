@@ -37,7 +37,7 @@ class Configuration:
         logger.debug(f"out_constraints={self.out_constraints}")
 
         if override_args.get("offline"):
-            settings["offline"] = True
+            settings["offline"] = "true"
 
         mode = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:
