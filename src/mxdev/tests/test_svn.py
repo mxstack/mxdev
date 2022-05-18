@@ -12,6 +12,7 @@ class TestSVN:
 
         SVNWorkingCopy._clear_caches()
 
+    @pytest.mark.skip("Needs rewrite")
     def testUpdateWithoutRevisionPin(self, develop, src, tempdir):
         from mxdev.vcs.commands import CmdCheckout
         from mxdev.vcs.commands import CmdUpdate
@@ -48,6 +49,7 @@ class TestSVN:
         finally:
             _log.__exit__(None, None, None)
 
+    @pytest.mark.skip("Needs rewrite")
     def testUpdateWithRevisionPin(self, develop, src, tempdir):
         from mxdev.vcs.commands import CmdCheckout
         from mxdev.vcs.commands import CmdUpdate
