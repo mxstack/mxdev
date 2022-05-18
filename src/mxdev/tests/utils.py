@@ -1,12 +1,13 @@
+from mxdev.vcs.common import WorkingCopies
 from subprocess import PIPE
 from subprocess import Popen
+from typing import Any
+from typing import Dict
+from typing import Iterable
 
 import os
 import sys
 import threading
-from typing import Any, Dict, Iterable
-
-from mxdev.vcs.common import WorkingCopies
 
 
 def tee(process, filter_func):
@@ -178,7 +179,7 @@ def vcs_checkout(
     verbose,
     update_git_submodules: str = "always",
     always_accept_server_certificate: bool = True,
-    **kw
+    **kw,
 ):
     workingcopies = WorkingCopies(sources=sources, threads=1)
     workingcopies.checkout(
@@ -186,7 +187,7 @@ def vcs_checkout(
         verbose=verbose,
         submodules=update_git_submodules,
         always_accept_server_certificate=always_accept_server_certificate,
-        **kw
+        **kw,
     )
 
 
@@ -196,7 +197,7 @@ def vcs_update(
     verbose,
     update_git_submodules: str = "always",
     always_accept_server_certificate: bool = True,
-    **kw
+    **kw,
 ):
     workingcopies = WorkingCopies(sources=sources, threads=1)
     workingcopies.update(
@@ -204,7 +205,7 @@ def vcs_update(
         verbose=verbose,
         submodules=update_git_submodules,
         always_accept_server_certificate=always_accept_server_certificate,
-        **kw
+        **kw,
     )
 
 

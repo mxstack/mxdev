@@ -30,7 +30,10 @@ parser.add_argument(
     "-n", "--no-fetch", help="Do not fetch sources", action="store_true"
 )
 parser.add_argument(
-    "-o", "--only-fetch", help="Only fetch sources", action="store_true"
+    "-f", "--fetch-only", help="Only fetch sources", action="store_true"
+)
+parser.add_argument(
+    "-o", "--offline", help="Do not fetch sources, work offline", action="store_true"
 )
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
 parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
@@ -47,16 +50,21 @@ def main() -> None:
     logger.info("#" * 79)
     hooks = load_hooks()
     logger.info("# Load configuration")
-    configuration = Configuration(tio=args.configuration, hooks=hooks)
+    override_args = {}
+    if args.offline:
+        override_args["offline"] = True
+    configuration = Configuration(
+        tio=args.configuration, override_args=override_args, hooks=hooks
+    )
     state = State(configuration=configuration)
     logger.info("#" * 79)
     logger.info("# Read infiles")
     read(state)
-    if not args.only_fetch:
+    if not args.fetch_only:
         read_hooks(state, hooks)
     if not args.no_fetch:
         fetch(state)
-    if args.only_fetch:
+    if args.fetch_only:
         return
     write(state)
     write_hooks(state, hooks)

@@ -14,7 +14,6 @@ class Path(str):
         f.close()
 
 
-
 @pytest.fixture
 def tempdir():
     cwd = os.getcwd()
@@ -34,7 +33,6 @@ def src(tempdir):
     base = tempdir["src"]
     os.mkdir(base)
     return base
-
 
 
 @pytest.fixture

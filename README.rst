@@ -61,10 +61,15 @@ In the main sections the input and output files are defined.
     Allowed values: ``direct`` or ``skip``
     Default: ``direct``
 
+``default-update``
+    Default for ``update`` on section, read there for details
+    Allowed values: ``yes`` or ``no``
+    Default: ``yes``
+
 ``offline``
-    Do not update sources.
+    Do not fetch any sources.
     Handy if working offline.
-    Default: False
+    Default: ``False``
 
 ``version-overrides``
     Override package versions which already defined in a dependent constraints file.
@@ -149,6 +154,7 @@ All other sections are defining the sources to be used.
 
     Defaults to default mode configured in main section ``[settings]`` ``default-install-mode =`` value.
 
+``update``
 
 Usage
 =====

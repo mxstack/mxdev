@@ -1,11 +1,13 @@
 # pylint: disable=redefined-outer-name
+from .fixtures import mkgitrepo
+from .fixtures import src
+from .fixtures import tempdir
 from mxdev.tests.utils import GitRepo
+from mxdev.tests.utils import vcs_checkout
+from mxdev.tests.utils import vcs_update
 from unittest.mock import patch
 
 import os
-
-from mxdev.tests.utils import vcs_checkout, vcs_update
-from .fixtures import src, mkgitrepo, tempdir
 
 
 def test_checkout_with_submodule(mkgitrepo, src, caplog):

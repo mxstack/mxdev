@@ -1,11 +1,18 @@
 # pylint: disable=redefined-outer-name
-from logging import Logger, getLogger
-from typing import Any, Dict, Iterable
-from mxdev.tests.utils import Process, vcs_checkout, vcs_status, vcs_update
-from unittest.mock import patch
-
+from .fixtures import mkgitrepo
+from .fixtures import src
+from .fixtures import tempdir
+from logging import getLogger
+from logging import Logger
+from mxdev.tests.utils import Process
+from mxdev.tests.utils import vcs_checkout
+from mxdev.tests.utils import vcs_status
+from mxdev.tests.utils import vcs_update
 from mxdev.vcs.common import WorkingCopies
-from .fixtures import src, mkgitrepo, tempdir
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from unittest.mock import patch
 
 import os
 import pytest

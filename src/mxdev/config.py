@@ -17,7 +17,12 @@ class Configuration:
     packages: typing.Dict[str, typing.Dict[str, str]]
     hooks: typing.Dict[str, typing.Dict[str, str]]
 
-    def __init__(self, tio: typing.TextIO, hooks: typing.List["Hook"]) -> None:
+    def __init__(
+        self,
+        tio: typing.TextIO,
+        override_args: typing.Dict,
+        hooks: typing.List["Hook"],
+    ) -> None:
         logger.debug("Read configuration")
         data = configparser.ConfigParser(
             default_section="settings",
@@ -30,6 +35,9 @@ class Configuration:
         logger.debug(f"infile={self.infile}")
         logger.debug(f"out_requirements={self.out_requirements}")
         logger.debug(f"out_constraints={self.out_constraints}")
+
+        if override_args.get("offline"):
+            settings["offline"] = True
 
         mode = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:
@@ -68,6 +76,8 @@ class Configuration:
                 continue
             logger.debug(f"Section '{name}' belongs to package")
             package = self.packages[name] = self._read_section(data, name)
+            if settings.get("offline", False):
+                package.setdefault("offline", True)
             # XXX: name should not be necessary in WorkingCopies
             package["name"] = name
             # XXX:
