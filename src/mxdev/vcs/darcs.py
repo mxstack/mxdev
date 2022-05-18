@@ -66,7 +66,9 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             self.update(**kwargs)
             return None
         if self.matches():
-            self.output((logger.info, f"Skipped checkout of existing package '{name}'."))
+            self.output(
+                (logger.info, f"Skipped checkout of existing package '{name}'.")
+            )
             return None
         raise DarcsError(
             f"Checkout URL for existing package '{name}' differs. Expected '{self.source['url']}'."
@@ -88,7 +90,12 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             )
             stdout, stderr = cmd.communicate()
             if cmd.returncode != 0:
-                self.output((logger.info, f"darcs info for '{name}' failed.\n{stderr.decode('utf8')}"))
+                self.output(
+                    (
+                        logger.info,
+                        f"darcs info for '{name}' failed.\n{stderr.decode('utf8')}",
+                    )
+                )
                 return
 
             lines = stdout.decode("utf8").splitlines()
