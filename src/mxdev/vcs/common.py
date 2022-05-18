@@ -22,9 +22,6 @@ def print_stderr(s: str):
 # taken from
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(name_root: str, default: str = None) -> str:
-    def is_exe(fpath):
-        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
-
     if platform.system() == "Windows":
         # http://www.voidspace.org.uk/python/articles/command_line.shtml#pathext
         pathext = os.environ["PATHEXT"]
@@ -36,7 +33,7 @@ def which(name_root: str, default: str = None) -> str:
     for name in names:
         for path in os.environ["PATH"].split(os.pathsep):
             exe_file = os.path.join(path, name)
-            if is_exe(exe_file):
+            if os.path.exists(exe_file) and os.access(exe_file, os.X_OK):
                 return exe_file
 
     if default is not None:
