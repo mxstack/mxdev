@@ -188,7 +188,7 @@ class WorkingCopies:
             return
         threads = []
 
-        for i in range(self.threads):
+        for _ in range(self.threads):
             thread = threading.Thread(target=worker, args=(self, the_queue))
             thread.start()
             threads.append(thread)
@@ -199,7 +199,7 @@ class WorkingCopies:
             logger.error("There have been errors, see messages above.")
             sys.exit(1)
 
-    def checkout(self, packages: typing.List[str], **kwargs) -> None:
+    def checkout(self, packages: typing.Iterable[str], **kwargs) -> None:
         the_queue: queue.Queue = queue.Queue()
         if "update" in kwargs and not isinstance(kwargs["update"], bool):
             if kwargs["update"].lower() in ("true", "yes", "on", "force"):
@@ -299,7 +299,7 @@ class WorkingCopies:
             logger.exception("Can not get status!")
             sys.exit(1)
 
-    def update(self, packages: typing.Dict[str, typing.Dict], **kwargs) -> None:
+    def update(self, packages: typing.Iterable[str], **kwargs) -> None:
         the_queue: queue.Queue = queue.Queue()
         for name in packages:
             kw = kwargs.copy()
