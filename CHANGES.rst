@@ -1,17 +1,14 @@
 Changes
 =======
 
-2.1.1 (unreleased)
-------------------
+3.0.0.a1 (unreleased)
+---------------------
 
-- Nothing changed yet.
-
-
-2.1.0 (2022-05-19)
-------------------
-
-- Fixed incompatibility with libvcs 0.12+.
-  [maurits]
+- Do not use ``libvcs``, but recycled and updated (type hints, tests) ``mr.developer`` VCS code.
+  Code for GIT is tested well, code for SVN, Mecurial, Bazaar and DARCS needs contributors with knowledge in this area.
+  Additional options, like ``pushurl``, ... (see README) were added.
+  ``pip`` style VCS URLs are not supported any longer.
+  [jensens, rnix, zworkb]
 
 - Config parser options are now considered case sensitive.
   [rnix]
