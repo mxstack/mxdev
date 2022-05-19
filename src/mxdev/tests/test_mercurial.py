@@ -4,6 +4,7 @@ from unittest.mock import patch
 import os
 import pytest
 
+
 class TestMercurial:
     @pytest.mark.skip("Needs rewrite")
     def testUpdateWithoutRevisionPin(self, develop, src, tempdir):

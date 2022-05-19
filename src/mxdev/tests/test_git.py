@@ -177,6 +177,6 @@ def test_update_verbose(mkgitrepo, src, capsys):
         ]
         captured = capsys.readouterr()
         # git output varies between versions...
-        assert "Already up to date" in captured.out.replace("-"," ")
+        assert "Already up to date" in captured.out.replace("-", " ")
         status = vcs_status(sources, verbose=True)
         assert status == {"egg": ("clean", "## master...origin/master\n")}
