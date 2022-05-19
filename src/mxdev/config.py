@@ -20,8 +20,8 @@ class Configuration:
     def __init__(
         self,
         tio: typing.TextIO,
-        override_args: typing.Dict,
-        hooks: typing.List["Hook"],
+        override_args: typing.Dict = {},
+        hooks: typing.List["Hook"] = [],
     ) -> None:
         logger.debug("Read configuration")
         data = configparser.ConfigParser(
