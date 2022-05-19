@@ -148,7 +148,7 @@ class GitRepo:
 
     def init(self):
         os.mkdir(self.base)
-        self("git init")
+        self("git init -b master")
 
     def setup_user(self):
         self('git config user.email "florian.schulze@gmx.net"')
