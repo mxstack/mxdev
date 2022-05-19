@@ -1,7 +1,7 @@
 Changes
 =======
 
-2.1.0 (unreleased)
+2.1.0 (2022-05-19)
 ------------------
 
 - Fixed incompatibility with libvcs 0.12+.
