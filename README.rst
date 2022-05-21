@@ -31,7 +31,7 @@ Configuration
 
 Given a ``requirements.txt`` (or similar named) file which itself references a ``constraints.txt`` file inside.
 
-Create an INI file, like `mxdev.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
+Create an INI file, like `mx.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
 
 
 Main section ``[settings]``
@@ -158,7 +158,7 @@ All other sections are defining the sources to be used.
 Usage
 =====
 
-Run ``mxdev -c mxdev.ini``.
+Run ``mxdev -c mx.ini``.
 
 Mxdev will **read** the configuration, **fetch** the packages defined in the config file and **write** a requirements and constraints file.
 
@@ -170,8 +170,8 @@ For more options run ``mxdev --help``.
 Example Configuration
 =====================
 
-Example ``mxdev.ini``
----------------------
+Example ``mx.ini``
+------------------
 
 This looks like so:
 
@@ -216,7 +216,7 @@ Extending
 Functionality of mxdev can be extended by hooks.
 This is useful to generate additional scripts or files or automate any other setup steps related to mxdev's domain.
 
-Extension configuration settings end up in the ``mxdev.ini`` file.
+Extension configuration settings end up in the ``mx.ini`` file.
 They can be added globally to the ``settings`` section, as dedicated config sections or package specific.
 To avoid naming conflicts, all hook related settings and config sections must be prefixed with a namespace.
 
@@ -284,7 +284,7 @@ Idea
     A pre-processor fetches (as this can be an URL) and expands all ``-c SOMEOTHER_FILE_OR_URL`` and ``-r SOMEOTHER_FILE_OR_URL`` files into one, filtering out all packages given in a configuration file.
     For each of those packages a ``-e ...`` entry is generated instead and written to a new ``TARGET.txt``.
     Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
-    The configuration is read from a file ``mxdev.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
+    The configuration is read from a file ``mx.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
 
 Trivia
     Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.

@@ -25,7 +25,7 @@ Changes
 - Add support for custom hooks.
   [rnix]
 
-- Rename sources.ini to mxdev.ini in documentation.
+- Rename sources.ini to mx.ini in documentation.
   [rnix]
 
 - Introduce state object and pass it to read/fetch/write. State object
