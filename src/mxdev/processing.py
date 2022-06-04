@@ -16,7 +16,7 @@ def process_line(
     ignore_keys: typing.List[str],
     variety: str,
 ) -> typing.Tuple[typing.List[str], typing.List[str]]:
-    """Take line from a constraints or requirements file and process it.
+    """Take line from a constraints or requirements file and process it recursively.
 
     The line is taken as is unless one of the following cases matches:
 
@@ -26,7 +26,7 @@ def process_line(
     is in package_keys, override_keys or ignore_keys
         prefix the line as comment with reason appended
 
-    return tuple of requirements and constraints
+    returns tuple of requirements and constraints
     """
     if isinstance(line, bytes):
         line = line.decode("utf8")
@@ -72,6 +72,11 @@ def process_io(
     ignore_keys: typing.List[str],
     variety: str,
 ) -> None:
+    """Read lines from an open file and trigger processing of each line
+
+    each line is processed and the result appendend to given requirements
+    and constraint lists.
+    """
     for line in fio:
         new_requirements, new_constraints = process_line(
             line, package_keys, override_keys, ignore_keys, variety
@@ -87,6 +92,10 @@ def resolve_dependencies(
     ignore_keys: typing.List[str],
     variety: str = "r",
 ) -> typing.Tuple[typing.List[str], typing.List[str]]:
+    """Takes a file or url, loads it and trigger to recursivly processes its content.
+
+    returns tuple of requirements and constraints
+    """
     requirements: typing.List[str] = []
     constraints: typing.List[str] = []
     if not file_or_url.strip():
@@ -147,7 +156,11 @@ def resolve_dependencies(
     return (requirements, constraints)
 
 
-def read(state: State, variety: str = "r") -> None:
+def read(state: State) -> None:
+    """Start reading and recursive processing of a requirements file
+
+    The result is stored on the state object
+    """
     cfg = state.configuration
     state.requirements, state.constraints = resolve_dependencies(
         file_or_url=cfg.infile,
@@ -156,7 +169,9 @@ def read(state: State, variety: str = "r") -> None:
         ignore_keys=cfg.ignore_keys,
     )
 
+
 def fetch(state: State) -> None:
+    """Fetch all configured sources from a VCS."""
     packages = state.configuration.packages
     logger.info("#" * 79)
     if not packages:
@@ -176,10 +191,10 @@ def fetch(state: State) -> None:
 
 
 def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.Any]]):
+    """Create requirements configuration for fetched source packages."""
     fio.write("\n" + "#" * 79 + "\n")
     fio.write("# mxdev development sources\n")
-    for name in packages:
-        package = packages[name]
+    for name, package in packages.items():
         if package["install-mode"] == "skip":
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
@@ -196,6 +211,7 @@ def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.An
 def write_dev_overrides(
     fio, overrides: typing.Dict[str, str], package_keys: typing.List[str]
 ):
+    """Create requirements configuration for overridden packages."""
     fio.write("\n" + "#" * 79 + "\n")
     fio.write("# mxdev constraint overrides\n")
     for pkg, line in overrides.items():
@@ -209,6 +225,9 @@ def write_dev_overrides(
 
 
 def write(state: State) -> None:
+    """Write the requirements and constraints file according to information
+    on the state
+    """
     requirements = state.requirements
     constraints = state.constraints
     cfg = state.configuration
