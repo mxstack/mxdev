@@ -1,4 +1,3 @@
-import re
 from mxdev.vcs.common import WorkingCopies
 from subprocess import PIPE
 from subprocess import Popen
@@ -7,6 +6,7 @@ from typing import Dict
 from typing import Iterable
 
 import os
+import re
 import sys
 import threading
 

@@ -11,7 +11,6 @@ from unittest.mock import patch
 
 import os
 import pytest
-import shutil
 
 
 logger: Logger = getLogger("vcs_test_git")
@@ -35,7 +34,7 @@ def create_default_content(repository):
     return rev
 
 
-def test_update_with_revision_pin(mkgitrepo, src):
+def test_update_with_revision_pin_rev(mkgitrepo, src):
     repository = mkgitrepo("repository")
     rev = create_default_content(repository)
 
@@ -59,12 +58,17 @@ def test_update_with_revision_pin(mkgitrepo, src):
 
     vcs_checkout(sources, packages, verbose)
     assert set(os.listdir(src / "egg")) == {".git", "foo", "foo2"}
+
     vcs_update(sources, packages, verbose)
     assert set(os.listdir(src / "egg")) == {".git", "foo", "foo2"}
 
-    shutil.rmtree(src / "egg")
 
+def test_update_with_revision_pin_branch(mkgitrepo, src):
+    repository = mkgitrepo("repository")
+    rev = create_default_content(repository)
     # check branch
+    packages = ["egg"]
+    verbose = False
     sources = {
         "egg": dict(
             vcs="git",
