@@ -16,8 +16,11 @@ def tempdir():
         finally:
             os.chdir(cwd)
     finally:
-        shutil.rmtree(tempdir)
-
+        try;
+            shutil.rmtree(tempdir)
+        except PermissionError:
+            # On windows this is not allowed
+            pass
 
 @pytest.fixture
 def src(tempdir):
