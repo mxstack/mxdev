@@ -6,7 +6,6 @@ from typing import Dict
 from typing import Iterable
 
 import os
-import re
 import sys
 import threading
 
@@ -121,7 +120,7 @@ class Off:
 class Process:
     """Process related functions using the tee module."""
 
-    def __init__(self, quiet=False, env=None, cwd=None):
+    def __init__(self, quiet: bool = False, env=None, cwd: str = None):
         self.quiet = quiet
         self.env = env
         self.cwd = cwd
@@ -139,10 +138,10 @@ class Process:
 
 
 class GitRepo:
-    def __init__(self, base):
+    def __init__(self, base: str):
         self.base = base
-        self.url = "file:///%s" % self.base
-        self.process = Process(cwd=self.base)
+        self.url = f"file:///{base}"
+        self.process = Process(cwd=base)
 
     def __call__(self, cmd, **kw):
         return self.process.check_call(cmd, **kw)
@@ -164,14 +163,15 @@ class GitRepo:
             msg = fname
         self(f"git commit {repo_file} -m {msg}", echo=False)
 
-    def add_submodule(self, submodule, submodule_name):
+    def add_submodule(self, submodule: "GitRepo", submodule_name: str):
         assert isinstance(submodule, GitRepo)
-        self(f"git submodule add {submodule.url} {submodule_name}")
+        assert isinstance(submodule_name, str)
+        self(f"git submodule add {submodule.url}")
         self("git add .gitmodules")
-        self("git add %s" % submodule_name)
-        self("git commit -m 'Add submodule %s'" % submodule_name)
+        self(f"git add {submodule_name}")
+        self(f"git commit -m 'Add submodule {submodule_name}'")
 
-    def add_branch(self, bname, msg=None):
+    def add_branch(self, bname: str, msg: str = None):
         self("git checkout -b %s" % bname)
 
 
