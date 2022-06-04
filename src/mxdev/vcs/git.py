@@ -131,7 +131,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
 
     def git_checkout(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
-        path = self.source["path"]
+        path = str(self.source["path"])
         url = self.source["url"]
         if os.path.exists(path):
             self.output(
