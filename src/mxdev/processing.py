@@ -16,6 +16,18 @@ def process_line(
     ignore_keys: typing.List[str],
     variety: str,
 ) -> typing.Tuple[typing.List[str], typing.List[str]]:
+    """Take line from a constraints or requirements file and process it.
+
+    The line is taken as is unless one of the following cases matches:
+
+    is a constraint or requirements file reference (as file or http(s))
+        trigger resolving/recursive processing (open/download) the reference and process it.
+
+    is in package_keys, override_keys or ignore_keys
+        prefix the line as comment with reason appended
+
+    return tuple of requirements and constraints
+    """
     if isinstance(line, bytes):
         line = line.decode("utf8")
     logger.debug(f"Process Line [{variety}]: {line.strip()}")
@@ -144,23 +156,6 @@ def read(state: State, variety: str = "r") -> None:
         ignore_keys=cfg.ignore_keys,
     )
 
-
-def autocorrect_pip_url(pip_url: str) -> str:
-    """So some autocorrection for pip urls, especially urls copy/pasted
-    from github as e.g. git@github.com:bluedynamics/mxdev.git
-    which should be git+ssh://git@github.com/bluedynamics/mxdev.git.
-
-    If no correction necessary, return the original value.
-    """
-    if pip_url.startswith("git@"):
-        return f"git+ssh://{pip_url.replace(':', '/')}"
-    elif pip_url.startswith("ssh://"):
-        return f"git+{pip_url}"
-    elif pip_url.startswith("https://"):
-        return f"git+{pip_url}"
-    return pip_url
-
-
 def fetch(state: State) -> None:
     packages = state.configuration.packages
     logger.info("#" * 79)
@@ -169,16 +164,6 @@ def fetch(state: State) -> None:
         return
 
     logger.info("# Fetch sources from VCS")
-
-    # for name in packages:
-    #     logger.info(f"Fetch or update {name}")
-    #     package = packages[name]
-    #     repo_dir = os.path.abspath(f"{package['target']}/{name}")
-    #     pip_url = autocorrect_pip_url(f"{package['url']}@{package['branch']}")
-    #     logger.debug(f"pip_url={pip_url} -> repo_dir={repo_dir}")
-    #     repo = create_project_from_pip_url(pip_url=pip_url, repo_dir=repo_dir)
-    #     repo.update_repo()
-
     workingcopies = WorkingCopies(packages, threads=1)
     workingcopies.checkout(
         sorted(packages),
