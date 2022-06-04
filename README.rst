@@ -293,5 +293,5 @@ Trivia
 Misc
 ====
 
-The VCS related code is taken from `mr.developer <https://github.com/fschulze/mr.developer>`_.
+The VCS related code is taken from `mr.developer`.
 Thanks to Florian Schulze and Contributors.
