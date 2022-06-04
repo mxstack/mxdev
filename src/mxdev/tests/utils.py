@@ -1,3 +1,4 @@
+import re
 from mxdev.vcs.common import WorkingCopies
 from subprocess import PIPE
 from subprocess import Popen
@@ -155,8 +156,9 @@ class GitRepo:
         self('git config user.name "Florian Schulze"')
 
     def add_file(self, fname, msg=None):
-        repo_file = self.base[fname]
-        repo_file.create_file(fname)
+        repo_file = self.base / fname
+        with open(repo_file, "w") as fio:
+            fio.write(fname)
         self("git add %s" % repo_file, echo=False)
         if msg is None:
             msg = fname

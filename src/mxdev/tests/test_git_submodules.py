@@ -22,17 +22,17 @@ def test_checkout_with_submodule(mkgitrepo, src, caplog):
     egg.add_file("bar")
     egg.add_submodule(submodule_a, submodule_name)
 
-    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src["egg"])}
+    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg")}
     with patch("mxdev.vcs.git.logger") as log:
         # CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))
         vcs_checkout(sources, ["egg"], verbose=True)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {".git", "foo"}
+        assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert (
             log.method_calls
             == log.method_calls
@@ -65,19 +65,19 @@ def test_checkout_with_two_submodules(mkgitrepo, src):
     egg.add_submodule(submodule, submodule_name)
     egg.add_submodule(submodule_b, submodule_b_name)
 
-    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src["egg"])}
+    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg")}
 
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             "submodule_b",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {".git", "foo"}
-        assert set(os.listdir(src["egg/%s" % submodule_b_name])) == {
+        assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
+        assert set(os.listdir(src / "egg" / submodule_b_name)) == {
             ".git",
             "foo_b",
         }
@@ -108,16 +108,16 @@ def test_update_with_submodule(mkgitrepo, src):
     egg.add_file("bar")
     egg.add_submodule(submodule, submodule_name)
 
-    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src["egg"])}
+    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg")}
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {".git", "foo"}
+        assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
             (
@@ -134,14 +134,14 @@ def test_update_with_submodule(mkgitrepo, src):
 
     with patch("mxdev.vcs.git.logger") as log:
         vcs_update(sources, ["egg"], verbose=False)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             "submodule_b",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_b_name])) == {
+        assert set(os.listdir(src / "egg" / submodule_b_name)) == {
             ".git",
             "foo_b",
         }
@@ -170,16 +170,16 @@ def test_checkout_with_submodules_option_never(mkgitrepo, src):
     egg.add_submodule(submodule_a, submodule_name)
 
     # develop.update_git_submodules = "never"
-    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src["egg"])}
+    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg")}
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False, update_git_submodules="never")
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == set()
+        assert set(os.listdir(src / "egg" / submodule_name)) == set()
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {})
         ]
@@ -208,29 +208,29 @@ def test_checkout_with_submodules_option_never_source_always(mkgitrepo, src):
             vcs="git",
             name="egg",
             url=egg.url,
-            path=src["egg"],
+            path=src / "egg",
             submodules="always",
         ),
-        "egg2": dict(vcs="git", name="egg2", url=egg2.url, path=src["egg2"]),
+        "egg2": dict(vcs="git", name="egg2", url=egg2.url, path=src / "egg2"),
     }
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(
             sources, ["egg", "egg2"], verbose=False, update_git_submodules="never"
         )
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {"foo", ".git"}
-        assert set(os.listdir(src["egg2"])) == {
+        assert set(os.listdir(src / "egg" / submodule_name)) == {"foo", ".git"}
+        assert set(os.listdir(src / "egg2")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg2/%s" % submodule_name])) == set()
+        assert set(os.listdir(src / "egg2" / submodule_name)) == set()
 
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
@@ -263,31 +263,31 @@ def test_checkout_with_submodules_option_always_source_never(mkgitrepo, src):
     egg2.add_submodule(submodule_a, submodule_name)
 
     sources = {
-        "egg": dict(vcs="git", name="egg", url=egg.url, path=src["egg"]),
+        "egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg"),
         "egg2": dict(
             vcs="git",
             name="egg2",
             url=egg2.url,
-            path=src["egg2"],
+            path=src / "egg2",
             submodules="never",
         ),
     }
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg", "egg2"], verbose=False)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {"foo", ".git"}
-        assert set(os.listdir(src["egg2"])) == {
+        assert set(os.listdir(src / "egg" / submodule_name)) == {"foo", ".git"}
+        assert set(os.listdir(src / "egg2")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg2/%s" % submodule_name])) == set()
+        assert set(os.listdir(src / "egg2" / submodule_name)) == set()
 
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
@@ -318,19 +318,19 @@ def test_update_with_submodule_checkout(mkgitrepo, src):
             vcs="git",
             name="egg",
             url=egg.url,
-            path=src["egg"],
+            path=src / "egg",
             submodules="checkout",
         )
     }
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {".git", "foo"}
+        assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
             (
@@ -347,14 +347,14 @@ def test_update_with_submodule_checkout(mkgitrepo, src):
 
     with patch("mxdev.vcs.git.logger") as log:
         vcs_update(sources, ["egg"], verbose=False)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             "submodule_b",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_b_name])) == set()
+        assert set(os.listdir(src / "egg" / submodule_b_name)) == set()
         assert log.method_calls == [
             ("info", ("Updated 'egg' with git.",), {}),
             ("info", ("Switching to branch 'master'.",), {}),
@@ -375,16 +375,16 @@ def test_update_with_submodule_dont_update_previous_submodules(mkgitrepo, src):
     egg.add_file("bar")
     egg.add_submodule(submodule, submodule_name)
 
-    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src["egg"])}
+    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg")}
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {".git", "foo"}
+        assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
             (
@@ -394,19 +394,19 @@ def test_update_with_submodule_dont_update_previous_submodules(mkgitrepo, src):
             ),
         ]
 
-    repo = GitRepo(src["egg/%s" % submodule_name])
+    repo = GitRepo(src / "egg" / submodule_name)
     repo.setup_user()
     repo.add_file("newfile")
 
     with patch("mxdev.vcs.git.logger") as log:
         vcs_update(sources, ["egg"], verbose=False, force=True)
-        assert set(os.listdir(src["egg"])) == {
+        assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
             "bar",
             ".gitmodules",
         }
-        assert set(os.listdir(src["egg/%s" % submodule_name])) == {
+        assert set(os.listdir(src / "egg" / submodule_name)) == {
             ".git",
             "foo",
             "newfile",

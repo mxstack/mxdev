@@ -2,26 +2,17 @@ import os
 import pytest
 import shutil
 import tempfile
-
-
-class Path(str):
-    def __getitem__(self, name):
-        return Path(os.path.join(self, name))
-
-    def create_file(self, *content):
-        f = open(self, "w")
-        f.write("\n".join(content))
-        f.close()
+import pathlib
 
 
 @pytest.fixture
 def tempdir():
     cwd = os.getcwd()
-    tempdir = os.path.realpath(tempfile.mkdtemp())
+    tempdir = pathlib.Path(tempfile.mkdtemp()).resolve()
     try:
         os.chdir(tempdir)
         try:
-            yield Path(tempdir)
+            yield tempdir
         finally:
             os.chdir(cwd)
     finally:
@@ -30,7 +21,7 @@ def tempdir():
 
 @pytest.fixture
 def src(tempdir):
-    base = tempdir["src"]
+    base = tempdir / "src"
     os.mkdir(base)
     return base
 
@@ -40,7 +31,7 @@ def mkgitrepo(tempdir):
     from mxdev.tests.utils import GitRepo
 
     def mkgitrepo(name):
-        repository = GitRepo(tempdir[name])
+        repository = GitRepo(tempdir / name)
         repository.init()
         repository.setup_user()
         return repository
