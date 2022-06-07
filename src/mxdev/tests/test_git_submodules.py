@@ -8,8 +8,12 @@ from mxdev.tests.utils import vcs_update
 from unittest.mock import patch
 
 import os
+import pytest
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_checkout_with_submodule(mkgitrepo, src, caplog):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in itith
@@ -47,6 +51,9 @@ def test_checkout_with_submodule(mkgitrepo, src, caplog):
         )
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_checkout_with_two_submodules(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a'
@@ -96,6 +103,9 @@ def test_checkout_with_two_submodules(mkgitrepo, src):
         ]
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_update_with_submodule(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
@@ -156,6 +166,9 @@ def test_update_with_submodule(mkgitrepo, src):
         ]
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_checkout_with_submodules_option_never(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
@@ -185,6 +198,9 @@ def test_checkout_with_submodules_option_never(mkgitrepo, src):
         ]
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_checkout_with_submodules_option_never_source_always(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
@@ -243,6 +259,9 @@ def test_checkout_with_submodules_option_never_source_always(mkgitrepo, src):
         ]
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_checkout_with_submodules_option_always_source_never(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
@@ -300,6 +319,9 @@ def test_checkout_with_submodules_option_always_source_never(mkgitrepo, src):
         ]
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_update_with_submodule_checkout(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
@@ -361,6 +383,9 @@ def test_update_with_submodule_checkout(mkgitrepo, src):
         ]
 
 
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_update_with_submodule_dont_update_previous_submodules(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
