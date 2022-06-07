@@ -31,7 +31,7 @@ Configuration
 
 Given a ``requirements.txt`` (or similar named) file which itself references a ``constraints.txt`` file inside.
 
-Create an INI file, like `mxdev.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
+Create an INI file, like `mx.ini` in `configparser.ExtendedInterpolation <https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation>`_ syntax.
 
 
 Main section ``[settings]``
@@ -60,6 +60,21 @@ In the main sections the input and output files are defined.
     Default for ``install-mode`` on section, read there for details
     Allowed values: ``direct`` or ``skip``
     Default: ``direct``
+
+``default-update``
+    Default for ``update`` on section, read there for details
+    Allowed values: ``yes`` or ``no``
+    Default: ``yes``
+
+``threads``
+    Number of threads to fetch sources in parallel with.
+    Speeds up fetching from VCS.
+    Default: ``4``
+
+``offline``
+    Do not fetch any sources.
+    Handy if working offline.
+    Default: ``False``
 
 ``version-overrides``
     Override package versions which already defined in a dependent constraints file.
@@ -105,16 +120,15 @@ All other sections are defining the sources to be used.
     The section name is the package name.
 
 ``url = URL``
-    the URL to the source in VCS and must follow the `pip install editable <https://pip.pypa.io/en/stable/cli/pip_install/#local-project-installs>`_ format.
-
-    Attention, this differs from the format one copies from Github/Gitlab, etc.
-    For convienince *mxdev* applies auto-correction for this common cases:
-
-    - ``ssh://`` -> ``git+ssh://``
-    - ``git@`` -> ``git+ssh://git@``
-    - ``https://`` -> ``git+https://``
+    The checkout URL of the repository.
 
     The URL is required.
+
+``pushurl = URL``
+    Optional a writable URL for pushes can be specified.
+
+    If the ``pushurl`` is set after initial checkout it is not applied.
+    To apply it remove the repository and checkout again.
 
 ``branch = BRANCHNAME_OR_TAG``
     the branch name or tag to checkout.
@@ -148,20 +162,22 @@ All other sections are defining the sources to be used.
 Usage
 =====
 
-Run ``mxdev -c mxdev.ini``.
+Run ``mxdev`` (for more options run ``mxdev --help``).
 
-Mxdev will **read** the configuration, **fetch** the packages defined in the config file and **write** a requirements and constraints file.
+Mxdev will
+
+1. **read** the configuration from ``mx.ini``,
+2. **fetch** the packages defined in the config file and
+3. **write** a requirements and constraints file.
 
 Now, use the generated requirements and constraints files with i.e. ``pip install -r requirements-mxdev.txt``.
-
-For more options run ``mxdev --help``.
 
 
 Example Configuration
 =====================
 
-Example ``mxdev.ini``
----------------------
+Example ``mx.ini``
+------------------
 
 This looks like so:
 
@@ -206,7 +222,7 @@ Extending
 Functionality of mxdev can be extended by hooks.
 This is useful to generate additional scripts or files or automate any other setup steps related to mxdev's domain.
 
-Extension configuration settings end up in the ``mxdev.ini`` file.
+Extension configuration settings end up in the ``mx.ini`` file.
 They can be added globally to the ``settings`` section, as dedicated config sections or package specific.
 To avoid naming conflicts, all hook related settings and config sections must be prefixed with a namespace.
 
@@ -274,7 +290,14 @@ Idea
     A pre-processor fetches (as this can be an URL) and expands all ``-c SOMEOTHER_FILE_OR_URL`` and ``-r SOMEOTHER_FILE_OR_URL`` files into one, filtering out all packages given in a configuration file.
     For each of those packages a ``-e ...`` entry is generated instead and written to a new ``TARGET.txt``.
     Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
-    The configuration is read from a file ``mxdev.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
+    The configuration is read from a file ``mx.ini`` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
 
 Trivia
     Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with mix.
+
+
+Misc
+====
+
+The VCS related code is taken from `mr.developer`.
+Thanks to Florian Schulze and Contributors.
