@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name
+from struct import pack
 from .fixtures import mkgitrepo
 from .fixtures import src
 from .fixtures import tempdir
@@ -37,30 +38,30 @@ def create_default_content(repository):
 def test_update_with_revision_pin_rev(mkgitrepo, src):
     repository = mkgitrepo("repository")
     rev = create_default_content(repository)
-
+    path = src / "egg"
     # check rev
     sources = {
         "egg": dict(
             vcs="git",
             name="egg",
             rev=rev,
-            url="%s" % repository.base,
-            path=src / "egg",
+            url=str(repository.base),
+            path=path,
         )
     }
 
     packages = ["egg"]
     verbose = False
 
-    assert not os.path.exists(src / "egg")
+    assert not os.path.exists(path)
     vcs_checkout(sources, packages, verbose)
-    assert set(os.listdir(src / "egg")) == set((".git", "foo", "foo2"))
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
 
     vcs_checkout(sources, packages, verbose)
-    assert set(os.listdir(src / "egg")) == {".git", "foo", "foo2"}
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
 
     vcs_update(sources, packages, verbose)
-    assert set(os.listdir(src / "egg")) == {".git", "foo", "foo2"}
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
 
 
 def test_update_with_revision_pin_branch(mkgitrepo, src):
@@ -91,7 +92,7 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
             vcs="git",
             name="egg",
             branch="master",
-            url="%s" % repository.base,
+            url=str(repository.base),
             path=path,
         )
     }
@@ -111,9 +112,7 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
     vcs_update(sources, packages, verbose)
 
     assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
-    sources = {
-        "egg": dict(vcs="git", name="egg", url="%s" % repository.base, path=path)
-    }
+    sources = {"egg": dict(vcs="git", name="egg", url=str(repository.base), path=path)}
     vcs_update(sources, packages, verbose)
 
     assert {x for x in path.iterdir()} == {path / ".git", path / "bar", path / "foo"}
@@ -127,7 +126,7 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
                 name="egg",
                 branch="test",
                 rev=rev,
-                url="%s" % repository.base,
+                url=str(repository.base),
                 path=src / "egg-failed",
             )
         }
@@ -140,16 +139,25 @@ def test_update_without_revision_pin(mkgitrepo, src, capsys, caplog):
     repository.add_file("bar")
     repository.add_branch("develop")
     packages = ["egg"]
+    path = src / "egg"
 
-    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=src / "egg")}
+    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=path)}
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, packages, verbose=False)
-        assert set(os.listdir(src / "egg")) == {".git", "bar", "foo"}
+        assert {x for x in path.iterdir()} == {
+            path / ".git",
+            path / "bar",
+            path / "foo",
+        }
         captured = capsys.readouterr()
         assert captured.out.startswith("Initialized empty Git repository in")
         vcs_update(sources, packages, verbose=False)
 
-        assert set(os.listdir(src / "egg")) == {".git", "bar", "foo"}
+        assert {x for x in path.iterdir()} == {
+            path / ".git",
+            path / "bar",
+            path / "foo",
+        }
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % repository.url,), {}),
             ("info", ("Updated 'egg' with git.",), {}),
@@ -167,14 +175,23 @@ def test_update_verbose(mkgitrepo, src, capsys):
     repository.add_file("foo")
     repository.add_file("bar")
     repository.add_branch("develop")
-    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=src / "egg")}
+    path = src / "egg"
+    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=path)}
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False)
-        assert set(os.listdir(src / "egg")) == {".git", "bar", "foo"}
+        assert {x for x in path.iterdir()} == {
+            path / ".git",
+            path / "bar",
+            path / "foo",
+        }
         captured = capsys.readouterr()
         assert captured.out.startswith("Initialized empty Git repository in")
         vcs_update(sources, ["egg"], verbose=True)
-        assert set(os.listdir(src / "egg")) == {".git", "bar", "foo"}
+        assert {x for x in path.iterdir()} == {
+            path / ".git",
+            path / "bar",
+            path / "foo",
+        }
         assert log.method_calls == [
             ("info", ("Cloned 'egg' with git from '%s'." % repository.url,), {}),
             ("info", ("Updated 'egg' with git.",), {}),
