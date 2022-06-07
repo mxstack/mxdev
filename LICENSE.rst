@@ -1,5 +1,5 @@
-Copyright 2009-2022 Florian Schulze
 Copyright 2021-2022 BlueDynamics Alliance
+VCS code Copyright 2009-2022 Florian Schulze and contributors
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
