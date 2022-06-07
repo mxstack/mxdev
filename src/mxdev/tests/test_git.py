@@ -17,7 +17,7 @@ import pytest
 logger: Logger = getLogger("vcs_test_git")
 
 
-def create_default_content(repository):
+def create_default_content(repository) -> str:
     # Create default content and branches in a repository.
     # Return a revision number.
     repository.add_file("foo", msg="Initial")
@@ -32,7 +32,7 @@ def create_default_content(repository):
     repository.add_file("bar")
     # Return revision of one of the commits, the one that adds the
     # foo2 file.
-    return rev
+    return rev.decode("utf8")
 
 
 def test_update_with_revision_pin_rev(mkgitrepo, src):
