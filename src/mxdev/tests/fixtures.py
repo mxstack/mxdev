@@ -1,22 +1,14 @@
 import os
-import pathlib
 import pytest
-import sys
-import tempfile
 
 
 @pytest.fixture
-def tempdir():
+def tempdir(tmp_path):
     cwd = os.getcwd()
     try:
-        kwargs = {"ignore_cleanup_errors": True} if sys.version_info >= (3, 10) else {}
-        with tempfile.TemporaryDirectory(**kwargs) as tempdir:
-            tempdir = pathlib.Path(tempdir).resolve()
-            os.chdir(tempdir)
-            yield tempdir
-    except PermissionError:
-        # happens on Windows on Python < 3.10
-        pass
+        wd = tmp_path / "testdir"
+        wd.mkdir()
+        yield wd
     finally:
         os.chdir(cwd)
 
