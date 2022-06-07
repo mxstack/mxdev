@@ -169,10 +169,10 @@ class GitRepo:
         self(f"git submodule add {submodule.url}")
         self("git add .gitmodules")
         self(f"git add {submodule_name}")
-        self(f"git commit -am 'Add submodule {submodule_name}'")
+        self(f"git commit -m 'Add submodule {submodule_name}'")
 
     def add_branch(self, bname: str, msg: str = None):
-        self("git checkout -b %s" % bname)
+        self(f"git checkout -b {bname}")
 
 
 def vcs_checkout(

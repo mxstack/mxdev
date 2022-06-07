@@ -7,13 +7,13 @@ import tempfile
 @pytest.fixture
 def tempdir():
     cwd = os.getcwd()
-    with tempfile.TemporaryDirectory() as tempdir:
-        tempdir = pathlib.Path(tempdir).resolve()
-        os.chdir(tempdir)
-        try:
+    try:
+        with tempfile.TemporaryDirectory() as tempdir:
+            tempdir = pathlib.Path(tempdir).resolve()
+            os.chdir(tempdir)
             yield tempdir
-        finally:
-            os.chdir(cwd)
+    finally:
+        os.chdir(cwd)
 
 
 @pytest.fixture
