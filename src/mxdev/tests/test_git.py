@@ -1,5 +1,4 @@
 # pylint: disable=redefined-outer-name
-from struct import pack
 from .fixtures import mkgitrepo
 from .fixtures import src
 from .fixtures import tempdir
@@ -8,6 +7,7 @@ from logging import Logger
 from mxdev.tests.utils import vcs_checkout
 from mxdev.tests.utils import vcs_status
 from mxdev.tests.utils import vcs_update
+from struct import pack
 from unittest.mock import patch
 
 import os

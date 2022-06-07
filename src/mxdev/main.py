@@ -35,6 +35,12 @@ parser.add_argument(
 parser.add_argument(
     "-o", "--offline", help="Do not fetch sources, work offline", action="store_true"
 )
+parser.add_argument(
+    "-t",
+    "--threads",
+    help="Number of threads to fetch sources in parallel with",
+    type=int,
+)
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
 parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
 

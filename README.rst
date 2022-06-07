@@ -66,6 +66,11 @@ In the main sections the input and output files are defined.
     Allowed values: ``yes`` or ``no``
     Default: ``yes``
 
+``threads``
+    Number of threads to fetch sources in parallel with.
+    Speeds up fetching from VCS.
+    Default: ``4``
+
 ``offline``
     Do not fetch any sources.
     Handy if working offline.
@@ -153,18 +158,19 @@ All other sections are defining the sources to be used.
 
     Defaults to default mode configured in main section ``[settings]`` ``default-install-mode =`` value.
 
-``update``
 
 Usage
 =====
 
-Run ``mxdev -c mx.ini``.
+Run ``mxdev`` (for more options run ``mxdev --help``).
 
-Mxdev will **read** the configuration, **fetch** the packages defined in the config file and **write** a requirements and constraints file.
+Mxdev will
+
+1. **read** the configuration from ``mx.ini``,
+2. **fetch** the packages defined in the config file and
+3. **write** a requirements and constraints file.
 
 Now, use the generated requirements and constraints files with i.e. ``pip install -r requirements-mxdev.txt``.
-
-For more options run ``mxdev --help``.
 
 
 Example Configuration
