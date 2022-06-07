@@ -1,6 +1,7 @@
 import os
 import pathlib
 import pytest
+import sys
 import tempfile
 
 
@@ -8,10 +9,14 @@ import tempfile
 def tempdir():
     cwd = os.getcwd()
     try:
-        with tempfile.TemporaryDirectory() as tempdir:
+        kwargs = {"ignore_cleanup_errors": True} if sys.version_info >= (3, 10) else {}
+        with tempfile.TemporaryDirectory(**kwargs) as tempdir:
             tempdir = pathlib.Path(tempdir).resolve()
             os.chdir(tempdir)
             yield tempdir
+    except PermissionError:
+        # happens on Windows on Python < 3.10
+        pass
     finally:
         os.chdir(cwd)
 
@@ -25,15 +30,15 @@ def src(tempdir):
 
 @pytest.fixture
 def mkgitrepo(tempdir):
-    from mxdev.tests.utils import GitRepo
+    from .utils import GitRepo
 
-    def mkgitrepo(name):
+    def _mkgitrepo(name):
         repository = GitRepo(tempdir / name)
         repository.init()
         repository.setup_user()
         return repository
 
-    return mkgitrepo
+    return _mkgitrepo
 
 
 @pytest.fixture
