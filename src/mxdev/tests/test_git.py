@@ -46,7 +46,7 @@ def test_update_with_revision_pin_rev(mkgitrepo, src):
             name="egg",
             rev=rev,
             url=str(repository.base),
-            path=path,
+            path=str(path),
         )
     }
 
@@ -77,7 +77,7 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
             name="egg",
             branch="test",
             url=str(repository.base),
-            path=path,
+            path=str(path),
         )
     }
     vcs_checkout(sources, packages, verbose)
@@ -93,7 +93,7 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
             name="egg",
             branch="master",
             url=str(repository.base),
-            path=path,
+            path=str(path),
         )
     }
     vcs_update(sources, packages, verbose)
@@ -106,13 +106,15 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
             name="egg",
             rev=rev,
             url=str(repository.base),
-            path=path,
+            path=str(path),
         )
     }
     vcs_update(sources, packages, verbose)
 
     assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
-    sources = {"egg": dict(vcs="git", name="egg", url=str(repository.base), path=path)}
+    sources = {
+        "egg": dict(vcs="git", name="egg", url=str(repository.base), path=str(path))
+    }
     vcs_update(sources, packages, verbose)
 
     assert {x for x in path.iterdir()} == {path / ".git", path / "bar", path / "foo"}
@@ -141,7 +143,7 @@ def test_update_without_revision_pin(mkgitrepo, src, capsys, caplog):
     packages = ["egg"]
     path = src / "egg"
 
-    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=path)}
+    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=str(path))}
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, packages, verbose=False)
         assert {x for x in path.iterdir()} == {
@@ -176,7 +178,7 @@ def test_update_verbose(mkgitrepo, src, capsys):
     repository.add_file("bar")
     repository.add_branch("develop")
     path = src / "egg"
-    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=path)}
+    sources = {"egg": dict(vcs="git", name="egg", url=repository.url, path=str(path))}
     with patch("mxdev.vcs.git.logger") as log:
         vcs_checkout(sources, ["egg"], verbose=False)
         assert {x for x in path.iterdir()} == {
