@@ -59,6 +59,8 @@ def main() -> None:
     override_args = {}
     if args.offline:
         override_args["offline"] = True
+    if args.threads:
+        override_args["threads"] = args.threads
     configuration = Configuration(
         tio=args.configuration, override_args=override_args, hooks=hooks
     )

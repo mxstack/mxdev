@@ -40,13 +40,7 @@ class Configuration:
             settings["offline"] = "true"
 
         if override_args.get("threads"):
-            settings["threads"] = override_args.get("threads")
-        else:
-            threads = settings.get("threads", "4")
-            try:
-                settings["threads"] = int(threads)
-            except ValueError:
-                settings["threads"] = 4
+            settings["threads"] = str(override_args.get("threads"))
 
         mode = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:

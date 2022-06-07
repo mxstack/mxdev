@@ -180,7 +180,7 @@ def fetch(state: State) -> None:
 
     logger.info("# Fetch sources from VCS")
     workingcopies = WorkingCopies(
-        packages, threads=state.configuration.settings["threads"]
+        packages, threads=int(state.configuration.settings["threads"])
     )
     workingcopies.checkout(
         sorted(packages),
