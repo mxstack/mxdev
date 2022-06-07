@@ -69,19 +69,20 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
     # check branch
     packages = ["egg"]
     verbose = False
+    path = src / "egg"
     sources = {
         "egg": dict(
             vcs="git",
             name="egg",
             branch="test",
-            url="%s" % repository.base,
-            path=src / "egg",
+            url=str(repository.base),
+            path=path,
         )
     }
     vcs_checkout(sources, packages, verbose)
-    assert set(os.listdir(src / "egg")) == {".git", "foo", "foo2"}
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
     vcs_update(sources, packages, verbose)
-    assert set(os.listdir(src / "egg")) == {".git", "foo", "foo2"}
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
     states = vcs_status(sources)
 
     # switch implicitly to master branch
@@ -91,11 +92,11 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
             name="egg",
             branch="master",
             url="%s" % repository.base,
-            path=src / "egg",
+            path=path,
         )
     }
     vcs_update(sources, packages, verbose)
-    assert set(os.listdir(src / "egg")) == {".git", "bar", "foo"}
+    assert {x for x in path.iterdir()} == {path / ".git", path / "bar", path / "foo"}
 
     # Switch to specific revision, then switch back to master branch.
     sources = {
@@ -103,19 +104,19 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
             vcs="git",
             name="egg",
             rev=rev,
-            url="%s" % repository.base,
-            path=src / "egg",
+            url=str(repository.base),
+            path=path,
         )
     }
     vcs_update(sources, packages, verbose)
 
-    assert set(os.listdir(src / "egg")) == {".git", "foo", "foo2"}
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
     sources = {
-        "egg": dict(vcs="git", name="egg", url="%s" % repository.base, path=src / "egg")
+        "egg": dict(vcs="git", name="egg", url="%s" % repository.base, path=path)
     }
     vcs_update(sources, packages, verbose)
 
-    assert set(os.listdir(src / "egg")) == {".git", "bar", "foo"}
+    assert {x for x in path.iterdir()} == {path / ".git", path / "bar", path / "foo"}
 
     vcs_status(sources)
     # we can't use both rev and branch
