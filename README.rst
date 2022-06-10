@@ -161,16 +161,16 @@ All other sections are defining the sources to be used.
 ``submodules``
     There are 3 different options
 
-    ``always`` 
+    ``always``
         (default) git submodules will always be checked out, the will be updated if already present
 
     ``checkout``
         submodules get only fetched during checkout, existing submodules stay untouched
 
     ``recursive``
-        fetches submodules recursively, results in ``git clone --recurse-submodules on`` checkout 
+        fetches submodules recursively, results in ``git clone --recurse-submodules on`` checkout
         and ``submodule update --init --recursive`` on update
-   
+
 Usage
 =====
 
