@@ -212,7 +212,7 @@ class WorkingCopies:
                 sys.exit(1)
         kwargs.setdefault("submodules", "always")
         # XXX: submodules is git related, move to GitWorkingCopy
-        if kwargs["submodules"] not in ["always", "never", "checkout"]:
+        if kwargs["submodules"] not in ["always", "never", "checkout", "recursive"]:
             logger.error(
                 "Unknown value '%s' for update-git-submodules option."
                 % kwargs["submodules"]
