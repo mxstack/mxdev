@@ -102,6 +102,7 @@ def test_checkout_with_two_submodules(mkgitrepo, src):
             ),
         ]
 
+
 @pytest.mark.skipif(
     condition=os.name == "nt", reason="submodules seem not to work on windows"
 )
@@ -257,8 +258,11 @@ def test_update_with_submodule_recursive(mkgitrepo, src):
         }
         assert log.method_calls == [
             ("info", (f"Updated 'egg' with git.",)),
-            ("info", (f"Switching to branch 'master'.", )),
-            ("info", (f"Initialized 'egg' submodule at '{submodule_b_name}' with git.",))
+            ("info", (f"Switching to branch 'master'.",)),
+            (
+                "info",
+                (f"Initialized 'egg' submodule at '{submodule_b_name}' with git.",),
+            ),
         ]
 
 

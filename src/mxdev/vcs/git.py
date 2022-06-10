@@ -257,7 +257,10 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             # as git submodule update on modified subomdules may cause code loss
             for submodule in initialized:
                 stdout, stderr = self.git_update_submodules(
-                    stdout, stderr, submodule=submodule, recursive = update_git_submodules=="recursive"
+                    stdout,
+                    stderr,
+                    submodule=submodule,
+                    recursive=update_git_submodules == "recursive",
                 )
                 self.output(
                     (
@@ -366,7 +369,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         return (stdout_in + stdout, stderr_in + stderr, initialized_submodules)
 
     def git_update_submodules(
-        self, stdout_in, stderr_in, submodule="all", recursive:bool = False
+        self, stdout_in, stderr_in, submodule="all", recursive: bool = False
     ) -> typing.Tuple[str, str]:
         params = ["submodule", "update"]
         if recursive:
