@@ -41,6 +41,8 @@ class Configuration:
 
         if override_args.get("threads"):
             settings["threads"] = str(override_args.get("threads"))
+        else:
+            settings["threads"] = "4"
 
         mode = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:
