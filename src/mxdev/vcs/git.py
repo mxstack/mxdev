@@ -143,8 +143,10 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             msg += " using branch '%s'" % self.source["branch"]
         msg += " from '%s'." % url
         self.output((logger.info, msg))
-        # XXX: make --recurse-submodules configurable?
-        args = ["clone", "--quiet", "--recurse-submodules"]
+        args = ["clone", "--quiet"]
+        update_git_submodules = self.source.get("submodules", kwargs["submodules"])
+        if update_git_submodules == "recursive":
+            args.append("--recurse-submodules")
         if "depth" in self.source:
             args.extend(["--depth", self.source["depth"]])
         if "branch" in self.source:
@@ -159,7 +161,6 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         if "pushurl" in self.source:
             stdout, stderr = self.git_set_pushurl(stdout, stderr)
 
-        update_git_submodules = self.source.get("submodules", kwargs["submodules"])
         if update_git_submodules in ["always", "checkout"]:
             stdout, stderr, initialized = self.git_init_submodules(stdout, stderr)
             # Update only new submodules that we just registered. this is for safety reasons
