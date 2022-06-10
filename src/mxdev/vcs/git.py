@@ -143,7 +143,8 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             msg += " using branch '%s'" % self.source["branch"]
         msg += " from '%s'." % url
         self.output((logger.info, msg))
-        args = ["clone", "--quiet"]
+        # XXX: make --recurse-submodules configurable?
+        args = ["clone", "--quiet", "--recurse-submodules"]
         if "depth" in self.source:
             args.extend(["--depth", self.source["depth"]])
         if "branch" in self.source:
