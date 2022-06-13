@@ -158,6 +158,18 @@ All other sections are defining the sources to be used.
 
     Defaults to default mode configured in main section ``[settings]`` ``default-install-mode =`` value.
 
+``submodules``
+    There are 3 different options
+
+    ``always``
+        (default) git submodules will always be checked out, the will be updated if already present
+
+    ``checkout``
+        submodules get only fetched during checkout, existing submodules stay untouched
+
+    ``recursive``
+        fetches submodules recursively, results in ``git clone --recurse-submodules on`` checkout
+        and ``submodule update --init --recursive`` on update
 
 Usage
 =====

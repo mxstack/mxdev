@@ -106,6 +106,49 @@ def test_checkout_with_two_submodules(mkgitrepo, src):
 @pytest.mark.skipif(
     condition=os.name == "nt", reason="submodules seem not to work on windows"
 )
+def test_checkout_with_two_submodules_recursive(mkgitrepo, src):
+    """
+    Tests the checkout of a module 'egg' with a submodule 'submodule_a'
+    and a submodule 'submodule_b' in it.
+    but this time we test it with the "recursive" option
+    """
+
+    submodule_name = "submodule_a"
+    submodule = mkgitrepo(submodule_name)
+    submodule_b_name = "submodule_b"
+    submodule_b = mkgitrepo(submodule_b_name)
+
+    submodule.add_file("foo")
+    submodule_b.add_file("foo_b")
+    egg = mkgitrepo("egg")
+    egg.add_file("bar")
+    egg.add_submodule(submodule, submodule_name)
+    egg.add_submodule(submodule_b, submodule_b_name)
+
+    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg")}
+
+    with patch("mxdev.vcs.git.logger") as log:
+        vcs_checkout(sources, ["egg"], verbose=False, update_git_submodules="recursive")
+        assert set(os.listdir(src / "egg")) == {
+            "submodule_a",
+            "submodule_b",
+            ".git",
+            "bar",
+            ".gitmodules",
+        }
+        assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
+        assert set(os.listdir(src / "egg" / submodule_b_name)) == {
+            ".git",
+            "foo_b",
+        }
+        assert log.method_calls == [
+            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+        ]
+
+
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
 def test_update_with_submodule(mkgitrepo, src):
     """
     Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
@@ -162,6 +205,63 @@ def test_update_with_submodule(mkgitrepo, src):
                 "info",
                 ("Initialized 'egg' submodule at '%s' with git." % submodule_b_name,),
                 {},
+            ),
+        ]
+
+
+@pytest.mark.skipif(
+    condition=os.name == "nt", reason="submodules seem not to work on windows"
+)
+def test_update_with_submodule_recursive(mkgitrepo, src):
+    """
+    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
+    Add a new 'submodule_b' to 'egg' and check it succesfully initializes.
+    """
+    submodule_name = "submodule_a"
+    submodule = mkgitrepo(submodule_name)
+    submodule.add_file("foo")
+    egg = mkgitrepo("egg")
+    egg.add_file("bar")
+    egg.add_submodule(submodule, submodule_name)
+
+    sources = {"egg": dict(vcs="git", name="egg", url=egg.url, path=src / "egg")}
+    with patch("mxdev.vcs.git.logger") as log:
+        vcs_checkout(sources, ["egg"], verbose=False, update_git_submodules="recursive")
+        assert set(os.listdir(src / "egg")) == {
+            "submodule_a",
+            ".git",
+            "bar",
+            ".gitmodules",
+        }
+        assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
+        assert log.method_calls == [
+            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+        ]
+
+    submodule_b_name = "submodule_b"
+    submodule_b = mkgitrepo(submodule_b_name)
+    submodule_b.add_file("foo_b")
+    egg.add_submodule(submodule_b, submodule_b_name)
+
+    with patch("mxdev.vcs.git.logger") as log:
+        vcs_update(sources, ["egg"], verbose=False, update_git_submodules="recursive")
+        assert set(os.listdir(src / "egg")) == {
+            "submodule_a",
+            "submodule_b",
+            ".git",
+            "bar",
+            ".gitmodules",
+        }
+        assert set(os.listdir(src / "egg" / submodule_b_name)) == {
+            ".git",
+            "foo_b",
+        }
+        assert log.method_calls == [
+            ("info", (f"Updated 'egg' with git.",)),
+            ("info", (f"Switching to branch 'master'.",)),
+            (
+                "info",
+                (f"Initialized 'egg' submodule at '{submodule_b_name}' with git.",),
             ),
         ]
 

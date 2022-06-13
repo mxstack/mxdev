@@ -144,6 +144,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         msg += " from '%s'." % url
         self.output((logger.info, msg))
         args = ["clone", "--quiet"]
+        update_git_submodules = self.source.get("submodules", kwargs["submodules"])
+        if update_git_submodules == "recursive":
+            args.append("--recurse-submodules")
         if "depth" in self.source:
             args.extend(["--depth", self.source["depth"]])
         if "branch" in self.source:
@@ -158,7 +161,6 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         if "pushurl" in self.source:
             stdout, stderr = self.git_set_pushurl(stdout, stderr)
 
-        update_git_submodules = self.source.get("submodules", kwargs["submodules"])
         if update_git_submodules in ["always", "checkout"]:
             stdout, stderr, initialized = self.git_init_submodules(stdout, stderr)
             # Update only new submodules that we just registered. this is for safety reasons
@@ -230,6 +232,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         self.output((logger.info, "Updated '%s' with git." % name))
         # First we fetch.  This should always be possible.
         argv = ["fetch"]
+        update_git_submodules = self.source.get("submodules", kwargs["submodules"])
+        if update_git_submodules == "recursive":
+            argv.append("--recurse-submodules")
         cmd = self.run_git(argv, cwd=path)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
@@ -246,13 +251,16 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             stdout, stderr = self.git_merge_rbranch(stdout, stderr, accept_missing=True)
 
         update_git_submodules = self.source.get("submodules", kwargs["submodules"])
-        if update_git_submodules in ["always"]:
+        if update_git_submodules in ["always", "recursive"]:
             stdout, stderr, initialized = self.git_init_submodules(stdout, stderr)
             # Update only new submodules that we just registered. this is for safety reasons
             # as git submodule update on modified subomdules may cause code loss
             for submodule in initialized:
                 stdout, stderr = self.git_update_submodules(
-                    stdout, stderr, submodule=submodule
+                    stdout,
+                    stderr,
+                    submodule=submodule,
+                    recursive=update_git_submodules == "recursive",
                 )
                 self.output(
                     (
@@ -361,11 +369,16 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         return (stdout_in + stdout, stderr_in + stderr, initialized_submodules)
 
     def git_update_submodules(
-        self, stdout_in, stderr_in, submodule="all"
+        self, stdout_in, stderr_in, submodule="all", recursive: bool = False
     ) -> typing.Tuple[str, str]:
         params = ["submodule", "update"]
+        if recursive:
+            params.append("--init")
+            params.append("--recursive")
+
         if submodule != "all":
             params.append(submodule)
+
         cmd = self.run_git(params, cwd=self.source["path"])
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
