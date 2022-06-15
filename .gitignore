@@ -1,7 +1,8 @@
 .python-version
 *.egg-info
 .*-cache
-.coverage
+.coverage*
+.tox/
 __pycache__
 build/
 example/*-outfile.txt

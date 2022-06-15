@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools >= 40.6.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+xfail_strict = true
+filterwarnings = [
+    "once::Warning",
+]
+
+[tool.coverage.run]
+parallel = true
+branch = true
+
+[tool.coverage.paths]
+source = ["src", ".tox/*/site-packages"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    # # a more strict default pragma
+    # "\\# pragma: no cover\\b",
+
+    # # allow defensive code
+    # "^\\s*raise AssertionError\\b",
+    # "^\\s*raise NotImplementedError\\b",
+    # "^\\s*return NotImplemented\\b",
+    # "^\\s*raise$",
+
+    # typing-related code
+    "^if (False|TYPE_CHECKING):",
+    ": \\.\\.\\.(\\s*#.*)?$",
+    "^ +\\.\\.\\.$",
+    "-> ['\"]?NoReturn['\"]?:",
+]
