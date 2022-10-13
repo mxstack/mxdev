@@ -2,6 +2,8 @@
 Mixed development source packages on top of stable constraints using pip
 ========================================================================
 
+## Talk: Edit & Ignore
+
 ``mxdev`` [mɪks dɛv] is a utility that makes it easy to work with Python projects containing lots of packages, of which you only want to develop some.
 
 It builds on top of the idea to have stable version constraints and then develop from a VCS on top of it.
