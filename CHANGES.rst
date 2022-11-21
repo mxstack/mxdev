@@ -1,8 +1,8 @@
 Changes
 =======
 
-3.0.0.b1 (unreleased)
----------------------
+3.0.0b1 (2022-11-21)
+--------------------
 
 - Do not use ``libvcs``, but recycled and updated (type hints, tests) ``mr.developer`` VCS code.
   Code for GIT is tested well, code for SVN, Mercurial, Bazaar and DARCS needs contributors with knowledge in this area.
