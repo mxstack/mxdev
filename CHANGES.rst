@@ -1,7 +1,7 @@
 Changes
 =======
 
-3.0.0.a1 (unreleased)
+3.0.0.b1 (unreleased)
 ---------------------
 
 - Do not use ``libvcs``, but recycled and updated (type hints, tests) ``mr.developer`` VCS code.
