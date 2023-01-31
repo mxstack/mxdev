@@ -1,8 +1,12 @@
-.python-version
 *.egg-info
 .*-cache
 .coverage
+.installed.txt
+.mxmake/
+.python-version
 __pycache__
 build/
+constraints-mxdev.txt
 example/*-outfile.txt
+requirements-mxdev.txt
 venv/
