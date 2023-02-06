@@ -10,6 +10,14 @@ if typing.TYPE_CHECKING:
     from .hooks import Hook
 
 
+def to_bool(value):
+    if not isinstance(value, str):
+        return bool(value)
+    if value.lower() in ("true", "on", "yes", "1"):
+        return True
+    return False
+
+
 class Configuration:
     settings: typing.Dict[str, str]
     overrides: typing.Dict[str, str]
@@ -48,6 +56,7 @@ class Configuration:
         if mode not in ["direct", "skip"]:
             raise ValueError("default-install-mode must be one of 'direct' or 'skip'")
 
+        default_use = to_bool(settings.get("default-use", True))
         raw_overrides = settings.get("version-overrides", "").strip()
         self.overrides = {}
         for line in raw_overrides.split("\n"):
@@ -80,7 +89,10 @@ class Configuration:
                 self.hooks[name] = self._read_section(data, name)
                 continue
             logger.debug(f"Section '{name}' belongs to package")
-            package = self.packages[name] = self._read_section(data, name)
+            package = self._read_section(data, name)
+            if not to_bool(package.get("use", default_use)):
+                continue
+            self.packages[name] = package
             if settings.get("offline", False):
                 package.setdefault("offline", True)
             # XXX: name should not be necessary in WorkingCopies

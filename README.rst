@@ -107,6 +107,10 @@ In the main sections the input and output files are defined.
             somefancypackage
             otherpackage
 
+``default-use``:
+  True by default.  When false, the source is not checked out,
+  and the version for this package is not overridden.
+
 Additional, custom variables can be defined as ``key = value`` pair.
 Those can be referenced in other values as ``${settings:key}`` and will be expanded there.
 
@@ -157,6 +161,11 @@ All other sections are defining the sources to be used.
 
 
     Defaults to default mode configured in main section ``[settings]`` ``default-install-mode =`` value.
+
+``use``:
+  True by default, unless ``default-use`` in the general settings is false.
+  When false, the source is not checked out,
+  and the version for this package is not overridden.
 
 ``submodules``
     There are 3 different options

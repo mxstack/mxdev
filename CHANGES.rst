@@ -4,7 +4,10 @@ Changes
 3.0.0b2 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Add ``use`` option to sources, and ``default-use`` to the settings.
+  ``default-use`` is true by default.  When false, the source is not
+  checked out, and the version for this package is not overridden.
+  [maurits]
 
 
 3.0.0b1 (2022-11-21)
