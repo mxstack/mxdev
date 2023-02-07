@@ -42,7 +42,7 @@ Homepage = "https://github.com/mxstack/mxdev"
 Source = "https://github.com/mxstack/mxdev/"
 
 [project.scripts]
-mxmxdev = "mxmxdev.main:main"
+mxdev = "mxdev.main:main"
 
 [project.entry-points."mxdev.workingcopytypes"]
 svn = "mxdev.vcs.svn:SVNWorkingCopy"
