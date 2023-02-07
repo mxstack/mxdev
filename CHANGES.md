@@ -1,5 +1,9 @@
 ## Changes
 
+# 3.0.0b3 (unreleased)
+
+- no changes yet
+
 # 3.0.0b2 (2023-02-07)
 
 - In this package, use `pyproject.toml` and markdown for README et al.
@@ -9,7 +13,6 @@
   `default-use` is true by default.  When false, the source is not
   checked out, and the version for this package is not overridden.
   [maurits]
-
 
 
 ## 3.0.0b1 (2022-11-21)
