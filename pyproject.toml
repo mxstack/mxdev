@@ -1,0 +1,101 @@
+[project]
+name = "mxdev"
+description = "Enable to work with Python projects containing lots of packages, of which you only want to develop some."
+version = "3.0.0b2.dev0"
+keywords = ["pip", "vcs", "git", "development"]
+authors = [
+  {name = "MX Stack Developers", email = "dev@bluedynamics.com" }
+]
+requires-python = ">=3.7"
+license = { text = "BSD 2-Clause License" }
+classifiers = [
+    "Development Status :: 3 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = []
+dynamic = ["readme"]
+
+[project.optional-dependencies]
+mypy = [
+    "types-setuptools",
+    "types-pkg-resources",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "types-setuptools",
+]
+
+[project.urls]
+Homepage = "https://github.com/mxstack/mxdev"
+"Bug Reports" = "https://github.com/mxstack/mxdev/issues"
+Source = "https://github.com/mxstack/mxdev/"
+
+[project.scripts]
+mxmxdev = "mxmxdev.main:main"
+
+[project.entry-points."mxdev.workingcopytypes"]
+svn = "mxdev.vcs.svn:SVNWorkingCopy"
+git = "mxdev.vcs.git:GitWorkingCopy"
+gitsvn = "mxdev.vcs.gitsvn:GitSVNWorkingCopy"
+hg = "mxdev.vcs.mercurial:MercurialWorkingCopy"
+bzr = "mxdev.vcs.bazaar:BazaarWorkingCopy"
+fs = "mxdev.vcs.filesystem:FilesystemWorkingCopy"
+darcs = "mxdev.vcs.darcs:DarcsWorkingCopy"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "CHANGES.md", "LICENSE.md"]}
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "src",
+]
+
+[tool.isort]
+profile = "black"
+force_alphabetical_sort = true
+force_single_line = true
+lines_after_imports = 2
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.flake8]
+# Excludes due to known issues or incompatibilities with black:
+# BLK100: Black would make changes. https://pypi.org/project/flake8-black/
+# W503: https://github.com/psf/black/search?q=W503&unscoped_q=W503
+# E231: https://github.com/psf/black/issues/1202
+ignore = "BLK100,E231,W503,D100,D101,D102,D102,D103,D104,D105,D106,D107,D202,D205"
+statistics = 1
+# black official is 88, but can get longer
+max-line-length = 120
+
+[tool.doc8]
+# TODO: Remove current max-line-lengh ignore in follow-up and adopt black limit.
+# max-line-length = 88
+ignore = "D001"
+
+[tool.check-manifest]
+ignore = [
+    "Makefile",
+    "mx.ini"
+]

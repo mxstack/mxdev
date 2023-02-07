@@ -4,6 +4,7 @@
 .installed.txt
 .mxmake/
 .python-version
+.tox
 __pycache__
 build/
 constraints-mxdev.txt

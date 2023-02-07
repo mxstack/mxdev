@@ -1,28 +1,29 @@
-Changes
-=======
+## Changes
 
-3.0.0b2 (unreleased)
---------------------
+# 3.0.0b2 (unreleased)
 
-- Add ``use`` option to sources, and ``default-use`` to the settings.
-  ``default-use`` is true by default.  When false, the source is not
+- In this package, use `pyproject.toml` and markdown for README et al.
+  [jensens]
+
+- Add `use` option to sources, and `default-use` to the settings.
+  `default-use` is true by default.  When false, the source is not
   checked out, and the version for this package is not overridden.
   [maurits]
 
 
-3.0.0b1 (2022-11-21)
---------------------
 
-- Do not use ``libvcs``, but recycled and updated (type hints, tests) ``mr.developer`` VCS code.
+## 3.0.0b1 (2022-11-21)
+
+- Do not use `libvcs`, but recycled and updated (type hints, tests) `mr.developer` VCS code.
   Code for GIT is tested well, code for SVN, Mercurial, Bazaar and DARCS needs contributors with knowledge in this area.
-  Additional options, like ``pushurl``, ... (see README) were added.
-  ``pip`` style VCS URLs are not supported any longer.
+  Additional options, like `pushurl`, ... (see README) were added.
+  `pip` style VCS URLs are not supported any longer.
   [jensens, rnix, zworkb]
 
 - Config parser options are now considered case sensitive.
   [rnix]
 
-- Do not fail ``mxdev`` run if ``requirements.txt`` is missing.
+- Do not fail `mxdev` run if `requirements.txt` is missing.
   [rnix]
 
 - Add flag to only fetch repositories an skip generating files.
@@ -42,8 +43,7 @@ Changes
   [rnix]
 
 
-2.0.0 (2022-01-31)
-------------------
+## 2.0.0 (2022-01-31)
 
 - Depend on pip 22, where interdependency mode is no longer needed.
   Remove all interdependency related code.
@@ -55,19 +55,17 @@ Changes
 - Better last message with the full pip command.
   [jensens]
 
-- Allow empty ``requirements-in`` configuration.
+- Allow empty `requirements-in` configuration.
   [jensens]
 
-1.1.0 (2021-12-29)
-------------------
+## 1.1.0 (2021-12-29)
 
 - Feature: Ignore existing constraints.
-  New setting ``ignores`` with a list of packages (one per line) to ignore from constraints without providing a version.
+  New setting `ignores` with a list of packages (one per line) to ignore from constraints without providing a version.
   [jensens]
 
 
-1.0.1 (2021-12-21)
-------------------
+## 1.0.1 (2021-12-21)
 
 - Fix: If a developed package depends on another developed package the dependent package was ignored *sometimes* (!?).
   Instead the last release was taken.
@@ -75,56 +73,49 @@ Changes
   [jensens]
 
 
-1.0.0 (2021-12-12)
-------------------
+## 1.0.0 (2021-12-12)
 
-- Defaults for "outfiles" are ``*-mxdev.txt`` now.
+- Defaults for "outfiles" are `*-mxdev.txt` now.
   [jensens]
 
 
-1.0.0b4 (2021-12-07)
---------------------
+## 1.0.0b4 (2021-12-07)
 
 - Fix interdependency mode.
   [jensens]
 
 
-1.0.0b3 (2021-12-07)
---------------------
+## 1.0.0b3 (2021-12-07)
 
 - Fix: Do not apply override disabling on requirements.
   [jensens]
 
 
-1.0.0b2 (2021-12-07)
---------------------
+## 1.0.0b2 (2021-12-07)
 
 - Add feature: version overrides.
   [jensens]
 
 
-1.0.0b1 (2021-12-04)
---------------------
+## 1.0.0b1 (2021-12-04)
 
-- Add ``-s`` or ``--silent`` option.
+- Add `-s` or `--silent` option.
   [jensens]
 
 - Beautified output.
   [jensens]
 
-- Fixed missing CR if ``*.txt`` does not end with newline.
+- Fixed missing CR if `*.txt` does not end with newline.
   [jensens]
 
 
-1.0.0a9 (2021-12-01)
---------------------
+## 1.0.0a9 (2021-12-01)
 
 - Added auto correction for pip URLs, so that GitHub or Gitlab URLs can be used as copied in `sources.ini`.
   [zworkb]
 
 
-1.0.0a8 (2021-11-30)
---------------------
+## 1.0.0a8 (2021-11-30)
 
 - Added interdependency handling to avoid manual dependency order resolution.
   [jensens, gogobd]
@@ -136,43 +127,37 @@ Changes
   [jensens, gogobd]
 
 
-1.0.0a7 (2021-11-30)
---------------------
+## 1.0.0a7 (2021-11-30)
 
 - Removed Workaround for libvcs and depend on libvcs>=0.10.1.
   [jensens]
 
 
-1.0.0a6 (2021-11-30)
---------------------
+## 1.0.0a6 (2021-11-30)
 
 - Workaround for libvcs bug https://github.com/vcs-python/libvcs/issues/295
   [jensens, gogobd]
 
 
-1.0.0a5 (2021-11-30)
---------------------
+## 1.0.0a5 (2021-11-30)
 
 - Workaround for libvcs bug https://github.com/vcs-python/libvcs/issues/293
   [jensens, gogobd]
 
 
-1.0.0a4 (2021-11-29)
---------------------
+## 1.0.0a4 (2021-11-29)
 
 - Fix: editable can be configured to be processed before or after initial requirements.
   [jensens]
 
 
-1.0.0a3 (2021-11-23)
---------------------
+## 1.0.0a3 (2021-11-23)
 
 - Fix #1: Re-run of pip vanishes committed changes
   [jensens]
 
 
-1.0.0a2 (2021-11-21)
---------------------
+## 1.0.0a2 (2021-11-21)
 
 - Fix/simplify packaging.
   [jensens]
@@ -184,8 +169,7 @@ Changes
   [jensens]
 
 
-1.0.0a1 (2021-11-21)
---------------------
+## 1.0.0a1 (2021-11-21)
 
 - Initial work.
   [jensens]

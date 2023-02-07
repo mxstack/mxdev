@@ -21,6 +21,10 @@
 # No default value.
 DEPLOY_TARGETS?=
 
+# Additional files and folders to remove when running clean target
+# No default value.
+CLEAN_FS?=
+
 ## core.mxenv
 
 # Python interpreter to use.
@@ -31,8 +35,8 @@ PYTHON_BIN?=python3
 # Default: 3.7
 PYTHON_MIN_VERSION?=3.7
 
-# Flag whether to use virtual environment. If `false`, the global
-# interpreter is used.
+# Flag whether to use virtual environment.
+# If `false`, the interpreter according to `PYTHON_BIN` found in `PATH` is used.
 # Default: true
 VENV_ENABLED?=true
 
@@ -43,6 +47,9 @@ VENV_ENABLED?=true
 VENV_CREATE?=true
 
 # The folder of the virtual environment.
+# If `VENV_ENABLED` is `true` and `VENV_CREATE` is true it is used as the target folder for the virtual environment.
+# If `VENV_ENABLED` is `true` and `VENV_CREATE` is false it is expected to point to an existing virtual environment.
+# If `VENV_ENABLED` is `false` it is ignored.
 # Default: venv
 VENV_FOLDER?=venv
 
@@ -53,6 +60,18 @@ MXDEV?=https://github.com/mxstack/mxdev/archive/main.zip
 # mxmake to install in virtual environment.
 # Default: https://github.com/mxstack/mxmake/archive/develop.zip
 MXMAKE?=https://github.com/mxstack/mxmake/archive/develop.zip
+
+## qa.isort
+
+# Source folder to scan for Python files to run isort on.
+# Default: src
+ISORT_SRC?=src
+
+## qa.black
+
+# Source folder to scan for Python files to run black on.
+# Default: src
+BLACK_SRC?=src
 
 ## core.mxfiles
 
@@ -80,18 +99,6 @@ MYPY_SRC?=src
 # Mypy Python requirements to be installed (via pip).
 # Default: types-setuptools
 MYPY_REQUIREMENTS?=types-setuptools
-
-## qa.isort
-
-# Source folder to scan for Python files to run isort on.
-# Default: src
-ISORT_SRC?=src
-
-## qa.black
-
-# Source folder to scan for Python files to run black on.
-# Default: src
-BLACK_SRC?=src
 
 ##############################################################################
 # END SETTINGS - DO NOT EDIT BELOW THIS LINE
@@ -183,6 +190,74 @@ DIRTY_TARGETS+=mxenv-dirty
 CLEAN_TARGETS+=mxenv-clean
 
 ##############################################################################
+# isort
+##############################################################################
+
+ISORT_TARGET:=$(SENTINEL_FOLDER)/isort.sentinel
+$(ISORT_TARGET): $(MXENV_TARGET)
+	@echo "Install isort"
+	@$(MXENV_PATH)pip install isort
+	@touch $(ISORT_TARGET)
+
+.PHONY: isort-check
+isort-check: $(ISORT_TARGET)
+	@echo "Run isort check"
+	@$(MXENV_PATH)isort --check $(ISORT_SRC)
+
+.PHONY: isort-format
+isort-format: $(ISORT_TARGET)
+	@echo "Run isort format"
+	@$(MXENV_PATH)isort $(ISORT_SRC)
+
+.PHONY: isort-dirty
+isort-dirty:
+	@rm -f $(ISORT_TARGET)
+
+.PHONY: isort-clean
+isort-clean: isort-dirty
+	@$(MXENV_PATH)pip uninstall isort
+
+INSTALL_TARGETS+=$(ISORT_TARGET)
+CHECK_TARGETS+=isort-check
+FORMAT_TARGETS+=isort-format
+DIRTY_TARGETS+=isort-dirty
+CLEAN_TARGETS+=isort-clean
+
+##############################################################################
+# black
+##############################################################################
+
+BLACK_TARGET:=$(SENTINEL_FOLDER)/black.sentinel
+$(BLACK_TARGET): $(MXENV_TARGET)
+	@echo "Install Black"
+	@$(MXENV_PATH)pip install black
+	@touch $(BLACK_TARGET)
+
+.PHONY: black-check
+black-check: $(BLACK_TARGET)
+	@echo "Run black checks"
+	@$(MXENV_PATH)black --check $(BLACK_SRC)
+
+.PHONY: black-format
+black-format: $(BLACK_TARGET)
+	@echo "Run black format"
+	@$(MXENV_PATH)black $(BLACK_SRC)
+
+.PHONY: black-dirty
+black-dirty:
+	@rm -f $(BLACK_TARGET)
+
+.PHONY: black-clean
+black-clean: black-dirty
+	@$(MXENV_PATH)pip uninstall black
+
+INSTALL_TARGETS+=$(BLACK_TARGET)
+CHECK_TARGETS+=black-check
+FORMAT_TARGETS+=black-format
+DIRTY_TARGETS+=black-dirty
+CLEAN_TARGETS+=black-clean
+
+##############################################################################
 # mxfiles
 ##############################################################################
 
@@ -201,9 +276,28 @@ define unset_mxfiles_env
 	@unset MXMAKE_FILES
 endef
 
-FILES_TARGET:=$(SENTINEL_FOLDER)/mxfiles.sentinel
-$(FILES_TARGET): $(PROJECT_CONFIG) $(MXENV_TARGET)
+$(PROJECT_CONFIG):
+ifneq ("$(wildcard $(PROJECT_CONFIG))","")
+	@touch $(PROJECT_CONFIG)
+else
+	@echo "[settings]" > $(PROJECT_CONFIG)
+endif
+
+LOCAL_PACKAGE_FILES:=
+ifneq ("$(wildcard pyproject.toml)","")
+	LOCAL_PACKAGE_FILES+=pyproject.toml
+endif
+ifneq ("$(wildcard setup.cfg)","")
+	LOCAL_PACKAGE_FILES+=setup.cfg
+endif
+ifneq ("$(wildcard setup.py)","")
+	LOCAL_PACKAGE_FILES+=setup.py
+endif
+
+FILES_TARGET:=requirements-mxdev.txt
+$(FILES_TARGET): $(PROJECT_CONFIG) $(MXENV_TARGET) $(LOCAL_PACKAGE_FILES)
 	@echo "Create project files"
+	@mkdir -p $(MXMAKE_FILES)
 	$(call set_mxfiles_env,$(MXENV_PATH),$(MXMAKE_FILES))
 	@$(MXENV_PATH)mxdev -n -c $(PROJECT_CONFIG)
 	$(call unset_mxfiles_env,$(MXENV_PATH),$(MXMAKE_FILES))
@@ -214,11 +308,11 @@ mxfiles: $(FILES_TARGET)
 
 .PHONY: mxfiles-dirty
 mxfiles-dirty:
-	@rm -f $(FILES_TARGET)
+	@touch $(PROJECT_CONFIG)
 
 .PHONY: mxfiles-clean
 mxfiles-clean: mxfiles-dirty
-	@rm -f constraints-mxdev.txt requirements-mxdev.txt $(MXMAKE_FILES)
+	@rm -rf constraints-mxdev.txt requirements-mxdev.txt $(MXMAKE_FILES)
 
 INSTALL_TARGETS+=mxfiles
 DIRTY_TARGETS+=mxfiles-dirty
@@ -253,15 +347,19 @@ PURGE_TARGETS+=sources-purge
 # packages
 ##############################################################################
 
+# case `core.sources` domain not included
+SOURCES_TARGET?=
+
+# additional sources targets which requires package re-install on change
 -include $(MXMAKE_FILES)/additional_sources_targets.mk
 ADDITIONAL_SOURCES_TARGETS?=
 
-INSTALLED_PACKAGES=.installed.txt
+INSTALLED_PACKAGES=$(MXMAKE_FILES)/installed.txt
 
-PACKAGES_TARGET:=$(SENTINEL_FOLDER)/packages.sentinel
-$(PACKAGES_TARGET): $(SOURCES_TARGET) $(ADDITIONAL_SOURCES_TARGETS)
+PACKAGES_TARGET:=$(INSTALLED_PACKAGES)
+$(PACKAGES_TARGET): $(FILES_TARGET) $(SOURCES_TARGET) $(ADDITIONAL_SOURCES_TARGETS)
 	@echo "Install python packages"
-	@$(MXENV_PATH)pip install -r requirements-mxdev.txt
+	@$(MXENV_PATH)pip install -r $(FILES_TARGET)
 	@$(MXENV_PATH)pip freeze > $(INSTALLED_PACKAGES)
 	@touch $(PACKAGES_TARGET)
 
@@ -272,8 +370,14 @@ packages: $(PACKAGES_TARGET)
 packages-dirty:
 	@rm -f $(PACKAGES_TARGET)
 
+.PHONY: packages-clean
+packages-clean:
+	@test -e $(FILES_TARGET) && pip uninstall -y -r $(FILES_TARGET)
+	@rm -f $(PACKAGES_TARGET)
+
 INSTALL_TARGETS+=packages
 DIRTY_TARGETS+=packages-dirty
+CLEAN_TARGETS+=packages-clean
 
 ##############################################################################
 # test
@@ -301,61 +405,19 @@ mypy: $(PACKAGES_TARGET) $(MYPY_TARGET)
 	@echo "Run mypy"
 	@$(MXENV_PATH)mypy $(MYPY_SRC)
 
+.PHONY: mypy-dirty
+mypy-dirty:
+	@rm -f $(MYPY_TARGET)
+
 .PHONY: mypy-clean
-mypy-clean:
+mypy-clean: mypy-dirty
 	@rm -rf .mypy_cache
+	@$(MXENV_PATH)pip uninstall mypy
 
 INSTALL_TARGETS+=$(MYPY_TARGET)
-CLEAN_TARGETS+=mypy-clean
 CHECK_TARGETS+=mypy
-
-##############################################################################
-# isort
-##############################################################################
-
-ISORT_TARGET:=$(SENTINEL_FOLDER)/isort.sentinel
-$(ISORT_TARGET): $(MXENV_TARGET)
-	@echo "Install isort"
-	@$(MXENV_PATH)pip install isort
-	@touch $(ISORT_TARGET)
-
-.PHONY: isort-check
-isort-check: $(PACKAGES_TARGET) $(ISORT_TARGET)
-	@echo "Run isort check"
-	@$(MXENV_PATH)isort --check $(ISORT_SRC)
-
-.PHONY: isort-format
-isort-format: $(PACKAGES_TARGET) $(ISORT_TARGET)
-	@echo "Run isort format"
-	@$(MXENV_PATH)isort $(ISORT_SRC)
-
-INSTALL_TARGETS+=$(ISORT_TARGET)
-CHECK_TARGETS+=isort-check
-FORMAT_TARGETS+=isort-format
-
-##############################################################################
-# black
-##############################################################################
-
-BLACK_TARGET:=$(SENTINEL_FOLDER)/black.sentinel
-$(BLACK_TARGET): $(MXENV_TARGET)
-	@echo "Install Black"
-	@$(MXENV_PATH)pip install black
-	@touch $(BLACK_TARGET)
-
-.PHONY: black-check
-black-check: $(PACKAGES_TARGET) $(BLACK_TARGET)
-	@echo "Run black checks"
-	@$(MXENV_PATH)black --check $(BLACK_SRC)
-
-.PHONY: black-format
-black-format: $(PACKAGES_TARGET) $(BLACK_TARGET)
-	@echo "Run black format"
-	@$(MXENV_PATH)black $(BLACK_SRC)
-
-INSTALL_TARGETS+=$(BLACK_TARGET)
-CHECK_TARGETS+=black-check
-CHECK_TARGETS+=black-format
+CLEAN_TARGETS+=mypy-clean
+DIRTY_TARGETS+=mypy-dirty
 
 ##############################################################################
 # Default targets
@@ -378,7 +440,7 @@ dirty: $(DIRTY_TARGETS)
 
 .PHONY: clean
 clean: dirty $(CLEAN_TARGETS)
-	@rm -rf $(CLEAN_TARGETS) $(MXMAKE_FOLDER)
+	@rm -rf $(CLEAN_TARGETS) $(MXMAKE_FOLDER) $(CLEAN_FS)
 
 .PHONY: purge
 purge: clean $(PURGE_TARGETS)
