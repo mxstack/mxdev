@@ -34,143 +34,176 @@ Create an INI file, like `mx.ini` in [configparser.ExtendedInterpolation](https:
 The **main section** must be called `[settings]`, even if kept empty.
 In the main sections the input and output files are defined.
 
-`requirements-in`
-    : Main requirements file to start with. This can be an URL too.
+#### `requirements-in`
 
-      If given an empty value mxdev will only generate output from the information given in INI file itself.
+Main requirements file to start with. This can be an URL too.
 
-      Default: `requirements.txt`
+If given an empty value mxdev will only generate output from the information given in INI file itself.
 
-`requirements-out`
-    : Output of the combined requirements including development sources to be used later with `pip install`. Default: `requirements-mxdev.txt`
+Default: `requirements.txt`
 
-`constraints-out`
-    : Output of the combined constraints. Default: `constraints-mxdev.txt`
+#### `requirements-out`
 
-`default-target`
-    : Target directory for sources from VCS. Default: `./sources`
+Output of the combined requirements including development sources to be used later with `pip install`.
+Default: `requirements-mxdev.txt`
 
-`default-install-mode`
-    : Default for `install-mode` on section, read there for details
-      Allowed values: `direct` or `skip`
-      Default: `direct`
+#### `constraints-out`
 
-`default-update`
-    : Default for `update` on section, read there for details
-      Allowed values: `yes` or `no`
-      Default: `yes`
+Output of the combined constraints.
 
-`threads`
-    : Number of threads to fetch sources in parallel with.
-      Speeds up fetching from VCS.
-      Default: `4`
+Default: `constraints-mxdev.txt`
 
-`offline`
-    : Do not fetch any sources.
-      Handy if working offline.
-      Default: `False`
+#### `default-target`
 
-`version-overrides`
-    : Override package versions which are already defined in a dependent constraints file.
-      I.e. an upstream *constraints.txt* contains already `somefancypackage==2.0.3`.
-      Given that, for some reason (like with my further developed sources), we need version 3.0.0 of the above package.
-      Then in this section, this can be defined as:
+Target directory for sources from VCS. Default: `./sources`
 
-      ```INI
-      [settings]
-      version-overrides =
-          somefancypackage==3.0.0
-          otherpackage==33.12.1
-      ```
+#### `default-install-mode`
 
-      It is possible to add as many overrides as needed.
-      When writing the *constraints-out*, the new version will be taken into account.
-      If there is a source section defined for the same package, the source will be used and entries here are ignored.
+Default for `install-mode` on section, read there for details
+Allowed values: `direct` or `skip`
 
-`ignores`
-    : Ignore packages that are already defined in a dependent constraints file.
-      No new version will be provided.
-      This is specifically handy if a package is going to be installed editable from local file system (like `-e .`), but was already pinned in an upstream constraints file.
+Default: `direct`
 
-       This can be defined as:
+#### `default-update`
+Default for `update` on section, read there for details
 
-      ```INI
-      [settings]
-      ignores =
-          somefancypackage
-          otherpackage
-      ```
+Allowed values: `yes` or `no`
 
-`default-use`
-  : True by default.  When false, the source is not checked out,
-    and the version for this package is not overridden.
-    Additionally, custom variables can be defined as `key = value` pair.
-    Those can be referenced in other values as `${settings:key}` and will be expanded there.
+Default: `yes`
 
+#### `threads`
+
+Number of threads to fetch sources in parallel with.
+Speeds up fetching from VCS.
+
+Default: `4`
+
+#### `offline`
+
+Do not fetch any sources.
+Handy if working offline.
+
+Default: `False`
+
+#### `version-overrides`
+
+Override package versions which are already defined in a dependent constraints file.
+I.e. an upstream *constraints.txt* contains already `somefancypackage==2.0.3`.
+Given that, for some reason (like with my further developed sources), we need version 3.0.0 of the above package.
+
+Then in this section, this can be defined as:
+
+```INI
+[settings]
+version-overrides =
+    somefancypackage==3.0.0
+    otherpackage==33.12.1
+```
+
+It is possible to add as many overrides as needed.
+When writing the *constraints-out*, the new version will be taken into account.
+If there is a source section defined for the same package, the source will be used and entries here are ignored.
+
+#### `ignores`
+
+Ignore packages that are already defined in a dependent constraints file.
+No new version will be provided.
+This is specifically handy if a package is going to be installed editable from local file system (like `-e .`), but was already pinned in an upstream constraints file.
+
+This can be defined as:
+
+```INI
+[settings]
+ignores =
+    somefancypackage
+    otherpackage
+```
+
+#### `default-use`
+
+True by default.  When false, the source is not checked out,
+and the version for this package is not overridden.
+Additionally, custom variables can be defined as `key = value` pair.
+Those can be referenced in other values as `${settings:key}` and will be expanded there.
 
 ### Subsequent package source sections
 
 All other sections are defining the sources to be used.
 
-`[PACKAGENAME]`
-    : The section name is the package name.
+#### `[PACKAGENAME]`
 
-`url = URL`
-    : The checkout URL of the repository.
+The section name is the package name.
 
-      The URL is required.
+#### `url = URL`
 
-`pushurl = URL`
-    : Optional a writable URL for pushes can be specified.
+The checkout URL of the repository.
 
-      If the `pushurl` is set after initial checkout it is not applied.
-      To apply it remove the repository and checkout again.
+The URL is required.
 
-`branch = BRANCHNAME_OR_TAG`
-    : the branch name or tag to checkout.
-      Defaults to `main`.
+#### `pushurl = URL`
 
-`extras = EXTRA1,EXTRA2`
-    : Package extras to install. Default empty.
+Optional a writable URL for pushes can be specified.
 
-`subdirectory = SUBPATH`
-    :  For specifying the path to the Python package, when it is not in the root of the VCS directory.
-       Default empty.
+If the `pushurl` is set after initial checkout it is not applied.
+To apply it remove the repository and checkout again.
 
-`target`
-    : The target directory for source from this section.
-      Default to default target directory configured in the main section `[settings]` `default-target =` value.
+#### `branch = BRANCHNAME_OR_TAG`
 
-`install-mode`
-    : There are different modes of pip installation:
+The branch name or tag to checkout.
 
-      `skip`
-        : Do not install with pip, just clone/update the repository.
+Defaults to `main`.
 
-      `direct`
-        : Install the package using `pip -e PACKAGEPATH`.
-          Dependencies are resolved immediately.
+#### `extras = EXTRA1,EXTRA2`
 
+Package extras to install. Default empty.
 
-      Defaults to default mode configured in main section `[settings]` `default-install-mode =` value.
+#### `subdirectory = SUBPATH`
 
-`use`
-    : True by default, unless `default-use` in the general settings is false.
-      When false, the source is not checked out,
-      and the version for this package is not overridden.
+For specifying the path to the Python package, when it is not in the root of the VCS directory.
 
-`submodules`
-    : There are 3 different options
+Default empty.
 
-      `always`
-        : (default) git submodules will always be checked out, they will be updated if already present
+#### `target`
+The target directory for source from this section.
 
-      `checkout`
-        : submodules get only fetched during checkout, existing submodules stay untouched
+Default to default target directory configured in the main section `[settings]` `default-target =` value.
 
-      `recursive`
-        : fetches submodules recursively, results in `git clone --recurse-submodules on` checkout
-          and `submodule update --init --recursive` on update
+#### `install-mode`
+
+There are different modes of pip installation
+
+##### `skip`
+
+Do not install with pip, just clone/update the repository
+
+##### `direct`
+
+Install the package using `pip -e PACKAGEPATH`.
+Dependencies are resolved immediately
+
+Defaults to default mode configured in main section `[settings]` `default-install-mode =` value.
+
+#### `use`
+
+True by default, unless `default-use` in the general settings is false.
+When false, the source is not checked out,
+and the version for this package is not overridden.
+
+#### `submodules`
+
+There are 3 different options:
+
+##### `always`
+
+(default) git submodules will always be checked out, they will be updated if already presen
+
+##### `checkout`
+
+submodules get only fetched during checkout, existing submodules stay untouche
+
+##### `recursive`
+
+Fetches submodules recursively, results in `git clone --recurse-submodules on` checkout and `submodule update --init --recursive` on update.
 
 ### Usage
 
@@ -280,20 +313,20 @@ hook = "myextension:MyExtension"
 
 ## Rationale
 
-Problem
-    : There is a constraint file like `-c constraints.txt` with a package `foo.bar` with a version pin.
-      Then it is not possible to install this package in a requirements file editable like `-r requirements.txt` with `-e git+ssh://git@github.com/orga/foo.bar.git@fix-99`.
-      Neither it is possible to override inherited version constraints with custom ones.
+### Problem
 
-Idea
-    : A pre-processor fetches (as this can be an URL) and expands all `-c SOMEOTHER_FILE_OR_URL` and `-r SOMEOTHER_FILE_OR_URL` files into one, filtering out all packages given in a configuration file.
-      For each of those packages, a `-`e ...` entry is generated instead and written to a new `TARGET.txt`.
-      Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
-      The configuration is read from a file `mx.ini` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
+There is a constraint file like `-c constraints.txt` with a package `foo.bar` with a version pin.
+Then it is not possible to install this package in a requirements file editable like `-r requirements.txt` with `-e git+ssh://git@github.com/orga/foo.bar.git@fix-99`.
+Neither it is possible to override inherited version constraints with custom ones.
 
-Trivia
-    : Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with the word "mix".
+### Idea
+A pre-processor fetches (as this can be an URL) and expands all `-c SOMEOTHER_FILE_OR_URL` and `-r SOMEOTHER_FILE_OR_URL` files into one, filtering out all packages given in a configuration file.
+For each of those packages, a `-`e ...` entry is generated instead and written to a new `TARGET.txt`.
+Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
+The configuration is read from a file `mx.ini` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
 
+### Trivia
+Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be a gender-neutral alternative to the titles Mr. and Ms. but also associates with the word "mix".
 
 ## Misc
 
