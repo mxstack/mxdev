@@ -1,6 +1,6 @@
 ## Changes
 
-# 3.0.0b2 (unreleased)
+# 3.0.0b2 (2023-02-07)
 
 - In this package, use `pyproject.toml` and markdown for README et al.
   [jensens]
