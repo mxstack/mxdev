@@ -126,6 +126,18 @@ and the version for this package is not overridden.
 Additionally, custom variables can be defined as `key = value` pair.
 Those can be referenced in other values as `${settings:key}` and will be expanded there.
 
+#### `main-package`
+
+mxdev can handle one Python package as main package directly via ini config.
+If defined, it will be added as last entry in the resulting requirements out file.
+
+This can be defined as:
+
+```INI
+[settings]
+main-package = -e .[test]
+```
+
 ### Subsequent package source sections
 
 All other sections are defining the sources to be used.

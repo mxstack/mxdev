@@ -2,7 +2,11 @@
 
 ### 3.0.0b3 (unreleased)
 
-- no changes yet
+- Do not write constraints out file if no constraints defined.
+  [rnix]
+
+- Add `main-package` option to the settings.
+  [rnix]
 
 ### 3.0.0b2 (2023-02-07)
 
