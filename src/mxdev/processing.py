@@ -256,7 +256,7 @@ def write(state: State) -> None:
         logger.info(f"No constraints, skip writing constraints file")
     logger.info(f"Write [r]: {cfg.out_requirements}")
     with open(cfg.out_requirements, "w") as fio:
-        if constraints:
+        if constraints or cfg.overrides:
             fio.write("#" * 79 + "\n")
             fio.write("# mxdev combined constraints\n")
             fio.write(f"-c {cfg.out_constraints}\n\n")
