@@ -2,7 +2,14 @@
 
 ### 3.0.0b3 (unreleased)
 
-- no changes yet
+- Fix reading sections from config parser without defaults if section contains setting which also exists as default.
+  [rnix]
+
+- Do not write constraints out file if no constraints defined.
+  [rnix]
+
+- Add `main-package` option to the settings.
+  [rnix]
 
 ### 3.0.0b2 (2023-02-07)
 

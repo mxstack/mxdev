@@ -194,7 +194,9 @@ def fetch(state: State) -> None:
 
 def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.Any]]):
     """Create requirements configuration for fetched source packages."""
-    fio.write("\n" + "#" * 79 + "\n")
+    if not packages:
+        return
+    fio.write("#" * 79 + "\n")
     fio.write("# mxdev development sources\n")
     for name, package in packages.items():
         if package["install-mode"] == "skip":
@@ -207,14 +209,14 @@ def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.An
         )
         logger.debug(f"-> {editable.strip()}")
         fio.write(editable)
-    fio.write("\n")
+    fio.write("\n\n")
 
 
 def write_dev_overrides(
     fio, overrides: typing.Dict[str, str], package_keys: typing.List[str]
 ):
     """Create requirements configuration for overridden packages."""
-    fio.write("\n" + "#" * 79 + "\n")
+    fio.write("#" * 79 + "\n")
     fio.write("# mxdev constraint overrides\n")
     for pkg, line in overrides.items():
         if pkg in package_keys:
@@ -223,7 +225,16 @@ def write_dev_overrides(
             )
         else:
             fio.write(f"{line}\n")
-    fio.write("\n")
+    fio.write("\n\n")
+
+
+def write_main_package(fio, settings: typing.Dict[str, str]):
+    """Write main package if configured."""
+    main_package = settings.get("main-package")
+    if main_package:
+        fio.write("#" * 79 + "\n")
+        fio.write("# main package\n")
+        fio.write(f"{main_package}\n")
 
 
 def write(state: State) -> None:
@@ -235,15 +246,20 @@ def write(state: State) -> None:
     cfg = state.configuration
     logger.info("#" * 79)
     logger.info("# Write outfiles")
-    logger.info(f"Write [c]: {cfg.out_constraints}")
-    with open(cfg.out_constraints, "w") as fio:
-        fio.writelines(constraints)
-        if cfg.overrides:
-            write_dev_overrides(fio, cfg.overrides, cfg.package_keys)
+    if constraints:
+        logger.info(f"Write [c]: {cfg.out_constraints}")
+        with open(cfg.out_constraints, "w") as fio:
+            fio.writelines(constraints)
+            if cfg.overrides:
+                write_dev_overrides(fio, cfg.overrides, cfg.package_keys)
+    else:
+        logger.info(f"No constraints, skip writing constraints file")
     logger.info(f"Write [r]: {cfg.out_requirements}")
     with open(cfg.out_requirements, "w") as fio:
-        fio.write("#" * 79 + "\n")
-        fio.write("# mxdev combined constraints\n")
-        fio.write(f"-c {cfg.out_constraints}\n\n")
+        if constraints:
+            fio.write("#" * 79 + "\n")
+            fio.write("# mxdev combined constraints\n")
+            fio.write(f"-c {cfg.out_constraints}\n\n")
         write_dev_sources(fio, cfg.packages)
         fio.writelines(requirements)
+        write_main_package(fio, cfg.settings)

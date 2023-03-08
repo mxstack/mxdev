@@ -123,8 +123,9 @@ class Configuration:
 
     def _read_section(self, data, name):
         # read section without defaults.
-        defaults = data.defaults()
-        return {k: v for k, v in data[name].items() if k not in defaults}
+        section_keys = data._sections[name].keys()
+        section = data[name]
+        return {k: section[k] for k in section_keys}
 
     @property
     def infile(self) -> str:
