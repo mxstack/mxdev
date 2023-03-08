@@ -2,6 +2,9 @@
 
 ### 3.0.0b3 (unreleased)
 
+- Fix reading sections from config parser without defaults if section contains setting which also exists as default.
+  [rnix]
+
 - Do not write constraints out file if no constraints defined.
   [rnix]
 
