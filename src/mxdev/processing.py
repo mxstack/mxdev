@@ -246,7 +246,7 @@ def write(state: State) -> None:
     cfg = state.configuration
     logger.info("#" * 79)
     logger.info("# Write outfiles")
-    if constraints:
+    if constraints or cfg.overrides:
         logger.info(f"Write [c]: {cfg.out_constraints}")
         with open(cfg.out_constraints, "w") as fio:
             fio.writelines(constraints)
