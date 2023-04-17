@@ -21,7 +21,8 @@ def process_line(
     The line is taken as is unless one of the following cases matches:
 
     is a constraint or requirements file reference (as file or http(s))
-        trigger resolving/recursive processing (open/download) the reference and process it.
+        trigger resolving/recursive processing (open/download) the reference
+        and process it.
 
     is in package_keys, override_keys or ignore_keys
         prefix the line as comment with reason appended
@@ -120,7 +121,8 @@ def resolve_dependencies(
                 )
         else:
             logger.info(
-                f"Can not read {variety_verbose} file '{file_or_url}', it does not exist. Empty file assumed."
+                f"Can not read {variety_verbose} file '{file_or_url}', "
+                "it does not exist. Empty file assumed."
             )
     else:
         with request.urlopen(file_or_url) as fio:
@@ -253,7 +255,7 @@ def write(state: State) -> None:
             if cfg.overrides:
                 write_dev_overrides(fio, cfg.overrides, cfg.package_keys)
     else:
-        logger.info(f"No constraints, skip writing constraints file")
+        logger.info("No constraints, skip writing constraints file")
     logger.info(f"Write [r]: {cfg.out_requirements}")
     with open(cfg.out_requirements, "w") as fio:
         if constraints or cfg.overrides:

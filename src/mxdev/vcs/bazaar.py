@@ -120,4 +120,3 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
         if self.status() != "clean" and not kwargs.get("force", False):
             raise BazaarError("Can't update package %r because it's dirty." % name)
         return self.bzr_pull(**kwargs)
-
