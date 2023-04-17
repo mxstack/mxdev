@@ -166,7 +166,7 @@ def test_update_without_revision_pin(mkgitrepo, src, capsys, caplog):
             ("info", ("Switching to remote branch 'master'.",), {}),
         ]
         captured = capsys.readouterr()
-        assert captured.out == ""
+        assert captured.err == ""
         status = vcs_status(sources, verbose=True)
         captured = capsys.readouterr()
         assert status == {"egg": ("clean", "## master...origin/master\n")}

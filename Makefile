@@ -83,7 +83,7 @@ PROJECT_CONFIG?=mx.ini
 # The command which gets executed. Defaults to the location the
 # :ref:`run-tests` template gets rendered to if configured.
 # Default: .mxmake/files/run-tests.sh
-TEST_COMMAND?=venv/bin/pytest src
+TEST_COMMAND?=venv/bin/pytest -vvv src
 
 # Additional make targets the test target depends on.
 # No default value.
