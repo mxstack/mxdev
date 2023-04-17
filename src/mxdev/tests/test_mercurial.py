@@ -8,7 +8,6 @@ import pytest
 class TestMercurial:
     @pytest.mark.skip("Needs rewrite")
     def testUpdateWithoutRevisionPin(self, develop, src, tempdir):
-
         from mxdev.vcs.commands import CmdCheckout
         from mxdev.vcs.commands import CmdUpdate
 

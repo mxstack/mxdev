@@ -41,4 +41,5 @@ jobs:
           path: "requirements.txt"
       - name: Run Tests
         run: |
+          git config --global protocol.file.allow always
           pytest .
