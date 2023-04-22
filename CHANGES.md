@@ -2,6 +2,13 @@
 
 ### 3.0.0b3 (unreleased)
 
+- Fix usage of "--install-option='pre'" and use "--pre" option in requirements files instead.
+  The install options is deprecated in pip 23 which Plone switched to recently.
+  More info:
+  https://github.com/pypa/pip/issues/11358
+  https://discuss.python.org/t/passing-command-line-arguments-to-pip-install-after-install-options-deprecation/22981/6
+  [thet, fredvd]
+
 - Fix reading sections from config parser without defaults if section contains setting which also exists as default.
   [rnix]
 
