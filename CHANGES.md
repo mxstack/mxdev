@@ -1,5 +1,9 @@
 ## Changes
 
+### 3.0.0b4 (unreleased)
+
+- nothing changed.
+
 ### 3.0.0b3 (2023-04-23)
 
 - Fix usage of "--install-option='pre'" and use "--pre" option in requirements files instead.
