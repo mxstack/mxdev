@@ -96,7 +96,6 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         # back to the main one large chunks of output
         kwargs["bufsize"] = -1
         kwargs["universal_newlines"] = True
-        print(commands)
         return subprocess.Popen(commands, **kwargs)
 
     def git_merge_rbranch(
