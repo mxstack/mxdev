@@ -1,25 +1,25 @@
 ## Changes
 
-### 3.0.0b4 (unreleased)
+### 3.0.0 (2023-05-08)
 
-- nothing changed.
+- Removed leftover print [jensens]
 
 ### 3.0.0b3 (2023-04-23)
 
-- Fix usage of "--install-option='pre'" and use "--pre" option in requirements files instead.
-  The install options is deprecated in pip 23 which Plone switched to recently.
+- Fix usage of `--install-option='pre'` and use `--pre` option in requirements files instead.
+  The install options are deprecated in pip 23 which Plone switched to recently.
   More info:
   https://github.com/pypa/pip/issues/11358
   https://discuss.python.org/t/passing-command-line-arguments-to-pip-install-after-install-options-deprecation/22981/6
   [thet, fredvd]
 
-- Fix reading sections from config parser without defaults if section contains setting which also exists as default.
+- Fix reading sections from the config parser without defaults if the section contains a setting that also exists as default.
   [rnix]
 
-- Do not write constraints out file if no constraints defined.
+- Do not write constraints out to the file if no constraints are defined.
   [rnix]
 
-- Add `main-package` option to the settings.
+- Add the `main-package` option to the settings.
   [rnix]
 
 ### 3.0.0b2 (2023-02-07)
@@ -28,8 +28,8 @@
   [jensens]
 
 - Add `use` option to sources, and `default-use` to the settings.
-  `default-use` is true by default.  When false, the source is not
-  checked out, and the version for this package is not overridden.
+  `default-use` is true by default.
+  When false, the source is not checked out, and the version for this package is not overridden.
   [maurits]
 
 
@@ -41,13 +41,13 @@
   `pip` style VCS URLs are not supported any longer.
   [jensens, rnix, zworkb]
 
-- Config parser options are now considered case sensitive.
+- Config parser options are now considered case-sensitive.
   [rnix]
 
 - Do not fail `mxdev` run if `requirements.txt` is missing.
   [rnix]
 
-- Add flag to only fetch repositories an skip generating files.
+- Add flag to only fetch repositories and skip generating files.
   [rnix]
 
 - Add flag to skip fetching of repositories.
@@ -56,21 +56,21 @@
 - Add support for custom hooks.
   [rnix]
 
-- Rename sources.ini to mx.ini in documentation.
+- Rename `sources.ini` to `mx.ini` in the documentation.
   [rnix]
 
-- Introduce state object and pass it to read/fetch/write. State object
-  contains all required runtime data.
+- Introduce state object and pass it to read/fetch/write.
+  State object contains all required runtime data.
   [rnix]
 
 
 ### 2.0.0 (2022-01-31)
 
 - Depend on pip 22, where interdependency mode is no longer needed.
-  Remove all interdependency related code.
+  Remove all interdependency-related code.
   [jensens]
 
-- Better error message if the requirements-in file does not exists.
+- Better error message if the requirements-in file does not exist.
   [jensens]
 
 - Better last message with the full pip command.
@@ -82,15 +82,15 @@
 ### 1.1.0 (2021-12-29)
 
 - Feature: Ignore existing constraints.
-  New setting `ignores` with a list of packages (one per line) to ignore from constraints without providing a version.
+  New setting `ignores` with a list of packages (one per line) to ignore constraints without providing a version.
   [jensens]
 
 
 ### 1.0.1 (2021-12-21)
 
 - Fix: If a developed package depends on another developed package the dependent package was ignored *sometimes* (!?).
-  Instead the last release was taken.
-  Solution: Install it with the `--pre` option in order allow the other non-final/in-development *release*.
+  Instead, the last release was taken.
+  Solution: Install it with the `--pre` option in order to allow the other non-final/in-development *release*.
   [jensens]
 
 
@@ -126,13 +126,13 @@
 - Beautified output.
   [jensens]
 
-- Fixed missing CR if `*.txt` does not end with newline.
+- Fixed missing CR if `*.txt` does not end with a newline.
   [jensens]
 
 
 ### 1.0.0a9 (2021-12-01)
 
-- Added auto correction for pip URLs, so that GitHub or Gitlab URLs can be used as copied in `sources.ini`.
+- Added auto correction for pip URLs, so that GitHub or GitLab URLs can be used as copied in `sources.ini`.
   [zworkb]
 
 

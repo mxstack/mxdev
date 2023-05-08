@@ -1,4 +1,4 @@
-# License
+## License
 
 Copyright (c) 2022-2023, mxstack Contributors
 

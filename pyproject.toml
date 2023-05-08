@@ -61,7 +61,7 @@ build-backend = "setuptools.build_meta"
 zip-safe = false
 
 [tool.setuptools.dynamic]
-readme = {file = ["README.md", "CHANGES.md", "LICENSE.md"], content-type = "text/markdown"}
+readme = {file = ["README.md", "CONTRIBUTING.md", "CHANGES.md", "LICENSE.md"], content-type = "text/markdown"}
 
 [tool.pytest.ini_options]
 minversion = "6.0"
