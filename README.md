@@ -333,7 +333,7 @@ Neither it is possible to override inherited version constraints with custom one
 
 ### Idea
 A pre-processor fetches (as this can be an URL) and expands all `-c SOMEOTHER_FILE_OR_URL` and `-r SOMEOTHER_FILE_OR_URL` files into one, filtering out all packages given in a configuration file.
-For each of those packages, a `-`e ...` entry is generated instead and written to a new `TARGET.txt`.
+For each of those packages, a `-e ...` entry is generated instead and written to a new `TARGET.txt`.
 Same is true for version overrides: a new entry is written to the resulting constraints file while the original version is disabled.
 The configuration is read from a file `mx.ini` in *ExtendedInterpolation* INI syntax (YAML would be nice, but the package must have as less dependencies as possible to other packages).
 
