@@ -1,5 +1,9 @@
 ## Changes
 
+### 3.0.1 (unreleased)
+
+Nothing yet.
+
 ### 3.0.0 (2023-05-08)
 
 - Removed leftover print [jensens]
