@@ -53,12 +53,12 @@ VENV_CREATE?=true
 VENV_FOLDER?=venv
 
 # mxdev to install in virtual environment.
-# Default: https://github.com/mxstack/mxdev/archive/main.zip
-MXDEV?=https://github.com/mxstack/mxdev/archive/main.zip
+# Default: mxdev
+MXDEV?=mxdev
 
 # mxmake to install in virtual environment.
-# Default: https://github.com/mxstack/mxmake/archive/develop.zip
-MXMAKE?=https://github.com/mxstack/mxmake/archive/develop.zip
+# Default: mxmake
+MXMAKE?=mxmake
 
 ## qa.isort
 
