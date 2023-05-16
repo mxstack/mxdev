@@ -2,7 +2,7 @@
 
 ### 3.0.1 (unreleased)
 
-Nothing yet.
+- Provide `directory` default setting [rnix]
 
 ### 3.0.0 (2023-05-08)
 

@@ -37,6 +37,11 @@ class Configuration:
             interpolation=configparser.ExtendedInterpolation(),
         )
         data.optionxform = str  # type: ignore
+
+        # default settings to be used in mx.ini config file
+        data["settings"]["directory"] = os.getcwd()
+        # end default settings
+
         data.read_file(tio)
         settings = self.settings = dict(data["settings"].items())
 

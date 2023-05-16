@@ -138,6 +138,20 @@ This can be defined as:
 main-package = -e .[test]
 ```
 
+### Default settings
+
+mxdev provides default settings which can be used inside package or custom
+sections.
+
+#### `directory`
+
+Contains the current working directory and can be used like this
+
+```INI
+[sectionname]
+param = ${settings:directory}/some/path
+```
+
 ### Subsequent package source sections
 
 All other sections are defining the sources to be used.
