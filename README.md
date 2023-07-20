@@ -138,6 +138,8 @@ This can be defined as:
 main-package = -e .[test]
 ```
 
+If the main package is defined in a dependent constraint file, it's name must be added to `ignores`.
+
 ### Default settings
 
 mxdev provides default settings which can be used inside package or custom
