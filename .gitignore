@@ -11,3 +11,4 @@ constraints-mxdev.txt
 example/*-outfile.txt
 requirements-mxdev.txt
 venv/
+dist/
