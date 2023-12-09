@@ -7,5 +7,6 @@ recursive-include example *.ini
 recursive-include example *.txt
 recursive-include src *.md
 recursive-exclude example *-outfile.txt
+recursive-include src *.ini
 recursive-exclude .vscode *
 graft mxdev
