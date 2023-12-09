@@ -1,13 +1,16 @@
 from configparser import ConfigParser
-from urllib import request
+from configparser import ExtendedInterpolation
 from urllib import parse
+from urllib import request
 
 import pathlib
 import tempfile
-
+import os
 
 def resolve_dependencies(
-    file_or_url: str | pathlib.Path, tmpdir: tempfile.TemporaryDirectory, http_parent=None,
+    file_or_url: str | pathlib.Path,
+    tmpdir: tempfile.TemporaryDirectory,
+    http_parent=None,
 ) -> list[pathlib.Path]:
     """Resolve dependencies of a file or url
 
@@ -27,11 +30,11 @@ def resolve_dependencies(
                 tf.write(fio.read())
                 tf.flush()
                 file = pathlib.Path(tf.name)
-            parts = list(parsed.parts)
+            parts = list(parsed)
             parts[2] = str(pathlib.Path(parts[2]).parent)
-            http_parent = parse.urlunparse(parsed.parts)
+            http_parent = parse.urlunparse(parts)
         else:
-            file = pathlib.Path(file)
+            file = pathlib.Path(file_or_url)
     else:
         file = file_or_url
     if not file.exists():
@@ -59,8 +62,13 @@ def read_with_included(file_or_url: str | pathlib.Path) -> ConfigParser:
 
     Parse the result as a ConfigParser and return it.
     """
+    cfg = ConfigParser(
+        default_section="settings",
+        interpolation=ExtendedInterpolation(),
+    )
+    cfg.optionxform = str  # type: ignore
+    cfg["settings"]["directory"] = os.getcwd()
     with tempfile.TemporaryDirectory() as tmpdir:
         resolved = resolve_dependencies(file_or_url, tmpdir)
-        cfg = ConfigParser()
         cfg.read(resolved)
-        return cfg
+    return cfg
