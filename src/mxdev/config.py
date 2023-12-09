@@ -1,5 +1,5 @@
-from .logging import logger
 from .including import read_with_included
+from .logging import logger
 
 import os
 import pkg_resources

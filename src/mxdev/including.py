@@ -3,12 +3,14 @@ from configparser import ExtendedInterpolation
 from urllib import parse
 from urllib import request
 
+import os
 import pathlib
 import tempfile
-import os
+import typing
+
 
 def resolve_dependencies(
-    file_or_url: str | pathlib.Path,
+    file_or_url: typing.Union[str, pathlib.Path],
     tmpdir: tempfile.TemporaryDirectory,
     http_parent=None,
 ) -> list[pathlib.Path]:

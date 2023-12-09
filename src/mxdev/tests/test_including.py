@@ -43,6 +43,7 @@ def test_resolve_dependencies_filenotfound(tmp_path):
     with pytest.raises(FileNotFoundError):
         resolve_dependencies(base / "file__not_found.ini", tmp_path)
 
+
 def test_read_with_included():
     from mxdev.including import read_with_included
 
@@ -53,4 +54,3 @@ def test_read_with_included():
     assert cfg["settings"]["unique_2"] == "2"
     assert cfg["settings"]["unique_3"] == "3"
     assert cfg["settings"]["unique_4"] == "4"
-
