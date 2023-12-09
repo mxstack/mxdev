@@ -53,6 +53,21 @@ Output of the combined constraints.
 
 Default: `constraints-mxdev.txt`
 
+#### `include`
+
+Include one or more other INI files.
+
+The included file is read the before main file, so the main file overrides included settings, if they appear in both sections.
+The included file is read depth first, so if the included file includes another file, this is read before the main file
+
+If an included file is an HTTP-URL, it is loaded from there.
+
+If the included file is a relative path, it is loaded relative to the parents directory or URL.
+
+The feature utilizes the [ConfigParser feature to read multiple files at once](https://docs.python.org/3/library/configparser.html#configparser.ConfigParser.read).
+
+Default: empty
+
 #### `default-target`
 
 Target directory for sources from VCS. Default: `./sources`
