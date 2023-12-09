@@ -57,7 +57,7 @@ Default: `constraints-mxdev.txt`
 
 Include one or more other INI files.
 
-The included file is read the before main file, so the main file overrides included settings, if they appear in both sections.
+The included file is read before main file, so the main file overrides included settings, if they appear in both sections.
 The included file is read depth first, so if the included file includes another file, this is read before the main file
 
 If an included file is an HTTP-URL, it is loaded from there.
