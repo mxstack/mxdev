@@ -59,7 +59,7 @@ def resolve_dependencies(
     return file_list
 
 
-def read_with_included(file_or_url: str | pathlib.Path) -> ConfigParser:
+def read_with_included(file_or_url: typing.Union[str, pathlib.Path]) -> ConfigParser:
     """Read a file or url and include all referenced files,
 
     Parse the result as a ConfigParser and return it.
