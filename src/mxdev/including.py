@@ -11,7 +11,7 @@ import typing
 
 def resolve_dependencies(
     file_or_url: typing.Union[str, pathlib.Path],
-    tmpdir: tempfile.TemporaryDirectory,
+    tmpdir: str,
     http_parent=None,
 ) -> list[pathlib.Path]:
     """Resolve dependencies of a file or url
@@ -25,10 +25,10 @@ def resolve_dependencies(
     if isinstance(file_or_url, str):
         if http_parent:
             file_or_url = parse.urljoin(http_parent, file_or_url)
-        parsed = parse.urlparse(file_or_url)
+        parsed = parse.urlparse(str(file_or_url))
         if parsed.scheme:
-            with request.urlopen(file_or_url) as fio:
-                tf = tempfile.NamedTemporaryFile(suffix=".ini", dir=tmpdir)
+            with request.urlopen(str(file_or_url)) as fio:
+                tf = tempfile.NamedTemporaryFile(suffix=".ini", dir=str(tmpdir))
                 tf.write(fio.read())
                 tf.flush()
                 file = pathlib.Path(tf.name)

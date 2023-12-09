@@ -13,9 +13,6 @@ def tempdir(tmp_path):
         os.chdir(cwd)
 
 
-import httpretty
-
-
 @pytest.fixture
 def src(tempdir):
     base = tempdir / "src"

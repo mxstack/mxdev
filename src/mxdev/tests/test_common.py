@@ -1,6 +1,5 @@
 from .. import vcs
 from ..vcs import common
-from unittest import mock
 
 import logging
 import os
@@ -28,16 +27,16 @@ def test_BaseWorkingCopy():
         common.BaseWorkingCopy(source={})
 
     class TestWorkingCopy(common.BaseWorkingCopy):
-        def checkout(self, **kwargs) -> typing.Union[str, None]:
+        def checkout(self, **kwargs) -> typing.Union[str, None]:  # type: ignore
             ...
 
-        def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
+        def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:  # type: ignore
             ...
 
-        def matches(self) -> bool:
+        def matches(self) -> bool:  # type: ignore
             ...
 
-        def update(self, **kwargs) -> typing.Union[str, None]:
+        def update(self, **kwargs) -> typing.Union[str, None]:  # type: ignore
             ...
 
     bwc = TestWorkingCopy(source=dict(url="https://tld.com/repo.git"))
@@ -163,10 +162,10 @@ def test_WorkingCopies_checkout(mocker, caplog, tmpdir):
         def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
             return self.package_status
 
-        def matches(self) -> bool:
+        def matches(self) -> bool:  # type: ignore
             ...
 
-        def update(self, **kwargs) -> typing.Union[str, None]:
+        def update(self, **kwargs) -> typing.Union[str, None]:  # type: ignore
             ...
 
     class WCT(dict):
