@@ -22,8 +22,7 @@ parser.add_argument(
     "-c",
     "--configuration",
     help="configuration file in INI format",
-    nargs="?",
-    type=argparse.FileType("r"),
+    type=str,
     default="mx.ini",
 )
 parser.add_argument(
@@ -62,7 +61,9 @@ def main() -> None:
     if args.threads:
         override_args["threads"] = args.threads
     configuration = Configuration(
-        tio=args.configuration, override_args=override_args, hooks=hooks
+        mxini=args.configuration,
+        override_args=override_args,
+        hooks=hooks,
     )
     state = State(configuration=configuration)
     logger.info("#" * 79)

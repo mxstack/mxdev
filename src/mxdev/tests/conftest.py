@@ -13,6 +13,9 @@ def tempdir(tmp_path):
         os.chdir(cwd)
 
 
+import httpretty
+
+
 @pytest.fixture
 def src(tempdir):
     base = tempdir / "src"
@@ -40,3 +43,13 @@ def develop(src):
     develop = MockDevelop()
     develop.sources_dir = src
     return develop
+
+
+@pytest.fixture
+def httpretty():
+    import httpretty
+
+    httpretty.enable()
+    yield httpretty
+    httpretty.disable()
+    httpretty.reset()

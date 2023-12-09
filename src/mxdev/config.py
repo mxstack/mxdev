@@ -1,6 +1,6 @@
 from .logging import logger
+from .including import read_with_included
 
-import configparser
 import os
 import pkg_resources
 import typing
@@ -27,22 +27,14 @@ class Configuration:
 
     def __init__(
         self,
-        tio: typing.TextIO,
+        mxini: str,
         override_args: typing.Dict = {},
         hooks: typing.List["Hook"] = [],
     ) -> None:
         logger.debug("Read configuration")
-        data = configparser.ConfigParser(
-            default_section="settings",
-            interpolation=configparser.ExtendedInterpolation(),
-        )
-        data.optionxform = str  # type: ignore
+        breakpoint()
+        data = read_with_included(mxini)
 
-        # default settings to be used in mx.ini config file
-        data["settings"]["directory"] = os.getcwd()
-        # end default settings
-
-        data.read_file(tio)
         settings = self.settings = dict(data["settings"].items())
 
         logger.debug(f"infile={self.infile}")
