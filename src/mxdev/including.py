@@ -13,7 +13,7 @@ def resolve_dependencies(
     file_or_url: typing.Union[str, pathlib.Path],
     tmpdir: str,
     http_parent=None,
-) -> list[pathlib.Path]:
+) -> typing.List[pathlib.Path]:
     """Resolve dependencies of a file or url
 
     The result is a list of pathlib.Path objects, starting with the
