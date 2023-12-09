@@ -32,7 +32,6 @@ class Configuration:
         hooks: typing.List["Hook"] = [],
     ) -> None:
         logger.debug("Read configuration")
-        breakpoint()
         data = read_with_included(mxini)
 
         settings = self.settings = dict(data["settings"].items())
