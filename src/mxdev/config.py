@@ -13,9 +13,7 @@ if typing.TYPE_CHECKING:
 def to_bool(value):
     if not isinstance(value, str):
         return bool(value)
-    if value.lower() in ("true", "on", "yes", "1"):
-        return True
-    return False
+    return value.lower() in ("true", "on", "yes", "1")
 
 
 class Configuration:
