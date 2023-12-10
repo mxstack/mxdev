@@ -1,6 +1,6 @@
 ## Changes
 
-### 3.1.0 (unreleased)
+### 3.1.0 (2023-12-10)
 
 - Provide `directory` default setting [rnix]
 - Feature: Include other INI config files [jensens]
