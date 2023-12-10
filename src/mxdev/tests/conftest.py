@@ -40,3 +40,13 @@ def develop(src):
     develop = MockDevelop()
     develop.sources_dir = src
     return develop
+
+
+@pytest.fixture
+def httpretty():
+    import httpretty
+
+    httpretty.enable()
+    yield httpretty
+    httpretty.disable()
+    httpretty.reset()

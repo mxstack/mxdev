@@ -21,7 +21,7 @@ def print_stderr(s: str):
 
 # taken from
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-def which(name_root: str, default: str = None) -> str:
+def which(name_root: str, default: typing.Union[str, None] = None) -> str:
     if platform.system() == "Windows":
         # http://www.voidspace.org.uk/python/articles/command_line.shtml#pathext
         pathext = os.environ["PATHEXT"]

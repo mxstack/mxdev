@@ -4,6 +4,7 @@ from subprocess import Popen
 from typing import Any
 from typing import Dict
 from typing import Iterable
+from typing import Union
 
 import os
 import sys
@@ -120,7 +121,7 @@ class Off:
 class Process:
     """Process related functions using the tee module."""
 
-    def __init__(self, quiet: bool = False, env=None, cwd: str = None):
+    def __init__(self, quiet: bool = False, env=None, cwd: Union[str, None] = None):
         self.quiet = quiet
         self.env = env
         self.cwd = cwd
@@ -171,7 +172,7 @@ class GitRepo:
         self(f"git add {submodule_name}")
         self(f"git commit -m 'Add submodule {submodule_name}'")
 
-    def add_branch(self, bname: str, msg: str = None):
+    def add_branch(self, bname: str, msg: Union[str, None] = None):
         self(f"git checkout -b {bname}")
 
 

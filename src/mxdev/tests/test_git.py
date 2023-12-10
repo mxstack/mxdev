@@ -1,7 +1,4 @@
 # pylint: disable=redefined-outer-name
-from .fixtures import mkgitrepo
-from .fixtures import src
-from .fixtures import tempdir
 from logging import getLogger
 from logging import Logger
 from mxdev.tests.utils import vcs_checkout

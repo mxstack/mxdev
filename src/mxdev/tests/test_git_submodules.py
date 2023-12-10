@@ -1,7 +1,3 @@
-# pylint: disable=redefined-outer-name
-from .fixtures import mkgitrepo
-from .fixtures import src
-from .fixtures import tempdir
 from mxdev.tests.utils import GitRepo
 from mxdev.tests.utils import vcs_checkout
 from mxdev.tests.utils import vcs_update

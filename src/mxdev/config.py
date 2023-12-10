@@ -1,6 +1,6 @@
+from .including import read_with_included
 from .logging import logger
 
-import configparser
 import os
 import pkg_resources
 import typing
@@ -13,9 +13,7 @@ if typing.TYPE_CHECKING:
 def to_bool(value):
     if not isinstance(value, str):
         return bool(value)
-    if value.lower() in ("true", "on", "yes", "1"):
-        return True
-    return False
+    return value.lower() in ("true", "on", "yes", "1")
 
 
 class Configuration:
@@ -27,22 +25,13 @@ class Configuration:
 
     def __init__(
         self,
-        tio: typing.TextIO,
+        mxini: str,
         override_args: typing.Dict = {},
         hooks: typing.List["Hook"] = [],
     ) -> None:
         logger.debug("Read configuration")
-        data = configparser.ConfigParser(
-            default_section="settings",
-            interpolation=configparser.ExtendedInterpolation(),
-        )
-        data.optionxform = str  # type: ignore
+        data = read_with_included(mxini)
 
-        # default settings to be used in mx.ini config file
-        data["settings"]["directory"] = os.getcwd()
-        # end default settings
-
-        data.read_file(tio)
         settings = self.settings = dict(data["settings"].items())
 
         logger.debug(f"infile={self.infile}")

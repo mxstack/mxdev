@@ -7,7 +7,7 @@ It builds on top of the idea to have stable version constraints and then develop
 As part of the above use-case sometimes versions of the stable constraints need an override with a different (i.e. newer) version.
 Other software follow the same idea are [mr.developer](https://pypi.org/project/mr.developer)  for Python's *zc.buildout* or [mrs-developer](https://www.npmjs.com/package/mrs-developer) for NPM packages.
 
-**mxdev 2.0 needs pip version 22 at minimum to work properly**
+**mxdev >=2.0 needs pip version 22 at minimum to work properly**
 
 
 ### Overview
@@ -52,6 +52,22 @@ Default: `requirements-mxdev.txt`
 Output of the combined constraints.
 
 Default: `constraints-mxdev.txt`
+
+#### `include`
+
+Include one or more other INI files.
+
+The included file is read before the main file, so the main file overrides included settings.
+Included files may include other files.
+Innermost inclusions are read first.
+
+If an included file is an HTTP-URL, it is loaded from there.
+
+If the included file is a relative path, it is loaded relative to the parents directory or URL.
+
+The feature utilizes the [ConfigParser feature to read multiple files at once](https://docs.python.org/3/library/configparser.html#configparser.ConfigParser.read).
+
+Default: empty
 
 #### `default-target`
 
