@@ -7,9 +7,8 @@ It builds on top of the idea to have stable version constraints and then develop
 As part of the above use-case sometimes versions of the stable constraints need an override with a different (i.e. newer) version.
 Other software follow the same idea are [mr.developer](https://pypi.org/project/mr.developer)  for Python's *zc.buildout* or [mrs-developer](https://www.npmjs.com/package/mrs-developer) for NPM packages.
 
-**[Star us on Github]()https://github.com/mxstack/mxdev)**
+**[Star us on Github](https://github.com/mxstack/mxdev)**
 
-.. contents:: Table of Contents
 
 ### Overview
 
