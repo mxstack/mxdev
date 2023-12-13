@@ -7,8 +7,9 @@ It builds on top of the idea to have stable version constraints and then develop
 As part of the above use-case sometimes versions of the stable constraints need an override with a different (i.e. newer) version.
 Other software follow the same idea are [mr.developer](https://pypi.org/project/mr.developer)  for Python's *zc.buildout* or [mrs-developer](https://www.npmjs.com/package/mrs-developer) for NPM packages.
 
-**mxdev >=2.0 needs pip version 22 at minimum to work properly**
+**[Star us on Github]()https://github.com/mxstack/mxdev)**
 
+.. contents:: Table of Contents
 
 ### Overview
 
@@ -261,6 +262,7 @@ Mxdev will
 
 Now, use the generated requirements and constraints files with i.e. `pip install -r requirements-mxdev.txt`.
 
+**mxdev >=2.0 needs pip version 22 at minimum to work properly**
 
 ## Example Configuration
 
