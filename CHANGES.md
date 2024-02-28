@@ -1,8 +1,23 @@
 ## Changes
 
+### 4.0.0 (2024-02-28)
+
+- Breaking: Remove `--pre` on sources from generated `requirements-mxdev.txt`.
+  Usually it is not needed any longer, at least withy pip 23.x.
+  This is a breaking change if you rely on the `--pre` option being present in the generated file.
+  Now the `--pre` option should be added to `pip install` when the generated file is used.
+  This change enables the use of the generated file with the alternative pip replacement `uv`.
+  [jensens]
+
+- Breaking: Drop official support for Python 3.7 (it is end of life).
+  [jensens]
+
+- Document `mx.ini` sections `vcs` setting.
+  [jensens]
+
 ### 3.1.0 (2023-12-10)
 
-- Provide `directory` default setting [rnix]
+- Feature: Provide `directory` default setting [rnix]
 - Feature: Include other INI config files [jensens]
 
 ### 3.0.0 (2023-05-08)

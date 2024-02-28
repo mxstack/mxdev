@@ -1,21 +1,20 @@
 [project]
 name = "mxdev"
 description = "Enable to work with Python projects containing lots of packages, of which you only want to develop some."
-version = "3.1.0"
+version = "4.0.0"
 keywords = ["pip", "vcs", "git", "development"]
 authors = [
   {name = "MX Stack Developers", email = "dev@bluedynamics.com" }
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = { text = "BSD 2-Clause License" }
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

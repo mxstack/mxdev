@@ -191,6 +191,22 @@ Optional a writable URL for pushes can be specified.
 If the `pushurl` is set after initial checkout it is not applied.
 To apply it remove the repository and checkout again.
 
+#### `vcs = VCS`
+
+The version control system to use.
+
+Supported are:
+- `git` (stable, tested)
+- `fs` (stable, tested) - in fact no vcs, but points to a local directory.
+  This can be achieved without mxdev by using `-e PATH` in the requirements input file.
+- `svn` (unstable, test needs rewrite)
+- `gitsvn` (unstable, test needs rewrite)
+- `hg` (unstable, test needs rewrite)
+- `bzr` (unstable, test needs rewrite)
+- `darcs` (unstable, test needs rewrite)
+
+Defaults to `git`.
+
 #### `branch = BRANCHNAME_OR_TAG`
 
 The branch name or tag to checkout.
@@ -208,6 +224,7 @@ For specifying the path to the Python package, when it is not in the root of the
 Default empty.
 
 #### `target`
+
 The target directory for source from this section.
 
 Default to default target directory configured in the main section `[settings]` `default-target =` value.
@@ -261,7 +278,7 @@ Mxdev will
 
 Now, use the generated requirements and constraints files with i.e. `pip install -r requirements-mxdev.txt`.
 
-**mxdev >=2.0 needs pip version 22 at minimum to work properly**
+**mxdev >=4.0 needs pip version 23 at minimum to work properly**
 
 ## Example Configuration
 
