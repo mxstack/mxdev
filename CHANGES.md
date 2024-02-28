@@ -9,10 +9,10 @@
   This change enables the use of the generated file with the alternative pip replacement `uv`.
   [jensens]
 
-- Breaking: Drop support for Python 3.7 (it is end of life).
+- Breaking: Drop official support for Python 3.7 (it is end of life).
   [jensens]
 
-- Document sections `vcs` setting.
+- Document `mx.ini` sections `vcs` setting.
   [jensens]
 
 ### 3.1.0 (2023-12-10)

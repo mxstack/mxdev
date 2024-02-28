@@ -224,6 +224,7 @@ For specifying the path to the Python package, when it is not in the root of the
 Default empty.
 
 #### `target`
+
 The target directory for source from this section.
 
 Default to default target directory configured in the main section `[settings]` `default-target =` value.
