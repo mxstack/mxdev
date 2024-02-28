@@ -9,6 +9,9 @@
   This change enables the use of the generated file with the alternative pip replacement `uv`.
   [jensens]
 
+- Document sections `vcs` setting.
+  [jensens]
+
 ### 3.1.0 (2023-12-10)
 
 - Feature: Provide `directory` default setting [rnix]

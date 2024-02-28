@@ -191,6 +191,22 @@ Optional a writable URL for pushes can be specified.
 If the `pushurl` is set after initial checkout it is not applied.
 To apply it remove the repository and checkout again.
 
+#### `vcs = VCS`
+
+The version control system to use.
+
+Supported are:
+- `git` (stable, tested)
+- `fs` (stable, tested) - in fact no vcs, but points to a local directory.
+  This can be achieved without mxdev by using `-e PATH` in the requirements input file.
+- `svn` (unstable, test needs rewrite)
+- `gitsvn` (unstable, test needs rewrite)
+- `hg` (unstable, test needs rewrite)
+- `bzr` (unstable, test needs rewrite)
+- `darcs` (unstable, test needs rewrite)
+
+Defaults to `git`.
+
 #### `branch = BRANCHNAME_OR_TAG`
 
 The branch name or tag to checkout.
