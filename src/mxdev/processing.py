@@ -205,9 +205,7 @@ def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.An
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
         subdir = f"/{package['subdirectory']}" if package["subdirectory"] else ""
-        editable = (
-            f"""-e ./{package['target']}/{name}{subdir}{extras}\n"""
-        )
+        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}\n"""
         logger.debug(f"-> {editable.strip()}")
         fio.write(editable)
     fio.write("\n\n")
