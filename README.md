@@ -277,7 +277,7 @@ Mxdev will
 
 Now, use the generated requirements and constraints files with i.e. `pip install -r requirements-mxdev.txt`.
 
-**mxdev >=2.0 needs pip version 22 at minimum to work properly**
+**mxdev >=4.0 needs pip version 23 at minimum to work properly**
 
 ## Example Configuration
 

@@ -3,7 +3,7 @@
 ### 4.0.0 (2024-02-28)
 
 - Breaking: Remove `--pre` on sources from generated `requirements-mxdev.txt`.
-  Usually it is not needed any longer.
+  Usually it is not needed any longer, at least withy pip 23.x.
   This is a breaking change if you rely on the `--pre` option being present in the generated file.
   Now the `--pre` option should be added to `pip install` when the generated file is used.
   This change enables the use of the generated file with the alternative pip replacement `uv`.
