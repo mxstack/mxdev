@@ -9,6 +9,9 @@
   This change enables the use of the generated file with the alternative pip replacement `uv`.
   [jensens]
 
+- Breaking: Drop support for Python 3.7 (it is end of life).
+  [jensens]
+
 - Document sections `vcs` setting.
   [jensens]
 
