@@ -36,15 +36,19 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         if "revision" in source:
             source["rev"] = source["revision"]
             del source["revision"]
-        if "branch" in source and "rev" in source:
-            logger.error(
-                "Cannot specify both branch (%s) and rev/revision "
-                "(%s) in source for %s",
-                source["branch"],
-                source["rev"],
-                source["name"],
-            )
-            sys.exit(1)
+        if "rev" in source:
+            # drop default value for branch if rev is specified
+            if source.get("branch") == "main":
+                del source["branch"]
+            elif "branch" in source:
+                logger.error(
+                    "Cannot specify both branch (%s) and rev/revision "
+                    "(%s) in source for %s",
+                    source["branch"],
+                    source["rev"],
+                    source["name"],
+                )
+                sys.exit(1)
         super().__init__(source)
 
     @functools.lru_cache(maxsize=4096)

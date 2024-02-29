@@ -1,5 +1,10 @@
 ## Changes
 
+### 4.0.1 (unreleased)
+
+- Fix specifying out a revision (#40)
+  [pbauer]
+
 ### 4.0.0 (2024-02-28)
 
 - Breaking: Remove `--pre` on sources from generated `requirements-mxdev.txt`.
