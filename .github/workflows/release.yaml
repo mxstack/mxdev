@@ -38,3 +38,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+      - name: Postrelease
+        run: >-
+          make postrelease
+          git commit pyproject.toml CHANGES.md -m"Post release: back to development."
+          git push

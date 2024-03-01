@@ -514,7 +514,7 @@ zest-releaser-release: $(ZEST_RELEASER_TARGET)
 .PHONY: zest-releaser-postrelease
 zest-releaser-postrelease: $(ZEST_RELEASER_TARGET)
 	@echo "Run postrelease"
-	@postrelease
+	@postrelease --no-input
 
 .PHONY: zest-releaser-fullrelease
 zest-releaser-fullrelease: $(ZEST_RELEASER_TARGET)
