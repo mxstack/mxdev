@@ -1,7 +1,7 @@
 [project]
 name = "mxdev"
 description = "Enable to work with Python projects containing lots of packages, of which you only want to develop some."
-version = "4.0.1.dev0"
+version = "4.0.1"
 keywords = ["pip", "vcs", "git", "development"]
 authors = [
   {name = "MX Stack Developers", email = "dev@bluedynamics.com" }

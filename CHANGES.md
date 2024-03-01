@@ -1,6 +1,6 @@
 ## Changes
 
-### 4.0.1 (unreleased)
+## 4.0.1 (2024-03-01)
 
 - Fix specifying out a revision (#40)
   [pbauer]
