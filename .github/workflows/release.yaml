@@ -40,6 +40,6 @@ jobs:
           verbose: true
       - name: Postrelease
         run: >-
-          make postrelease
+          make ZEST_RELEASER_POSTRELEASE_OPTIONS=--no-input postrelease
           git commit pyproject.toml CHANGES.md -m"Post release: back to development."
           git push

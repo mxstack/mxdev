@@ -143,6 +143,24 @@ MYPY_SRC?=src
 # Default: types-setuptools
 MYPY_REQUIREMENTS?=types-setuptools
 
+## applications.zest-releaser
+
+# Options to pass to zest.releaser prerelease command.
+# No default value.
+ZEST_RELEASER_PRERELEASE_OPTIONS?=
+
+# Options to pass to zest.releaser release command.
+# No default value.
+ZEST_RELEASER_RELEASE_OPTIONS?=
+
+# Options to pass to zest.releaser postrelease command.
+# No default value.
+ZEST_RELEASER_POSTRELEASE_OPTIONS?=
+
+# Options to pass to zest.releaser fullrelease command.
+# No default value.
+ZEST_RELEASER_FULLRELEASE_OPTIONS?=
+
 ##############################################################################
 # END SETTINGS - DO NOT EDIT BELOW THIS LINE
 ##############################################################################
@@ -504,22 +522,22 @@ $(ZEST_RELEASER_TARGET): $(MXENV_TARGET)
 .PHONY: zest-releaser-prerelease
 zest-releaser-prerelease: $(ZEST_RELEASER_TARGET)
 	@echo "Run prerelease"
-	@prerelease
+	@prerelease $(ZEST_RELEASER_PRERELEASE_OPTIONS)
 
 .PHONY: zest-releaser-release
 zest-releaser-release: $(ZEST_RELEASER_TARGET)
 	@echo "Run release"
-	@release
+	@release $(ZEST_RELEASER_RELEASE_OPTIONS)
 
 .PHONY: zest-releaser-postrelease
 zest-releaser-postrelease: $(ZEST_RELEASER_TARGET)
 	@echo "Run postrelease"
-	@postrelease --no-input
+	@postrelease $(ZEST_RELEASER_POSTRELEASE_OPTIONS)
 
 .PHONY: zest-releaser-fullrelease
 zest-releaser-fullrelease: $(ZEST_RELEASER_TARGET)
 	@echo "Run fullrelease"
-	@fullrelease
+	@fullrelease $(ZEST_RELEASER_FULLRELEASE_OPTIONS)
 
 .PHONY: zest-releaser-dirty
 zest-releaser-dirty:
