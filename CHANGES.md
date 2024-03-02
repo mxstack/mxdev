@@ -1,5 +1,11 @@
 ## Changes
 
+## 4.0.2 (unreleased)
+
+
+- Nothing changed yet.
+
+
 ## 4.0.1 (2024-03-01)
 
 - Fix specifying out a revision (#40)
