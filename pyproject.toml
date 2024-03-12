@@ -21,20 +21,16 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = []
+dependencies = ["packaging"]
 dynamic = ["readme"]
 
 [project.optional-dependencies]
-mypy = [
-    "types-setuptools",
-    "types-pkg-resources",
-]
+mypy = []
 test = [
     "pytest",
     "pytest-cov",
     "pytest-mock",
     "httpretty",
-    "types-setuptools",
 ]
 
 [project.urls]

@@ -1,8 +1,8 @@
 from .including import read_with_included
 from .logging import logger
+from packaging.requirements import Requirement
 
 import os
-import pkg_resources
 import typing
 
 
@@ -55,11 +55,11 @@ class Configuration:
         self.overrides = {}
         for line in raw_overrides.split("\n"):
             try:
-                parsed = pkg_resources.Requirement.parse(line)
+                parsed = Requirement(line)
             except Exception:
                 logger.error(f"Can not parse override: {line}")
                 continue
-            self.overrides[parsed.key] = line
+            self.overrides[parsed.name] = line
 
         raw_ignores = settings.get("ignores", "").strip()
         self.ignore_keys = []
@@ -68,7 +68,7 @@ class Configuration:
             if line:
                 self.ignore_keys.append(line)
 
-        def is_ns_member(name):
+        def is_ns_member(name) -> bool:
             for hook in hooks:
                 if name.startswith(hook.namespace):
                     return True

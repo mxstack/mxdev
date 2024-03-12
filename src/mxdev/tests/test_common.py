@@ -143,8 +143,7 @@ def test_WorkingCopies_process(mocker, caplog):
 def test_WorkingCopies_checkout(mocker, caplog, tmpdir):
     caplog.set_level(logging.INFO)
 
-    class SysExit(Exception):
-        ...
+    class SysExit(Exception): ...
 
     class Exit:
         def __call__(self, code):
