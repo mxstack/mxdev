@@ -1,6 +1,6 @@
 ## Changes
 
-## 4.0.2 (unreleased)
+## 4.0.2 (2024-03-13)
 
 - Fix #42: deprecated use of `pkg_resoures` to load entry points and parse requirements.
   This enables mxdev to work on Python 3.12, where `pkg_resources` is no longer installed by default in virtual_envs.
