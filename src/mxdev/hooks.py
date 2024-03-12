@@ -1,7 +1,16 @@
+from .entry_points import load_eps_by_group
 from .state import State
-from pkg_resources import iter_entry_points
 
 import typing
+
+
+try:
+    # do we have Python 3.12+
+    from importlib.metadata import EntryPoints  # type: ignore # noqa: F401
+
+    HAS_IMPORTLIB_ENTRYPOINTS = True
+except ImportError:
+    HAS_IMPORTLIB_ENTRYPOINTS = False
 
 
 class Hook:
@@ -18,11 +27,12 @@ class Hook:
 
 
 def load_hooks() -> list:
-    return [ep.load()() for ep in iter_entry_points("mxdev") if ep.name == "hook"]
+    return [ep.load()() for ep in load_eps_by_group("mxdev") if ep.name == "hook"]
 
 
 def read_hooks(state: State, hooks: typing.List[Hook]) -> None:
     for hook in hooks:
+        breakpoint()
         hook.read(state)
 
 

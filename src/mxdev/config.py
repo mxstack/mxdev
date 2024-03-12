@@ -68,7 +68,7 @@ class Configuration:
             if line:
                 self.ignore_keys.append(line)
 
-        def is_ns_member(name):
+        def is_ns_member(name) -> bool:
             for hook in hooks:
                 if name.startswith(hook.namespace):
                     return True

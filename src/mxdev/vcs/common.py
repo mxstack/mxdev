@@ -1,7 +1,8 @@
+from ..entry_points import load_eps_by_group
+
 import abc
 import logging
 import os
-import pkg_resources
 import platform
 import queue
 import re
@@ -93,20 +94,16 @@ class BaseWorkingCopy(abc.ABC):
         return update
 
     @abc.abstractmethod
-    def checkout(self, **kwargs) -> typing.Union[str, None]:
-        ...
+    def checkout(self, **kwargs) -> typing.Union[str, None]: ...
 
     @abc.abstractmethod
-    def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]:
-        ...
+    def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]: ...
 
     @abc.abstractmethod
-    def matches(self) -> bool:
-        ...
+    def matches(self) -> bool: ...
 
     @abc.abstractmethod
-    def update(self, **kwargs) -> typing.Union[str, None]:
-        ...
+    def update(self, **kwargs) -> typing.Union[str, None]: ...
 
 
 def yesno(
@@ -151,12 +148,12 @@ def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
         return _workingcopytypes
     group = "mxdev.workingcopytypes"
     addons = {}
-    for entrypoint in pkg_resources.iter_entry_points(group=group):
+    for entrypoint in load_eps_by_group(group):
         key = entrypoint.name
         workingcopytype = entrypoint.load()
         if not entrypoint.dist:
             continue
-        if entrypoint.dist.project_name == "mxdev":
+        if entrypoint.dist.name == "mxdev":
             _workingcopytypes[key] = workingcopytype
             continue
         if key in addons:
