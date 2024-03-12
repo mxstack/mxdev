@@ -32,7 +32,6 @@ def load_hooks() -> list:
 
 def read_hooks(state: State, hooks: typing.List[Hook]) -> None:
     for hook in hooks:
-        breakpoint()
         hook.read(state)
 
 

@@ -1,11 +1,11 @@
 from .logging import logger
 from .state import State
 from .vcs.common import WorkingCopies
+from packaging.requirements import Requirement
 from pathlib import Path
 from urllib import parse
 from urllib import request
 
-import pkg_resources
 import typing
 
 
@@ -49,15 +49,15 @@ def process_line(
             variety="r",
         )
     try:
-        parsed = pkg_resources.Requirement.parse(line)
+        parsed = Requirement(line)
     except Exception:
         pass
     else:
-        if parsed.key in package_keys:
+        if parsed.name in package_keys:
             line = f"# {line.strip()} -> mxdev disabled (source)\n"
-        if variety == "c" and parsed.key in override_keys:
+        if variety == "c" and parsed.name in override_keys:
             line = f"# {line.strip()} -> mxdev disabled (override)\n"
-        if variety == "c" and parsed.key in ignore_keys:
+        if variety == "c" and parsed.name in ignore_keys:
             line = f"# {line.strip()} -> mxdev disabled (ignore)\n"
     if variety == "c":
         return [], [line]

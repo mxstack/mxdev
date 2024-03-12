@@ -20,8 +20,8 @@ def load_eps_by_group(group: str) -> list:
         eps_base = entry_points()
         if group not in eps_base:
             return []
-        eps = eps_base[group]
+        eps = eps_base[group]  # type: ignore
     # XXX: for some reasons entry points are loaded twice. not sure if this
     #      is a glitch when installing with uv or something related to
     #      importlib.metadata.entry_points
-    return list(eps)  # type: ignore
+    return list(set(eps))  # type: ignore

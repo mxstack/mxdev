@@ -147,23 +147,16 @@ def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
     if _workingcopytypes:
         return _workingcopytypes
     group = "mxdev.workingcopytypes"
-    addons = {}
+    addons: dict[str, typing.Type[BaseWorkingCopy]] = {}
     for entrypoint in load_eps_by_group(group):
         key = entrypoint.name
         workingcopytype = entrypoint.load()
-        if not entrypoint.dist:
-            continue
-        if entrypoint.dist.name == "mxdev":
-            _workingcopytypes[key] = workingcopytype
-            continue
         if key in addons:
             logger.error(
-                f"There already is a working copy type addon registered for '{key}'."
+                f"Duplicate workingcopy types registration '{key}' at "
+                f"{entrypoint.value} can not override {addons[key]}"
             )
             sys.exit(1)
-        logger.info(
-            f"Overwriting '{key}' with addon from '{entrypoint.dist.project_name}'."
-        )
         addons[key] = workingcopytype
     _workingcopytypes.update(addons)
     return _workingcopytypes
