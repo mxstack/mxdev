@@ -1,5 +1,11 @@
 ## Changes
 
+## 4.0.3 (unreleased)
+
+
+- Nothing changed yet.
+
+
 ## 4.0.2 (2024-03-13)
 
 - Fix #42: deprecated use of `pkg_resoures` to load entry points and parse requirements.
