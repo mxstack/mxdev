@@ -39,7 +39,7 @@ jobs:
         with:
           verbose: true
       - name: Postrelease
-        run: >-
-          git config user.name "${{ env.CI_COMMIT_AUTHOR }}" &&
-          git config user.email "username@users.noreply.github.com" &&
+        run: |
+          git config user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config user.email "username@users.noreply.github.com"
           make ZEST_RELEASER_POSTRELEASE_OPTIONS=--no-input postrelease
