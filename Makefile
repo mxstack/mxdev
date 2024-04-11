@@ -122,7 +122,7 @@ PACKAGES_ALLOW_PRERELEASES?=false
 # The command which gets executed. Defaults to the location the
 # :ref:`run-tests` template gets rendered to if configured.
 # Default: .mxmake/files/run-tests.sh
-TEST_COMMAND?=venv/bin/pytest -vvv src
+TEST_COMMAND?=pytest -vvv src
 
 # Additional Python requirements for running tests to be
 # installed (via pip).
