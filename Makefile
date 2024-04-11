@@ -191,7 +191,7 @@ MXMAKE_FOLDER?=.mxmake
 # Sentinel files
 SENTINEL_FOLDER?=$(MXMAKE_FOLDER)/sentinels
 SENTINEL?=$(SENTINEL_FOLDER)/about.txt
-$(SENTINEL):
+$(SENTINEL): Makefile
 	@mkdir -p $(SENTINEL_FOLDER)
 	@echo "Sentinels for the Makefile process." > $(SENTINEL)
 
