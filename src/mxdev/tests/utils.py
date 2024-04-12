@@ -167,6 +167,10 @@ class GitRepo:
     def add_submodule(self, submodule: "GitRepo", submodule_name: str):
         assert isinstance(submodule, GitRepo)
         assert isinstance(submodule_name, str)
+        
+        # Allow file protocol
+        # This is needed for the submodule to be added from a local path
+        self("git config --global protocol.file.allow always")
         self(f"git submodule add {submodule.url}")
         self("git add .gitmodules")
         self(f"git add {submodule_name}")
