@@ -1,6 +1,7 @@
+from .utils import Process
+
 import os
 import pytest
-from .utils import Process
 
 
 @pytest.fixture
@@ -41,13 +42,16 @@ def git_allow_file_protocol():
     This is needed for the submodule to be added from a local path
     """
     from .utils import GitRepo
-    
+
     shell = Process()
-    file_allow = shell.check_call("git config --global --get protocol.file.allow")[0].decode("utf8").strip()
+    file_allow = (
+        shell.check_call("git config --global --get protocol.file.allow")[0]
+        .decode("utf8")
+        .strip()
+    )
     shell.check_call(f"git config --global protocol.file.allow always")
     yield file_allow
     shell.check_call(f"git config --global protocol.file.allow {file_allow}")
-
 
 
 @pytest.fixture

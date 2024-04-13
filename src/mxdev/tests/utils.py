@@ -167,7 +167,7 @@ class GitRepo:
     def add_submodule(self, submodule: "GitRepo", submodule_name: str):
         assert isinstance(submodule, GitRepo)
         assert isinstance(submodule_name, str)
-             
+
         self(f"git submodule add {submodule.url}")
         self("git add .gitmodules")
         self(f"git add {submodule_name}")
