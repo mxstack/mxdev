@@ -5,6 +5,7 @@ from packaging.requirements import Requirement
 from pathlib import Path
 from urllib import parse
 from urllib import request
+from urllib.error import URLError
 
 import typing
 
@@ -125,16 +126,19 @@ def resolve_dependencies(
                 "it does not exist. Empty file assumed."
             )
     else:
-        with request.urlopen(file_or_url) as fio:
-            process_io(
-                fio,
-                requirements,
-                constraints,
-                package_keys,
-                override_keys,
-                ignore_keys,
-                variety,
-            )
+        try:
+            with request.urlopen(file_or_url) as fio:
+                process_io(
+                    fio,
+                    requirements,
+                    constraints,
+                    package_keys,
+                    override_keys,
+                    ignore_keys,
+                    variety,
+                )
+        except URLError as e:
+            raise Exception(f"Failed to fetch '{file_or_url}': {e}")
 
     if requirements and variety == "r":
         requirements = (
