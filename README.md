@@ -120,6 +120,10 @@ It is possible to add as many overrides as needed.
 When writing the *constraints-out*, the new version will be taken into account.
 If there is a source section defined for the same package, the source will be used and entries here are ignored.
 
+Note: When using [uv](https://pypi.org/project/uv/) pip install the version overrides here are not needed, since it [supports overrides nativly](https://github.com/astral-sh/uv?tab=readme-ov-file#dependency-overrides).
+With uv it is recommended to create an `overrides.txt` file with the version overrides and use `uv pip install --overrides overrides.txt [..]` to install the packages.
+
+
 #### `ignores`
 
 Ignore packages that are already defined in a dependent constraints file.
