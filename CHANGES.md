@@ -1,6 +1,6 @@
 ## Changes
 
-## 4.0.3 (unreleased)
+## 4.0.3 (2024-05-17)
 
 
 - Fix #45: Packages with capital names do not get ignored when checked out.
