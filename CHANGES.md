@@ -3,7 +3,8 @@
 ## 4.0.3 (unreleased)
 
 
-- Nothing changed yet.
+- Fix #45: Packages with capital names do not get ignored when checked out.
+  [jensens]
 
 
 ## 4.0.2 (2024-03-13)
