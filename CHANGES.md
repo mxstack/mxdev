@@ -2,7 +2,8 @@
 
 ## 4.0.4 (unreleased)
 
-- nothing yet
+- Fix #47: Do not add packages with capital names uncommented at the bottom ignore list when checked out.
+  [petschki]
 
 ## 4.0.3 (2024-05-17)
 
