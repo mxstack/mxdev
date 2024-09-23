@@ -297,7 +297,7 @@ requirements-out = requirements-mxdev.txt
 contraints-out = constraints-mxdev.txt
 
 version-overrides =
-    baz.baaz = 1.9.32
+    baz.baaz==1.9.32
 
 ignores =
     my.ignoredpackage
