@@ -223,7 +223,7 @@ def write_dev_overrides(
     fio.write("#" * 79 + "\n")
     fio.write("# mxdev constraint overrides\n")
     for pkg, line in overrides.items():
-        if pkg in package_keys:
+        if pkg.lower() in [k.lower() for k in package_keys]:
             fio.write(
                 f"# {line} IGNORE mxdev constraint override. Source override wins!\n"
             )
