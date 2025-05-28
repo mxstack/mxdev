@@ -254,6 +254,13 @@ True by default, unless `default-use` in the general settings is false.
 When false, the source is not checked out,
 and the version for this package is not overridden.
 
+#### `depth`
+
+For `git` only.
+This is used to set the git clone depth.
+This is not set by default: you get a full clone.
+You can set environment variable `GIT_CLONE_DEPTH=1` to set a default git depth for all checkouts.  This is useful for CI.
+
 #### `submodules`
 
 There are 3 different options:
