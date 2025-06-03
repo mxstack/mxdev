@@ -9,6 +9,7 @@ import typing
 
 
 logger = common.logger
+GIT_CLONE_DEPTH = os.getenv("GIT_CLONE_DEPTH")
 
 
 class GitError(common.WCError):
@@ -151,8 +152,8 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         update_git_submodules = self.source.get("submodules", kwargs["submodules"])
         if update_git_submodules == "recursive":
             args.append("--recurse-submodules")
-        if "depth" in self.source:
-            args.extend(["--depth", self.source["depth"]])
+        if "depth" in self.source or GIT_CLONE_DEPTH:
+            args.extend(["--depth", self.source.get("depth", GIT_CLONE_DEPTH)])
         if "branch" in self.source:
             args.extend(["-b", self.source["branch"]])
         args.extend([url, path])

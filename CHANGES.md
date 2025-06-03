@@ -2,6 +2,9 @@
 
 ## 4.0.4 (unreleased)
 
+- Support environment variable `GIT_CLONE_DEPTH` for setting a default git depth for all checkouts.  Useful for CI.
+  [maurits]
+
 - Fix #47: Do not add packages with capital names uncommented at the bottom ignore list when checked out.
   [petschki]
 
