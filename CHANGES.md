@@ -1,6 +1,6 @@
 ## Changes
 
-## 4.0.4 (unreleased)
+## 4.1.0 (2025-06-03)
 
 - Support environment variable `GIT_CLONE_DEPTH` for setting a default git depth for all checkouts.  Useful for CI.
   [maurits]
