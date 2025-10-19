@@ -1,7 +1,5 @@
 include *.rst
 include *.md
-exclude requirements.txt
-exclude tox.ini
 exclude .*.yaml
 recursive-include example *.ini
 recursive-include example *.txt

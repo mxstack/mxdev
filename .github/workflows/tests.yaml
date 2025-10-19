@@ -8,42 +8,44 @@ on:
      - "opened"
   workflow_call:
   workflow_dispatch:
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - uses: pre-commit/action@v3.0.1
-  build:
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run lint with tox
+        run: uvx --with tox-uv tox -e lint
+
+  test:
     strategy:
       matrix:
-        python-version:
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
         os:
           - ubuntu-latest
           - windows-latest
           - macos-latest
+        python-config:
+          - version: "3.8"
+            tox-env: "py38"
+          - version: "3.9"
+            tox-env: "py39"
+          - version: "3.10"
+            tox-env: "py310"
+          - version: "3.11"
+            tox-env: "py311"
+          - version: "3.12"
+            tox-env: "py312"
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: "pip"
-      - name: "Install Python dependencies (pip)"
-        uses: "py-actions/py-dependency-install@v4"
-        with:
-          path: "requirements.txt"
-      - name: Run Tests
-        run: |
-          git config --global protocol.file.allow always
-          pytest .
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Set up Python ${{ matrix.python-config.version }}
+        run: uv python install ${{ matrix.python-config.version }}
+      - name: Configure git for tests
+        run: git config --global protocol.file.allow always
+      - name: Run tests with tox
+        run: uvx --with tox-uv tox -e ${{ matrix.python-config.tox-env }}
