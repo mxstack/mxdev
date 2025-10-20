@@ -2,7 +2,10 @@
 
 ## 4.1.1 (unreleased)
 
-- nothing yet
+- Modernize release method with hatchling. See RELEASE.md [jensens]
+- Modernize tox setup. [jensens]
+- Modernize Github workflows. [jensens]
+- Fix Makefile. [jensens]
 
 
 ## 4.1.0 (2025-06-03)
