@@ -257,7 +257,8 @@ def test_which_windows(mocker):
 def test_which_unix(mocker):
     """Test which() on Unix platform."""
     mocker.patch("platform.system", return_value="Linux")
-    mocker.patch.dict("os.environ", {"PATH": "/usr/bin:/bin"})
+    mocker.patch("os.pathsep", ":")
+    mocker.patch.dict("os.environ", {"PATH": "/usr/bin:/bin"}, clear=True)
 
     def exists_side_effect(path):
         return path == "/usr/bin/python"
