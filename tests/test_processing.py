@@ -271,7 +271,7 @@ def test_write_dev_overrides(tmp_path):
     assert "urllib3==1.26.9" in content
 
 
-def test_write_dev_overrides_source_wins():
+def test_write_dev_overrides_source_wins(tmp_path):
     """Test write_dev_overrides comments out override when package is in sources."""
     from mxdev.processing import write_dev_overrides
 
@@ -279,13 +279,12 @@ def test_write_dev_overrides_source_wins():
         "my.package": "my.package==1.0.0",
     }
 
-    outfile = pathlib.Path("/tmp/test_override_source_wins.txt")
+    outfile = tmp_path / "test_override_source_wins.txt"
     with open(outfile, "w") as fio:
         write_dev_overrides(fio, overrides, package_keys=["my.package"])
 
     content = outfile.read_text()
     assert "# my.package==1.0.0 IGNORE mxdev constraint override" in content
-    outfile.unlink()
 
 
 def test_write_main_package(tmp_path):
