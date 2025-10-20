@@ -235,3 +235,346 @@ def test_WorkingCopies_checkout(mocker, caplog, tmpdir):
         "Checkout called with: {'update': True, 'force': True, 'submodules': 'always'}",
     ]
     caplog.clear()
+
+
+def test_which_windows(mocker):
+    """Test which() on Windows platform."""
+    mocker.patch("platform.system", return_value="Windows")
+    mocker.patch.dict("os.environ", {"PATHEXT": ".COM;.EXE;.BAT", "PATH": "/fake/path"})
+    mocker.patch("os.path.exists", return_value=False)
+    mocker.patch("os.access", return_value=False)
+
+    # Test with default value
+    result = common.which("test", default="/default/test")
+    assert result == "/default/test"
+
+    # Test without default - should exit
+    exit_mock = mocker.patch("sys.exit")
+    common.which("test")
+    exit_mock.assert_called_once_with(1)
+
+
+def test_which_unix(mocker):
+    """Test which() on Unix platform."""
+    mocker.patch("platform.system", return_value="Linux")
+    mocker.patch.dict("os.environ", {"PATH": "/usr/bin:/bin"})
+
+    def exists_side_effect(path):
+        return path == "/usr/bin/python"
+
+    def access_side_effect(path, mode):
+        return path == "/usr/bin/python"
+
+    mocker.patch("os.path.exists", side_effect=exists_side_effect)
+    mocker.patch("os.access", side_effect=access_side_effect)
+
+    result = common.which("python")
+    assert result == "/usr/bin/python"
+
+
+def test_get_workingcopytypes_duplicate_error(mocker, caplog):
+    """Test get_workingcopytypes() with duplicate entry."""
+
+    class FakeEntryPoint:
+        name = "duplicate"
+        value = "fake.module:FakeClass"
+
+        def load(self):
+            return "FakeWorkingCopy"
+
+    # Save the original workingcopytypes
+    original_wct = common._workingcopytypes.copy()
+
+    try:
+        exit_mock = mocker.patch("sys.exit")
+        mocker.patch(
+            "mxdev.vcs.common.load_eps_by_group",
+            return_value=[FakeEntryPoint(), FakeEntryPoint()],
+        )
+        common._workingcopytypes.clear()
+
+        common.get_workingcopytypes()
+        exit_mock.assert_called_once_with(1)
+    finally:
+        # Restore the original workingcopytypes
+        common._workingcopytypes.clear()
+        common._workingcopytypes.update(original_wct)
+
+
+def test_WorkingCopies_matches(mocker, caplog):
+    """Test WorkingCopies.matches() method."""
+
+    class TestWorkingCopy(common.BaseWorkingCopy):
+        def checkout(self, **kwargs):
+            return None
+
+        def status(self, **kwargs):
+            return "clean"
+
+        def matches(self):
+            return True
+
+        def update(self, **kwargs):
+            return None
+
+    exit_mock = mocker.patch("sys.exit")
+    mocker.patch("mxdev.vcs.common._workingcopytypes", {"test": TestWorkingCopy})
+
+    wc = common.WorkingCopies(
+        sources={"package": {"vcs": "test", "name": "package", "url": "test://url"}}
+    )
+
+    # Test successful match
+    result = wc.matches({"name": "package"})
+    assert result is True
+
+    # Test with missing source
+    try:
+        wc.matches({"name": "missing"})
+    except KeyError:
+        pass  # Expected - sys.exit() is mocked so code continues
+    exit_mock.assert_called_with(1)
+    assert "Checkout failed. No source defined for 'missing'." in caplog.text
+    caplog.clear()
+    exit_mock.reset_mock()
+
+    # Test with unregistered VCS type
+    wc.sources = {"package": {"vcs": "unknown", "name": "package"}}
+    try:
+        wc.matches({"name": "package"})
+    except TypeError:
+        pass  # Expected - sys.exit() is mocked so code continues
+    exit_mock.assert_called_with(1)
+    assert "Unregistered repository type unknown" in caplog.text
+    caplog.clear()
+    exit_mock.reset_mock()
+
+    # Test with WCError exception
+    class ErrorWorkingCopy(TestWorkingCopy):
+        def matches(self):
+            raise common.WCError("Test error")
+
+    wc.workingcopytypes = {"test": ErrorWorkingCopy}
+    wc.sources = {"package": {"vcs": "test", "name": "package"}}
+    try:
+        wc.matches({"name": "package"})
+    except (TypeError, common.WCError):
+        pass  # Expected - WCError is raised
+    assert "Can not get matches!" in caplog.text
+    exit_mock.assert_called_with(1)
+
+
+def test_WorkingCopies_status(mocker, caplog):
+    """Test WorkingCopies.status() method."""
+
+    class TestWorkingCopy(common.BaseWorkingCopy):
+        def checkout(self, **kwargs):
+            return None
+
+        def status(self, **kwargs):
+            return "clean"
+
+        def matches(self):
+            return True
+
+        def update(self, **kwargs):
+            return None
+
+    exit_mock = mocker.patch("sys.exit")
+    mocker.patch("mxdev.vcs.common._workingcopytypes", {"test": TestWorkingCopy})
+
+    wc = common.WorkingCopies(
+        sources={"package": {"vcs": "test", "name": "package", "url": "test://url"}}
+    )
+
+    # Test successful status
+    result = wc.status({"name": "package"})
+    assert result == "clean"
+
+    # Test with missing source
+    try:
+        wc.status({"name": "missing"})
+    except KeyError:
+        pass  # Expected - sys.exit() is mocked so code continues
+    exit_mock.assert_called_with(1)
+    assert "Status failed. No source defined for 'missing'." in caplog.text
+    caplog.clear()
+    exit_mock.reset_mock()
+
+    # Test with unregistered VCS type
+    wc.sources = {"package": {"vcs": "unknown", "name": "package"}}
+    try:
+        wc.status({"name": "package"})
+    except TypeError:
+        pass  # Expected - sys.exit() is mocked so code continues
+    assert "Unregistered repository type unknown" in caplog.text
+    exit_mock.assert_called_with(1)
+    caplog.clear()
+    exit_mock.reset_mock()
+
+    # Test with WCError exception
+    class ErrorWorkingCopy(TestWorkingCopy):
+        def status(self, **kwargs):
+            raise common.WCError("Test error")
+
+    wc.workingcopytypes = {"test": ErrorWorkingCopy}
+    wc.sources = {"package": {"vcs": "test", "name": "package"}}
+    try:
+        wc.status({"name": "package"})
+    except (TypeError, common.WCError):
+        pass  # Expected - WCError is raised
+    assert "Can not get status!" in caplog.text
+    exit_mock.assert_called_with(1)
+
+
+def test_WorkingCopies_update(mocker, caplog, tmp_path):
+    """Test WorkingCopies.update() method."""
+    caplog.set_level(logging.INFO)
+
+    class TestWorkingCopy(common.BaseWorkingCopy):
+        package_status = "clean"
+
+        def checkout(self, **kwargs):
+            return None
+
+        def status(self, **kwargs):
+            return self.package_status
+
+        def matches(self):
+            return True
+
+        def update(self, **kwargs):
+            common.logger.info(f"Update called with: {kwargs}")
+            return None
+
+    exit_mock = mocker.patch("sys.exit")
+    mocker.patch("mxdev.vcs.common._workingcopytypes", {"test": TestWorkingCopy})
+
+    package_dir = tmp_path / "package"
+    package_dir.mkdir()
+    wc = common.WorkingCopies(
+        sources={
+            "package": {"vcs": "test", "name": "package", "path": str(package_dir)}
+        },
+        threads=1,
+    )
+
+    # Test clean update
+    wc.update(packages=["package"])
+    assert "Queued 'package' for update." in caplog.text
+    assert "Update called with:" in caplog.text
+    caplog.clear()
+
+    # Test with missing package - should skip
+    wc.update(packages=["missing"])
+    assert "missing" not in caplog.text
+    caplog.clear()
+
+    # Test with unregistered VCS type
+    wc.sources = {
+        "package": {"vcs": "unknown", "name": "package", "path": str(package_dir)}
+    }
+    try:
+        wc.update(packages=["package"])
+    except TypeError:
+        # Expected - sys.exit() is mocked so code continues and tries to call None
+        pass
+    exit_mock.assert_called_with(1)
+    assert "Unregistered repository type unknown" in caplog.text
+    caplog.clear()
+    exit_mock.reset_mock()
+
+    # Test dirty package with user declining update
+    input_mock = mocker.patch("mxdev.vcs.common.input", new_callable=Input)
+    input_mock.answer = "n"
+    print_stderr = mocker.patch("mxdev.vcs.common.print_stderr")
+
+    TestWorkingCopy.package_status = "dirty"
+    wc.sources = {
+        "package": {"vcs": "test", "name": "package", "path": str(package_dir)}
+    }
+    wc.update(packages=["package"])
+    print_stderr.assert_called_with("The package 'package' is dirty.")
+    assert "Skipped update of 'package'." in caplog.text
+    caplog.clear()
+
+    # Test dirty package with user accepting update
+    input_mock.answer = "y"
+    wc.update(packages=["package"])
+    assert "Queued 'package' for update." in caplog.text
+    assert "'force': True" in caplog.text
+    caplog.clear()
+
+    # Test dirty package with 'all' answer
+    input_mock.answer = "all"
+    wc.update(packages=["package"])
+    assert "Queued 'package' for update." in caplog.text
+    caplog.clear()
+
+
+def test_worker_with_error(mocker, caplog):
+    """Test worker() function with WCError exception."""
+
+    class TestWorkingCopy(common.BaseWorkingCopy):
+        def checkout(self, **kwargs):
+            raise common.WCError("Test error")
+
+        def status(self, **kwargs):
+            return "clean"
+
+        def matches(self):
+            return True
+
+        def update(self, **kwargs):
+            return None
+
+    wc = TestWorkingCopy(source={"url": "test://url"})
+    wc.output((logging.error, "Error message"))
+
+    working_copies = common.WorkingCopies(sources={})
+    test_queue = queue.Queue()
+    test_queue.put((wc, wc.checkout, {}))
+
+    common.worker(working_copies, test_queue)
+
+    assert working_copies.errors is True
+    assert "Can not execute action!" in caplog.text
+
+
+def test_worker_with_bytes_output(mocker):
+    """Test worker() function with bytes output."""
+
+    class TestWorkingCopy(common.BaseWorkingCopy):
+        def checkout(self, **kwargs):
+            return b"bytes output"
+
+        def status(self, **kwargs):
+            return "clean"
+
+        def matches(self):
+            return True
+
+        def update(self, **kwargs):
+            return None
+
+    wc = TestWorkingCopy(source={"url": "test://url"})
+
+    working_copies = common.WorkingCopies(sources={})
+    test_queue = queue.Queue()
+    test_queue.put((wc, wc.checkout, {"verbose": True}))
+
+    print_mock = mocker.patch("builtins.print")
+    common.worker(working_copies, test_queue)
+
+    print_mock.assert_called_once_with("bytes output")
+
+
+def test_worker_errors_flag(mocker):
+    """Test worker() respects the errors flag."""
+    working_copies = common.WorkingCopies(sources={})
+    working_copies.errors = True
+    test_queue = queue.Queue()
+
+    # Should return immediately without processing queue
+    common.worker(working_copies, test_queue)
+    assert test_queue.qsize() == 0  # Queue should not be modified
