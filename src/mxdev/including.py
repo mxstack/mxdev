@@ -26,7 +26,10 @@ def resolve_dependencies(
         if http_parent:
             file_or_url = parse.urljoin(http_parent, file_or_url)
         parsed = parse.urlparse(str(file_or_url))
-        if parsed.scheme:
+        # Check if it's a real URL scheme (not a Windows drive letter)
+        # Windows drive letters are single characters, URL schemes are longer
+        is_url = parsed.scheme and len(parsed.scheme) > 1
+        if is_url:
             with request.urlopen(str(file_or_url)) as fio:
                 tf = tempfile.NamedTemporaryFile(
                     suffix=".ini",
@@ -54,7 +57,10 @@ def resolve_dependencies(
         include = include.strip()
         if not include:
             continue
-        if http_parent or parse.urlparse(include).scheme:
+        # Check if it's a real URL scheme (not a Windows drive letter)
+        parsed_include = parse.urlparse(include)
+        is_include_url = parsed_include.scheme and len(parsed_include.scheme) > 1
+        if http_parent or is_include_url:
             file_list += resolve_dependencies(include, tmpdir, http_parent)
         else:
             file_list += resolve_dependencies(file.parent / include, tmpdir)

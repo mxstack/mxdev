@@ -54,3 +54,21 @@ def test_read_with_included():
     assert cfg["settings"]["unique_2"] == "2"
     assert cfg["settings"]["unique_3"] == "3"
     assert cfg["settings"]["unique_4"] == "4"
+
+
+def test_resolve_dependencies_windows_path(tmp_path):
+    """Test that Windows absolute paths with drive letters are handled correctly.
+
+    On Windows, paths like 'D:\\path\\to\\file.ini' should be treated as
+    file paths, not URLs (even though urlparse() interprets 'D:' as a scheme).
+    """
+    from mxdev.including import resolve_dependencies
+
+    # Create a test file with no includes
+    test_file = tmp_path / "test_config.ini"
+    test_file.write_text("[settings]\ntest = value\n")
+
+    # Test with the actual path (on Windows this would be like D:\...\test_config.ini)
+    file_list = resolve_dependencies(str(test_file), str(tmp_path))
+    assert len(file_list) == 1
+    assert file_list[0] == test_file
