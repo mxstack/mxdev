@@ -13,9 +13,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
       - name: Run lint with tox
         run: uvx --with tox-uv tox -e lint
 
@@ -40,9 +40,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Fetch all history for hatch-vcs to work
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
       - name: Set up Python ${{ matrix.python-config.version }}
         run: uv python install ${{ matrix.python-config.version }}
       - name: Configure git for tests

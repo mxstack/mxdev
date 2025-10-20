@@ -14,10 +14,14 @@ jobs:
     environment: release
     permissions:
       id-token: write
+      attestations: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Fetch all history for hatch-vcs to determine version
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install pypa/build
@@ -38,6 +42,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+          attestations: true
       - name: Postrelease
         run: |
           git config user.name "${{ env.CI_COMMIT_AUTHOR }}"
