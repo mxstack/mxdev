@@ -65,6 +65,7 @@ packages = ["src/mxdev"]
 [tool.hatch.build.targets.sdist]
 include = [
     "/src",
+    "/tests",
     "/example",
     "/README.md",
     "/CONTRIBUTING.md",
@@ -105,7 +106,7 @@ path = "LICENSE.md"
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = [
-    "src",
+    "tests",
 ]
 
 [tool.isort]
@@ -143,7 +144,7 @@ uv_resolution = "highest"
 pass_env = ["LC_ALL", "LANG", "HOME"]
 commands = [
     ["uv", "pip", "install", "-e", ".[test]"],
-    ["pytest", "--cov", "--cov-report=term", "--cov-branch", "{posargs:src}"]
+    ["pytest", "--cov", "--cov-report=term", "--cov-branch", "{posargs:tests}"]
 ]
 
 [tool.tox.env.lint]

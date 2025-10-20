@@ -1,10 +1,11 @@
-from mxdev.tests.utils import GitRepo
-from mxdev.tests.utils import vcs_checkout
-from mxdev.tests.utils import vcs_update
 from unittest.mock import patch
 
 import os
 import pytest
+
+from utils import GitRepo
+from utils import vcs_checkout
+from utils import vcs_update
 
 
 @pytest.mark.skipif(

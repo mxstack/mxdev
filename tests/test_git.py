@@ -1,14 +1,15 @@
 # pylint: disable=redefined-outer-name
 from logging import getLogger
 from logging import Logger
-from mxdev.tests.utils import vcs_checkout
-from mxdev.tests.utils import vcs_status
-from mxdev.tests.utils import vcs_update
 from struct import pack
 from unittest.mock import patch
 
 import os
 import pytest
+
+from utils import vcs_checkout
+from utils import vcs_status
+from utils import vcs_update
 
 
 logger: Logger = getLogger("vcs_test_git")

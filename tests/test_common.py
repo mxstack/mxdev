@@ -1,5 +1,5 @@
-from .. import vcs
-from ..vcs import common
+from mxdev import vcs
+from mxdev.vcs import common
 
 import logging
 import os

@@ -124,7 +124,7 @@ PACKAGES_ALLOW_PRERELEASES?=false
 # The command which gets executed. Defaults to the location the
 # :ref:`run-tests` template gets rendered to if configured.
 # Default: .mxmake/files/run-tests.sh
-TEST_COMMAND?=LANG=en_US.UTF-8 pytest -vvv src
+TEST_COMMAND?=LANG=en_US.UTF-8 pytest -vvv tests
 
 # Additional Python requirements for running tests to be
 # installed (via pip).

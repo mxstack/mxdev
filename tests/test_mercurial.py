@@ -1,8 +1,9 @@
-from mxdev.tests.utils import Process
 from unittest.mock import patch
 
 import os
 import pytest
+
+from utils import Process
 
 
 class TestMercurial:

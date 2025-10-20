@@ -1,7 +1,7 @@
-from .utils import Process
-
 import os
 import pytest
+
+from utils import Process
 
 
 @pytest.fixture
@@ -24,7 +24,7 @@ def src(tempdir):
 
 @pytest.fixture
 def mkgitrepo(tempdir):
-    from .utils import GitRepo
+    from utils import GitRepo
 
     def _mkgitrepo(name):
         repository = GitRepo(tempdir / name)
@@ -41,7 +41,7 @@ def git_allow_file_protocol():
     Allow file protocol
     This is needed for the submodule to be added from a local path
     """
-    from .utils import GitRepo
+    from utils import GitRepo
 
     shell = Process()
     file_allow = (
@@ -56,7 +56,7 @@ def git_allow_file_protocol():
 
 @pytest.fixture
 def develop(src):
-    from mxdev.tests.utils import MockDevelop
+    from utils import MockDevelop
 
     develop = MockDevelop()
     develop.sources_dir = src
