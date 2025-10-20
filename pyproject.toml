@@ -30,6 +30,7 @@ test = [
     "pytest-cov",
     "pytest-mock",
     "httpretty",
+    "coverage[toml]",
 ]
 
 [project.urls]
@@ -133,6 +134,41 @@ max-line-length = 120
 # max-line-length = 88
 ignore = "D001"
 
+[tool.coverage.run]
+source = ["src"]
+branch = true
+parallel = true
+relative_files = true
+omit = [
+    "*/tests/*",
+    "*/_version.py",
+    "*/vcs/__init__.py",
+]
+
+[tool.coverage.paths]
+source = [
+    "src",
+    ".tox/*/lib/python*/site-packages",
+    ".tox/*/Lib/site-packages",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "htmlcov"
+
 [tool.tox]
 requires = ["tox>=4", "tox-uv>=1"]
 env_list = ["lint", "py38", "py39", "py310", "py311", "py312", "py313", "py314"]
@@ -144,7 +180,7 @@ uv_resolution = "highest"
 pass_env = ["LC_ALL", "LANG", "HOME"]
 commands = [
     ["uv", "pip", "install", "-e", ".[test]"],
-    ["pytest", "--cov", "--cov-report=term", "--cov-branch", "{posargs:tests}"]
+    ["coverage", "run", "-m", "pytest", "{posargs:tests}"]
 ]
 
 [tool.tox.env.lint]

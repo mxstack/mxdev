@@ -1,9 +1,15 @@
 *.egg-info
 .*-cache
 .coverage
+.coverage.*
+!.coveragerc
+coverage.json
+coverage.xml
+htmlcov/
 .installed.txt
 .mxmake/
 .python-version
+.pytest_cache/
 .tox
 __pycache__
 build/
