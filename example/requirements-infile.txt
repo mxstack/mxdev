@@ -1,2 +1,8 @@
-foo==11.2
+# Main requirements file
+# Reference constraints for version pinning
 -c constraints-infile.txt
+
+# Core packages
+foo==11.2
+setuptools
+wheel
