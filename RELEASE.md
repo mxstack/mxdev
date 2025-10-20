@@ -42,30 +42,44 @@ git log $(git describe --tags --abbrev=0)..HEAD --oneline
 
 #### 3. Update CHANGES.md
 
-Edit [CHANGES.md](CHANGES.md) to document the changes in this release:
+Edit [CHANGES.md](CHANGES.md) to finalize the release notes:
 
+**Before release:**
 ```markdown
-## 4.2.0 (2025-10-20)
+## 4.1.1 (unreleased)
 
-### Features
-
-- Added new feature X
-- Improved Y performance
-
-### Bug Fixes
-
-- Fixed issue with Z
-
-### Internal
-
-- Migrated to hatchling build backend
+- Modernize release method with hatchling. See RELEASE.md [jensens]
+- Modernize tox setup. [jensens]
+- Modernize Github workflows. [jensens]
 ```
+
+**After editing (change `unreleased` to release date and add new unreleased section):**
+```markdown
+## Changes
+
+## 4.1.2 (unreleased)
+
+<!-- Add future changes here -->
+
+
+## 4.1.1 (2025-10-20)
+
+- Modernize release method with hatchling. See RELEASE.md [jensens]
+- Modernize tox setup. [jensens]
+- Modernize Github workflows. [jensens]
+```
+
+**Important notes:**
+- The version number in CHANGES.md is **manual** (you edit it)
+- The package version comes **automatically** from the git tag via hatch-vcs
+- Keep the format: `## X.Y.Z (YYYY-MM-DD)` for released versions
+- Add `[author]` at the end of each change entry
 
 Commit the changes:
 
 ```bash
 git add CHANGES.md
-git commit -m "Prepare release 4.2.0"
+git commit -m "Prepare release 4.1.1"
 git push origin main
 ```
 
@@ -89,17 +103,26 @@ git push origin main
 2. Verify tests pass (usually ~5-10 minutes)
 3. Check PyPI once published: https://pypi.org/project/mxdev/
 
-#### 6. Post-release steps
+#### 6. Post-release steps (Optional)
 
-The workflow automatically runs `make postrelease` which handles:
-- Creating post-release version bump commit
-- Any other zest.releaser configured tasks
+After the release is published on PyPI, you may want to:
 
-Verify and pull the changes:
+1. **Update CHANGES.md** to add a new unreleased section for future changes (if not done in step 3):
+   ```bash
+   # Edit CHANGES.md to add:
+   # ## X.Y.Z (unreleased)
+   #
+   # <!-- Add future changes here -->
 
-```bash
-git pull origin main
-```
+   git add CHANGES.md
+   git commit -m "Start development of next version"
+   git push origin main
+   ```
+
+2. **Announce the release** (optional):
+   - Post on relevant mailing lists or forums
+   - Update documentation if needed
+   - Notify users of significant changes
 
 ## Version Numbering
 
@@ -192,12 +215,12 @@ pip install --index-url https://test.pypi.org/simple/ mxdev
 Use this checklist for each release:
 
 - [ ] All tests passing on main branch
-- [ ] CHANGES.md updated with release notes
+- [ ] CHANGES.md updated with release date (changed from `unreleased`)
+- [ ] New unreleased section added to CHANGES.md (for next version)
 - [ ] Changes committed and pushed to main
 - [ ] GitHub release created with correct tag (format: `vX.Y.Z`)
 - [ ] GitHub Actions workflow completed successfully
 - [ ] Package visible on PyPI with correct version
-- [ ] Post-release changes pulled from main
 - [ ] Release announced (if applicable)
 
 ## Troubleshooting
@@ -260,14 +283,51 @@ The `release` environment in GitHub requires:
 - Approval from maintainers (optional, can be configured)
 - Runs only on release events
 
-### Makefile Integration
+## Changelog Management
 
-The release workflow uses `make postrelease` which calls zest.releaser.
+mxdev uses a **manual changelog** approach where version numbers and dates in CHANGES.md are updated by hand.
 
-To customize behavior, edit the Makefile variables:
-```makefile
-ZEST_RELEASER_POSTRELEASE_OPTIONS=--no-input
+### Format
+
+The changelog follows this simple format:
+
+```markdown
+## Changes
+
+## X.Y.Z (unreleased)
+
+- Description of change [author]
+
+
+## X.Y.Z (YYYY-MM-DD)
+
+- Description of change [author]
+- Another change [author]
 ```
+
+### Key Points
+
+- **Version in CHANGES.md**: Manual - you edit the version number and date
+- **Package version**: Automatic - comes from git tag via hatch-vcs
+- **During development**: Changes are added under `(unreleased)`
+- **Before release**: Change `(unreleased)` to the actual date
+- **After release**: Add new `(unreleased)` section for next version
+
+### Why This Works
+
+With hatch-vcs, the package version is determined by git tags at build time. This means:
+- You maintain a human-readable changelog in CHANGES.md
+- The build system automatically gets the correct version from tags
+- No need to keep version numbers in sync between files
+
+### Alternative Tools
+
+For larger teams or to avoid merge conflicts, consider using:
+- **Scriv**: Fragment-based changelog management
+- **Towncrier**: Popular in the Python ecosystem
+- **git-cliff**: Generate from commit messages
+
+See the project's issue tracker or maintainers if you'd like to adopt automated changelog tools.
 
 ## Alternative: Manual Release (Not Recommended)
 
