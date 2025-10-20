@@ -10,7 +10,7 @@ Other software follow the same idea are [mr.developer](https://pypi.org/project/
 **[Star us on Github](https://github.com/mxstack/mxdev)**
 
 
-### Overview
+## Overview
 
 mxdev procedure is:
 
@@ -21,87 +21,77 @@ mxdev procedure is:
 
 mxdev will **not** run *pip* for you!
 
+## Installation
 
-### Configuration
+```bash
+pip install mxdev
+```
 
-Given a `requirements.txt` (or similar named) file which itself references a `constraints.txt` file inside.
+**mxdev >=4.0 needs pip version 23 at minimum to work properly**
 
-Create an INI file, like `mx.ini` in [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) syntax.
+## Quick Start
 
+1. **Create `mx.ini`** configuration file:
 
-### Main section `[settings]`
+```ini
+[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-mxdev.txt
+constraints-out = constraints-mxdev.txt
+
+# Custom variables for reuse
+github = git+ssh://git@github.com/
+
+[mypackage]
+url = ${settings:github}myorg/mypackage.git
+branch = main
+extras = test
+```
+
+2. **Run mxdev** to fetch sources and generate files:
+
+```bash
+mxdev
+```
+
+3. **Install with pip** using the generated files:
+
+```bash
+pip install -r requirements-mxdev.txt
+```
+
+For more examples see the [example/](https://github.com/mxstack/mxdev/tree/main/example) directory.
+
+## Configuration
+
+Configuration is done in an INI file (default: `mx.ini`) using [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) syntax.
+
+### Settings Section `[settings]`
 
 The **main section** must be called `[settings]`, even if kept empty.
-In the main sections the input and output files are defined.
 
-#### `requirements-in`
+#### I/O Settings
 
-Main requirements file to start with. This can be an URL too.
+| Option | Description | Default |
+|--------|-------------|---------|
+| `requirements-in` | Input requirements file (can be URL). Empty value = generate from INI only | `requirements.txt` |
+| `requirements-out` | Output requirements with development sources as `-e` entries | `requirements-mxdev.txt` |
+| `constraints-out` | Output constraints (developed packages commented out) | `constraints-mxdev.txt` |
 
-If given an empty value mxdev will only generate output from the information given in INI file itself.
+#### Behavior Settings
 
-Default: `requirements.txt`
+| Option | Description | Default |
+|--------|-------------|---------|
+| `default-target` | Target directory for VCS checkouts | `./sources` |
+| `threads` | Number of parallel threads for fetching sources | `4` |
+| `offline` | Skip all VCS fetch operations (handy for offline work) | `False` |
+| `default-install-mode` | Default `install-mode` for packages: `direct` or `skip` | `direct` |
+| `default-update` | Default update behavior: `yes` or `no` | `yes` |
+| `default-use` | Default use behavior (when false, sources not checked out) | `True` |
 
-#### `requirements-out`
+#### Package Overrides
 
-Output of the combined requirements including development sources to be used later with `pip install`.
-Default: `requirements-mxdev.txt`
-
-#### `constraints-out`
-
-Output of the combined constraints.
-
-Default: `constraints-mxdev.txt`
-
-#### `include`
-
-Include one or more other INI files.
-
-The included file is read before the main file, so the main file overrides included settings.
-Included files may include other files.
-Innermost inclusions are read first.
-
-If an included file is an HTTP-URL, it is loaded from there.
-
-If the included file is a relative path, it is loaded relative to the parents directory or URL.
-
-The feature utilizes the [ConfigParser feature to read multiple files at once](https://docs.python.org/3/library/configparser.html#configparser.ConfigParser.read).
-
-Default: empty
-
-#### `default-target`
-
-Target directory for sources from VCS. Default: `./sources`
-
-#### `default-install-mode`
-
-Default for `install-mode` on section, read there for details
-Allowed values: `direct` or `skip`
-
-Default: `direct`
-
-#### `default-update`
-Default for `update` on section, read there for details
-
-Allowed values: `yes` or `no`
-
-Default: `yes`
-
-#### `threads`
-
-Number of threads to fetch sources in parallel with.
-Speeds up fetching from VCS.
-
-Default: `4`
-
-#### `offline`
-
-Do not fetch any sources.
-Handy if working offline.
-
-Default: `False`
-
-#### `version-overrides`
+##### `version-overrides`
 
 Override package versions which are already defined in a dependent constraints file.
 I.e. an upstream *constraints.txt* contains already `somefancypackage==2.0.3`.
@@ -120,11 +110,11 @@ It is possible to add as many overrides as needed.
 When writing the *constraints-out*, the new version will be taken into account.
 If there is a source section defined for the same package, the source will be used and entries here are ignored.
 
-Note: When using [uv](https://pypi.org/project/uv/) pip install the version overrides here are not needed, since it [supports overrides nativly](https://github.com/astral-sh/uv?tab=readme-ov-file#dependency-overrides).
-With uv it is recommended to create an `overrides.txt` file with the version overrides and use `uv pip install --overrides overrides.txt [..]` to install the packages.
+Note: When using [uv](https://pypi.org/project/uv/) pip install the version overrides here are not needed, since it [supports overrides natively](https://github.com/astral-sh/uv?tab=readme-ov-file#dependency-overrides).
+With uv it is recommended to create an `overrides.txt` file with the version overrides and use `uv pip install --override overrides.txt [..]` to install the packages.
 
 
-#### `ignores`
+##### `ignores`
 
 Ignore packages that are already defined in a dependent constraints file.
 No new version will be provided.
@@ -139,14 +129,7 @@ ignores =
     otherpackage
 ```
 
-#### `default-use`
-
-True by default.  When false, the source is not checked out,
-and the version for this package is not overridden.
-Additionally, custom variables can be defined as `key = value` pair.
-Those can be referenced in other values as `${settings:key}` and will be expanded there.
-
-#### `main-package`
+##### `main-package`
 
 mxdev can handle one Python package as main package directly via ini config.
 If defined, it will be added as last entry in the resulting requirements out file.
@@ -158,124 +141,88 @@ This can be defined as:
 main-package = -e .[test]
 ```
 
-If the main package is defined in a dependent constraint file, it's name must be added to `ignores`.
+If the main package is defined in a dependent constraint file, its name must be added to `ignores`.
 
-### Default settings
+#### Advanced Settings
 
-mxdev provides default settings which can be used inside package or custom
-sections.
+##### `include`
 
-#### `directory`
+Include one or more other INI files.
 
-Contains the current working directory and can be used like this
+The included file is read before the main file, so the main file overrides included settings.
+Included files may include other files.
+Innermost inclusions are read first.
+
+If an included file is an HTTP-URL, it is loaded from there.
+
+If the included file is a relative path, it is loaded relative to the parent's directory or URL.
+
+Default: empty
+
+##### `directory`
+
+mxdev provides a default setting containing the current working directory which can be used inside package or custom sections:
 
 ```INI
 [sectionname]
 param = ${settings:directory}/some/path
 ```
 
-### Subsequent package source sections
+##### Custom Variables
 
-All other sections are defining the sources to be used.
+Additionally, custom variables can be defined as `key = value` pair.
+Those can be referenced in other values as `${settings:key}` and will be expanded there.
 
-#### `[PACKAGENAME]`
+```INI
+[settings]
+github = git+ssh://git@github.com/
+gitlab = git+ssh://git@gitlab.com/
+```
 
-The section name is the package name.
+### Package Source Sections
 
-#### `url = URL`
+Sections other than `[settings]` can define:
+- **Package sources**: `[PACKAGENAME]` - VCS sources to checkout and develop
+- **Hook configuration**: `[hookname-section]` - Settings for mxdev extensions (see [EXTENDING.md](https://github.com/mxstack/mxdev/blob/main/EXTENDING.md))
 
-The checkout URL of the repository.
+For package sources, the section name is the package name: `[PACKAGENAME]`
 
-The URL is required.
+#### Basic Package Options
 
-#### `pushurl = URL`
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `url` | **required** | VCS checkout URL | — |
+| `vcs` | optional | Version control system: `git`, `fs`, `svn`, `gitsvn`, `hg`, `bzr`, `darcs` | `git` |
+| `branch` | optional | Branch name or tag to checkout | `main` |
+| `extras` | optional | Comma-separated package extras (e.g., `test,dev`) | empty |
+| `subdirectory` | optional | Path to Python package when not in repository root | empty |
+| `target` | optional | Custom target directory (overrides `default-target`) | `default-target` |
+| `pushurl` | optional | Writable URL for pushes (not applied after initial checkout) | — |
 
-Optional a writable URL for pushes can be specified.
-
-If the `pushurl` is set after initial checkout it is not applied.
-To apply it remove the repository and checkout again.
-
-#### `vcs = VCS`
-
-The version control system to use.
-
-Supported are:
+**VCS Support Status:**
 - `git` (stable, tested)
-- `fs` (stable, tested) - in fact no vcs, but points to a local directory.
-  This can be achieved without mxdev by using `-e PATH` in the requirements input file.
-- `svn` (unstable, test needs rewrite)
-- `gitsvn` (unstable, test needs rewrite)
-- `hg` (unstable, test needs rewrite)
-- `bzr` (unstable, test needs rewrite)
-- `darcs` (unstable, test needs rewrite)
+- `fs` (stable, tested) - local directory pseudo-VCS
+- `svn`, `gitsvn`, `hg`, `bzr`, `darcs` (unstable, tests need rewrite)
 
-Defaults to `git`.
+#### Installation Options
 
-#### `branch = BRANCHNAME_OR_TAG`
+| Option | Description | Default |
+|--------|-------------|---------|
+| `install-mode` | `direct`: Install with `pip -e PACKAGEPATH`<br>`skip`: Only clone, don't install | `default-install-mode` |
+| `use` | When `false`, source is not checked out and version not overridden | `default-use` |
 
-The branch name or tag to checkout.
+#### Git-Specific Options
 
-Defaults to `main`.
+| Option | Description | Default |
+|--------|-------------|---------|
+| `depth` | Git clone depth (shallow clone). Set `GIT_CLONE_DEPTH=1` env var for global default | full clone |
+| `submodules` | Submodule handling: `always`, `checkout`, `recursive` (see below) | `always` |
 
-#### `extras = EXTRA1,EXTRA2`
+##### Git Submodule Modes
 
-Package extras to install. Default empty.
-
-#### `subdirectory = SUBPATH`
-
-For specifying the path to the Python package, when it is not in the root of the VCS directory.
-
-Default empty.
-
-#### `target`
-
-The target directory for source from this section.
-
-Default to default target directory configured in the main section `[settings]` `default-target =` value.
-
-#### `install-mode`
-
-There are different modes of pip installation
-
-##### `skip`
-
-Do not install with pip, just clone/update the repository
-
-##### `direct`
-
-Install the package using `pip -e PACKAGEPATH`.
-Dependencies are resolved immediately
-
-Defaults to default mode configured in main section `[settings]` `default-install-mode =` value.
-
-#### `use`
-
-True by default, unless `default-use` in the general settings is false.
-When false, the source is not checked out,
-and the version for this package is not overridden.
-
-#### `depth`
-
-For `git` only.
-This is used to set the git clone depth.
-This is not set by default: you get a full clone.
-You can set environment variable `GIT_CLONE_DEPTH=1` to set a default git depth for all checkouts.  This is useful for CI.
-
-#### `submodules`
-
-There are 3 different options:
-
-##### `always`
-
-(default) git submodules will always be checked out, they will be updated if already presen
-
-##### `checkout`
-
-submodules get only fetched during checkout, existing submodules stay untouche
-
-##### `recursive`
-
-Fetches submodules recursively, results in `git clone --recurse-submodules on` checkout and `submodule update --init --recursive` on update.
+- **`always`** (default): Git submodules will always be checked out, updated if already present
+- **`checkout`**: Submodules only fetched during checkout, existing submodules stay untouched
+- **`recursive`**: Fetches submodules recursively, results in `git clone --recurse-submodules` on checkout and `submodule update --init --recursive` on update
 
 ### Usage
 
@@ -289,8 +236,6 @@ Mxdev will
 
 Now, use the generated requirements and constraints files with i.e. `pip install -r requirements-mxdev.txt`.
 
-**mxdev >=4.0 needs pip version 23 at minimum to work properly**
-
 ## Example Configuration
 
 ### Example `mx.ini`
@@ -301,10 +246,10 @@ This looks like so:
 [settings]
 requirements-in = requirements.txt
 requirements-out = requirements-mxdev.txt
-contraints-out = constraints-mxdev.txt
+constraints-out = constraints-mxdev.txt
 
 version-overrides =
-    baz.baaz = 1.9.32
+    baz.baaz==1.9.32
 
 ignores =
     my.ignoredpackage
@@ -324,11 +269,14 @@ branch = fix99
 extras = test,baz
 ```
 
-### Examples at GitHub
+### More Examples
+
+For comprehensive examples demonstrating all features, see the [example/](https://github.com/mxstack/mxdev/tree/main/example) directory.
+
+### Real-World Examples
 
 - ["new" plone.org backend](https://github.com/plone/plone.org/tree/main/backend)
 - [Conestack](https://github.com/conestack/conestack/)
-- (add more)
 
 
 ## Extending
@@ -336,53 +284,7 @@ extras = test,baz
 The functionality of mxdev can be extended by hooks.
 This is useful to generate additional scripts or files or automate any other setup steps related to mxdev's domain.
 
-Extension configuration settings end up in the `mx.ini` file.
-They can be added globally to the `settings` section, as dedicated config sections or package specific.
-To avoid naming conflicts, all hook-related settings and config sections must be prefixed with a namespace.
-
-It is recommended to use the package name containing the hook as a namespace.
-
-This looks like so:
-
-```INI
-[settings]
-myextension-global_setting = 1
-
-[myextension-section]
-setting = value
-
-[foo.bar]
-myextension-package_setting = 1
-```
-The extension is implemented as a subclass of `mxdev.Hook`:
-
-```Python
-
-from mxdev import Hook
-from mxdev import State
-
-class MyExtension(Hook):
-
-    namespace = None
-    """The namespace for this hook."""
-
-    def read(self, state: State) -> None:
-        """Gets executed after mxdev read operation."""
-
-    def write(self, state: State) -> None:
-        """Gets executed after mxdev write operation."""
-```
-
-The default settings section from the INI file is available at `state.configuration.settings`.
-The package configuration is available at `state.configuration.packages`.
-Hook-related config sections are available at `state.configuration.hooks`.
-
-The hook must be registered as an entry point in the `pyproject.toml` of your package:
-
-```TOML
-[project.entry-points.mxdev]
-hook = "myextension:MyExtension"
-```
+See [EXTENDING.md](https://github.com/mxstack/mxdev/blob/main/EXTENDING.md) for complete documentation on creating mxdev extensions.
 
 ## Rationale
 
