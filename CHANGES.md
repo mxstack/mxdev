@@ -1,10 +1,11 @@
 ## Changes
 
-## 4.1.1 (unreleased)
+## 4.1.1 (2025-10-20)
 
 - Modernize release method with hatchling. See RELEASE.md [jensens]
 - Modernize tox setup. [jensens]
 - Modernize Github workflows. [jensens]
+- Enhance test coverage [jensens]
 - Fix Makefile. [jensens]
 
 
