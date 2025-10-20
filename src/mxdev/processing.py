@@ -107,8 +107,11 @@ def resolve_dependencies(
     logger.info(f"Read [{variety}]: {file_or_url}")
     parsed = parse.urlparse(file_or_url)
     variety_verbose = "requirements" if variety == "r" else "constraints"
+    # Check if it's a real URL scheme (not a Windows drive letter)
+    # Windows drive letters are single characters, URL schemes are longer
+    is_url = parsed.scheme and len(parsed.scheme) > 1
 
-    if not parsed.scheme:
+    if not is_url:
         requirements_in_file = Path(file_or_url)
         if requirements_in_file.exists():
             with requirements_in_file.open("r") as fio:
