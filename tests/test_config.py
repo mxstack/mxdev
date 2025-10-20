@@ -42,7 +42,10 @@ def test_configuration_basic():
     assert config.settings["requirements-out"] == "requirements-mxdev.txt"
     assert config.settings["constraints-out"] == "constraints-mxdev.txt"
     assert "example.package" in config.packages
-    assert config.packages["example.package"]["url"] == "https://github.com/example/package.git"
+    assert (
+        config.packages["example.package"]["url"]
+        == "https://github.com/example/package.git"
+    )
     assert config.packages["example.package"]["branch"] == "main"
 
 
@@ -136,8 +139,7 @@ def test_configuration_override_args_offline():
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
     config = Configuration(
-        str(base / "basic_config.ini"),
-        override_args={"offline": True}
+        str(base / "basic_config.ini"), override_args={"offline": True}
     )
 
     assert config.settings["offline"] == "true"
@@ -151,8 +153,7 @@ def test_configuration_override_args_threads():
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
     config = Configuration(
-        str(base / "basic_config.ini"),
-        override_args={"threads": 16}
+        str(base / "basic_config.ini"), override_args={"threads": 16}
     )
 
     assert config.settings["threads"] == "16"

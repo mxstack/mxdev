@@ -7,10 +7,10 @@ def test_hook_class_exists():
     from mxdev.hooks import Hook
 
     assert Hook is not None
-    assert hasattr(Hook, 'read')
-    assert hasattr(Hook, 'write')
+    assert hasattr(Hook, "read")
+    assert hasattr(Hook, "write")
     # namespace is a type annotation, check it exists in annotations
-    assert 'namespace' in Hook.__annotations__
+    assert "namespace" in Hook.__annotations__
 
 
 def test_hook_class_can_be_instantiated():
@@ -61,7 +61,7 @@ def test_load_hooks_no_hooks():
     """Test load_hooks returns empty list when no hooks registered."""
     from mxdev.hooks import load_hooks
 
-    with patch('mxdev.hooks.load_eps_by_group', return_value=[]):
+    with patch("mxdev.hooks.load_eps_by_group", return_value=[]):
         hooks = load_hooks()
         assert hooks == []
 
@@ -78,7 +78,7 @@ def test_load_hooks_with_hooks():
     mock_hook_class.return_value = mock_hook_instance
     mock_ep.load.return_value = mock_hook_class
 
-    with patch('mxdev.hooks.load_eps_by_group', return_value=[mock_ep]):
+    with patch("mxdev.hooks.load_eps_by_group", return_value=[mock_ep]):
         hooks = load_hooks()
         assert len(hooks) == 1
         assert hooks[0] == mock_hook_instance
@@ -100,7 +100,9 @@ def test_load_hooks_filters_by_name():
     mock_ep_other = MagicMock()
     mock_ep_other.name = "other"
 
-    with patch('mxdev.hooks.load_eps_by_group', return_value=[mock_ep_hook, mock_ep_other]):
+    with patch(
+        "mxdev.hooks.load_eps_by_group", return_value=[mock_ep_hook, mock_ep_other]
+    ):
         hooks = load_hooks()
         assert len(hooks) == 1
         assert hooks[0] == mock_hook_instance

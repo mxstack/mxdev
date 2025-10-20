@@ -57,7 +57,9 @@ def test_checkout_path_exists_but_doesnt_match(tmp_path):
 
     wc = FilesystemWorkingCopy(source)
 
-    with pytest.raises(FilesystemError, match="Directory name for existing package .* differs"):
+    with pytest.raises(
+        FilesystemError, match="Directory name for existing package .* differs"
+    ):
         wc.checkout()
 
 
@@ -76,7 +78,9 @@ def test_checkout_path_doesnt_exist(tmp_path):
 
     wc = FilesystemWorkingCopy(source)
 
-    with pytest.raises(FilesystemError, match="Directory .* for package .* doesn't exist"):
+    with pytest.raises(
+        FilesystemError, match="Directory .* for package .* doesn't exist"
+    ):
         wc.checkout()
 
 
@@ -197,7 +201,9 @@ def test_update_when_doesnt_match(tmp_path):
 
     wc = FilesystemWorkingCopy(source)
 
-    with pytest.raises(FilesystemError, match="Directory name for existing package .* differs"):
+    with pytest.raises(
+        FilesystemError, match="Directory name for existing package .* differs"
+    ):
         wc.update()
 
 

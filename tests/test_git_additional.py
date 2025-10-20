@@ -1,4 +1,5 @@
 """Additional tests for git.py to increase coverage to >90%."""
+
 import os
 import pytest
 from unittest.mock import Mock, patch, MagicMock
@@ -33,7 +34,7 @@ def test_git_working_copy_revision_converted_to_rev():
     """Test that 'revision' is converted to 'rev'."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -51,7 +52,7 @@ def test_git_working_copy_rev_removes_default_branch():
     """Test that specifying rev removes default branch 'main'."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -68,7 +69,7 @@ def test_git_working_copy_rev_with_non_main_branch_errors():
     """Test that specifying both rev and non-main branch causes exit."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -85,7 +86,7 @@ def test_git_version_returncode_error():
     """Test git_version handles git --version failure."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -98,7 +99,7 @@ def test_git_version_returncode_error():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("error", "error message")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(SystemExit):
                 wc.git_version()
 
@@ -107,7 +108,7 @@ def test_git_version_parse_error():
     """Test git_version handles unparseable version output."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -120,7 +121,7 @@ def test_git_version_parse_error():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("invalid version output", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(SystemExit):
                 wc.git_version()
 
@@ -129,7 +130,7 @@ def test_git_version_too_old():
     """Test git_version exits on git < 1.5."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -142,7 +143,7 @@ def test_git_version_too_old():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("git version 1.4.0", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(SystemExit):
                 wc.git_version()
 
@@ -151,7 +152,7 @@ def test_git_version_parsing_two_parts():
     """Test git_version parses version with 2 parts."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -164,7 +165,7 @@ def test_git_version_parsing_two_parts():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("git version 2.5", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             version = wc.git_version()
             assert version == (2, 5)
 
@@ -173,7 +174,7 @@ def test_git_version_parsing_four_parts():
     """Test git_version parses version with 4 parts."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -186,7 +187,7 @@ def test_git_version_parsing_four_parts():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("git version 2.30.1.2", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             version = wc.git_version()
             assert version == (2, 30, 1, 2)
 
@@ -195,7 +196,7 @@ def test_remote_branch_prefix_old_git():
     """Test _remote_branch_prefix for git < 1.6.3."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -204,7 +205,7 @@ def test_remote_branch_prefix_old_git():
 
         wc = GitWorkingCopy(source)
 
-        with patch.object(wc, 'git_version', return_value=(1, 5, 0)):
+        with patch.object(wc, "git_version", return_value=(1, 5, 0)):
             assert wc._remote_branch_prefix == "origin"
 
 
@@ -212,7 +213,7 @@ def test_remote_branch_prefix_new_git():
     """Test _remote_branch_prefix for git >= 1.6.3."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -221,7 +222,7 @@ def test_remote_branch_prefix_new_git():
 
         wc = GitWorkingCopy(source)
 
-        with patch.object(wc, 'git_version', return_value=(2, 30, 0)):
+        with patch.object(wc, "git_version", return_value=(2, 30, 0)):
             assert wc._remote_branch_prefix == "remotes/origin"
 
 
@@ -229,7 +230,7 @@ def test_git_merge_rbranch_failure():
     """Test git_merge_rbranch handles git branch failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -242,7 +243,7 @@ def test_git_merge_rbranch_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "branch command failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(GitError, match="git branch -a"):
                 wc.git_merge_rbranch("", "")
 
@@ -251,7 +252,7 @@ def test_git_merge_rbranch_missing_branch_accept():
     """Test git_merge_rbranch with missing branch and accept_missing=True."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -266,7 +267,7 @@ def test_git_merge_rbranch_missing_branch_accept():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("* main\n  develop\n", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             stdout, stderr = wc.git_merge_rbranch("", "", accept_missing=True)
             assert stdout == "* main\n  develop\n"
 
@@ -275,7 +276,7 @@ def test_git_merge_rbranch_missing_branch_no_accept():
     """Test git_merge_rbranch with missing branch and accept_missing=False."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -290,7 +291,7 @@ def test_git_merge_rbranch_missing_branch_no_accept():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("* main\n  develop\n", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(SystemExit):
                 wc.git_merge_rbranch("", "", accept_missing=False)
 
@@ -299,7 +300,7 @@ def test_git_merge_rbranch_merge_failure():
     """Test git_merge_rbranch handles merge failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -319,8 +320,8 @@ def test_git_merge_rbranch_merge_failure():
                 mock_proc.communicate.return_value = ("", "merge conflict")
             return mock_proc
 
-        with patch.object(wc, 'run_git', side_effect=mock_run_git_side_effect):
-            with patch.object(wc, 'git_version', return_value=(2, 30, 0)):
+        with patch.object(wc, "run_git", side_effect=mock_run_git_side_effect):
+            with patch.object(wc, "git_version", return_value=(2, 30, 0)):
                 with pytest.raises(GitError, match="git merge"):
                     wc.git_merge_rbranch("", "")
 
@@ -332,7 +333,7 @@ def test_git_checkout_existing_path(tmp_path):
     test_dir = tmp_path / "test-package"
     test_dir.mkdir()
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -350,7 +351,7 @@ def test_git_checkout_clone_failure():
     """Test git_checkout handles clone failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -363,7 +364,7 @@ def test_git_checkout_clone_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "clone failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(GitError, match="git cloning"):
                 wc.git_checkout(submodules="never")
 
@@ -372,7 +373,7 @@ def test_git_checkout_with_depth():
     """Test git_checkout with depth parameter."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -386,7 +387,7 @@ def test_git_checkout_with_depth():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("cloned", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process) as mock_run:
+        with patch.object(wc, "run_git", return_value=mock_process) as mock_run:
             wc.git_checkout(submodules="never")
 
             # Verify --depth was included in clone command
@@ -399,8 +400,8 @@ def test_git_checkout_with_git_clone_depth_env():
     """Test git_checkout uses GIT_CLONE_DEPTH environment variable."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.git.GIT_CLONE_DEPTH', '5'):
-        with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.git.GIT_CLONE_DEPTH", "5"):
+        with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
             source = {
                 "name": "test-package",
                 "url": "https://github.com/test/repo.git",
@@ -413,7 +414,7 @@ def test_git_checkout_with_git_clone_depth_env():
             mock_process.returncode = 0
             mock_process.communicate.return_value = ("cloned", "")
 
-            with patch.object(wc, 'run_git', return_value=mock_process) as mock_run:
+            with patch.object(wc, "run_git", return_value=mock_process) as mock_run:
                 wc.git_checkout(submodules="never")
 
                 # Verify --depth with env value was included
@@ -426,7 +427,7 @@ def test_git_checkout_with_pushurl():
     """Test git_checkout with pushurl."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -440,8 +441,10 @@ def test_git_checkout_with_pushurl():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
-            with patch.object(wc, 'git_set_pushurl', return_value=("", "")) as mock_pushurl:
+        with patch.object(wc, "run_git", return_value=mock_process):
+            with patch.object(
+                wc, "git_set_pushurl", return_value=("", "")
+            ) as mock_pushurl:
                 wc.git_checkout(submodules="never")
                 # Verify git_set_pushurl was called
                 mock_pushurl.assert_called_once()
@@ -451,7 +454,7 @@ def test_git_set_pushurl_failure():
     """Test git_set_pushurl handles failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -465,7 +468,7 @@ def test_git_set_pushurl_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "config failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(GitError, match="git config"):
                 wc.git_set_pushurl("", "")
 
@@ -474,7 +477,7 @@ def test_git_init_submodules_failure():
     """Test git_init_submodules handles failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -487,7 +490,7 @@ def test_git_init_submodules_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "submodule init failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(GitError, match="git submodule init"):
                 wc.git_init_submodules("", "")
 
@@ -496,7 +499,7 @@ def test_git_init_submodules_stderr_output():
     """Test git_init_submodules parses stderr when stdout is empty."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -512,7 +515,7 @@ def test_git_init_submodules_stderr_output():
             "Submodule 'vendor/libs' (https://github.com/vendor/libs.git) registered",
         )
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             stdout, stderr, initialized = wc.git_init_submodules("", "")
             assert "vendor/libs" in initialized
 
@@ -521,7 +524,7 @@ def test_git_update_submodules_failure():
     """Test git_update_submodules handles failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -534,7 +537,7 @@ def test_git_update_submodules_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "submodule update failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(GitError, match="git submodule update"):
                 wc.git_update_submodules("", "")
 
@@ -543,7 +546,7 @@ def test_git_update_submodules_recursive():
     """Test git_update_submodules with recursive flag."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -556,7 +559,7 @@ def test_git_update_submodules_recursive():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("updated", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process) as mock_run:
+        with patch.object(wc, "run_git", return_value=mock_process) as mock_run:
             wc.git_update_submodules("", "", recursive=True)
 
             # Verify recursive flags were included
@@ -569,7 +572,7 @@ def test_git_update_submodules_specific():
     """Test git_update_submodules for a specific submodule."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -582,7 +585,7 @@ def test_git_update_submodules_specific():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("updated", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process) as mock_run:
+        with patch.object(wc, "run_git", return_value=mock_process) as mock_run:
             wc.git_update_submodules("", "", submodule="vendor/libs")
 
             # Verify specific submodule was included
@@ -594,7 +597,7 @@ def test_checkout_path_not_exist():
     """Test checkout when path doesn't exist."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -603,7 +606,9 @@ def test_checkout_path_not_exist():
 
         wc = GitWorkingCopy(source)
 
-        with patch.object(wc, 'git_checkout', return_value="checkout output") as mock_checkout:
+        with patch.object(
+            wc, "git_checkout", return_value="checkout output"
+        ) as mock_checkout:
             result = wc.checkout(submodules="never")
 
             # Should call git_checkout
@@ -615,7 +620,7 @@ def test_checkout_update_needed():
     """Test checkout when update is needed."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -624,9 +629,11 @@ def test_checkout_update_needed():
 
         wc = GitWorkingCopy(source)
 
-        with patch('os.path.exists', return_value=True):
-            with patch.object(wc, 'should_update', return_value=True):
-                with patch.object(wc, 'update', return_value="update output") as mock_update:
+        with patch("os.path.exists", return_value=True):
+            with patch.object(wc, "should_update", return_value=True):
+                with patch.object(
+                    wc, "update", return_value="update output"
+                ) as mock_update:
                     result = wc.checkout()
 
                     mock_update.assert_called_once()
@@ -637,7 +644,7 @@ def test_checkout_no_update_doesnt_match():
     """Test checkout when no update and doesn't match."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -646,9 +653,9 @@ def test_checkout_no_update_doesnt_match():
 
         wc = GitWorkingCopy(source)
 
-        with patch('os.path.exists', return_value=True):
-            with patch.object(wc, 'should_update', return_value=False):
-                with patch.object(wc, 'matches', return_value=False):
+        with patch("os.path.exists", return_value=True):
+            with patch.object(wc, "should_update", return_value=False):
+                with patch.object(wc, "matches", return_value=False):
                     result = wc.checkout()
 
                     # Should return None and log warning
@@ -659,7 +666,7 @@ def test_matches_failure():
     """Test matches() handles git remote failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -672,7 +679,7 @@ def test_matches_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "remote show failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(GitError, match="git remote"):
                 wc.matches()
 
@@ -681,7 +688,7 @@ def test_update_not_matching():
     """Test update when URL doesn't match."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -690,9 +697,11 @@ def test_update_not_matching():
 
         wc = GitWorkingCopy(source)
 
-        with patch.object(wc, 'matches', return_value=False):
-            with patch.object(wc, 'status', return_value="clean"):
-                with patch.object(wc, 'git_update', return_value="updated") as mock_git_update:
+        with patch.object(wc, "matches", return_value=False):
+            with patch.object(wc, "status", return_value="clean"):
+                with patch.object(
+                    wc, "git_update", return_value="updated"
+                ) as mock_git_update:
                     result = wc.update()
 
                     # Should still call git_update even if not matching
@@ -703,7 +712,7 @@ def test_update_dirty_no_force():
     """Test update with dirty status and no force."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -712,8 +721,8 @@ def test_update_dirty_no_force():
 
         wc = GitWorkingCopy(source)
 
-        with patch.object(wc, 'matches', return_value=True):
-            with patch.object(wc, 'status', return_value="dirty"):
+        with patch.object(wc, "matches", return_value=True):
+            with patch.object(wc, "status", return_value="dirty"):
                 with pytest.raises(GitError, match="dirty"):
                     wc.update()
 
@@ -722,7 +731,7 @@ def test_update_dirty_with_force():
     """Test update with dirty status and force=True."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -731,9 +740,11 @@ def test_update_dirty_with_force():
 
         wc = GitWorkingCopy(source)
 
-        with patch.object(wc, 'matches', return_value=True):
-            with patch.object(wc, 'status', return_value="dirty"):
-                with patch.object(wc, 'git_update', return_value="updated") as mock_git_update:
+        with patch.object(wc, "matches", return_value=True):
+            with patch.object(wc, "status", return_value="dirty"):
+                with patch.object(
+                    wc, "git_update", return_value="updated"
+                ) as mock_git_update:
                     result = wc.update(force=True)
 
                     # Should call git_update when forced
@@ -744,7 +755,7 @@ def test_git_update_fetch_failure():
     """Test git_update handles fetch failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -757,7 +768,7 @@ def test_git_update_fetch_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "fetch failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(GitError, match="git fetch"):
                 wc.git_update(submodules="never")
 
@@ -766,7 +777,7 @@ def test_status_clean():
     """Test status() returns clean."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -779,7 +790,7 @@ def test_status_clean():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("## main...origin/main", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             status = wc.status()
             assert status == "clean"
 
@@ -788,7 +799,7 @@ def test_status_ahead():
     """Test status() returns ahead."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -801,7 +812,7 @@ def test_status_ahead():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("## main...origin/main [ahead 2]", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             status = wc.status()
             assert status == "ahead"
 
@@ -810,7 +821,7 @@ def test_status_dirty():
     """Test status() returns dirty."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -823,7 +834,7 @@ def test_status_dirty():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("## main\n M file.txt", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             status = wc.status()
             assert status == "dirty"
 
@@ -832,7 +843,7 @@ def test_status_verbose():
     """Test status() with verbose=True."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -846,7 +857,7 @@ def test_status_verbose():
         output = "## main\n M file.txt"
         mock_process.communicate.return_value = (output, "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             status, stdout = wc.status(verbose=True)
             assert status == "dirty"
             assert stdout == output
@@ -856,7 +867,7 @@ def test_git_switch_branch_failure():
     """Test git_switch_branch handles branch -a failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -869,8 +880,8 @@ def test_git_switch_branch_failure():
         mock_process.returncode = 1
         mock_process.communicate.return_value = ("", "branch command failed")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
-            with patch.object(wc, 'git_version', return_value=(2, 30, 0)):
+        with patch.object(wc, "run_git", return_value=mock_process):
+            with patch.object(wc, "git_version", return_value=(2, 30, 0)):
                 with pytest.raises(GitError, match="git branch -a"):
                     wc.git_switch_branch("", "")
 
@@ -879,7 +890,7 @@ def test_git_switch_branch_missing_no_accept():
     """Test git_switch_branch with missing branch and accept_missing=False."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -893,7 +904,7 @@ def test_git_switch_branch_missing_no_accept():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("* main\n", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
+        with patch.object(wc, "run_git", return_value=mock_process):
             with pytest.raises(SystemExit):
                 wc.git_switch_branch("", "", accept_missing=False)
 
@@ -902,7 +913,7 @@ def test_git_switch_branch_missing_accept():
     """Test git_switch_branch with missing branch and accept_missing=True."""
     from mxdev.vcs.git import GitWorkingCopy
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -916,8 +927,8 @@ def test_git_switch_branch_missing_accept():
         mock_process.returncode = 0
         mock_process.communicate.return_value = ("* main\n", "")
 
-        with patch.object(wc, 'run_git', return_value=mock_process):
-            with patch.object(wc, 'git_version', return_value=(2, 30, 0)):
+        with patch.object(wc, "run_git", return_value=mock_process):
+            with patch.object(wc, "git_version", return_value=(2, 30, 0)):
                 stdout, stderr = wc.git_switch_branch("", "", accept_missing=True)
                 # Should return without error
                 assert "main" in stdout
@@ -927,7 +938,7 @@ def test_git_switch_branch_checkout_failure():
     """Test git_switch_branch handles checkout failure."""
     from mxdev.vcs.git import GitWorkingCopy, GitError
 
-    with patch('mxdev.vcs.common.which', return_value='/usr/bin/git'):
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
             "name": "test-package",
             "url": "https://github.com/test/repo.git",
@@ -947,7 +958,7 @@ def test_git_switch_branch_checkout_failure():
                 mock_proc.communicate.return_value = ("", "checkout failed")
             return mock_proc
 
-        with patch.object(wc, 'run_git', side_effect=mock_run_git_side_effect):
-            with patch.object(wc, 'git_version', return_value=(2, 30, 0)):
+        with patch.object(wc, "run_git", side_effect=mock_run_git_side_effect):
+            with patch.object(wc, "git_version", return_value=(2, 30, 0)):
                 with pytest.raises(GitError, match="git checkout"):
                     wc.git_switch_branch("", "")

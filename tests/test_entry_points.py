@@ -21,8 +21,10 @@ def test_load_eps_by_group_with_python312():
     mock_ep2.name = "test-ep2"
     mock_eps = [mock_ep1, mock_ep2]
 
-    with patch('mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS', True):
-        with patch('mxdev.entry_points.entry_points', return_value=mock_eps) as mock_entry_points:
+    with patch("mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS", True):
+        with patch(
+            "mxdev.entry_points.entry_points", return_value=mock_eps
+        ) as mock_entry_points:
             result = load_eps_by_group("test-group")
 
             # Should call entry_points with group parameter
@@ -43,13 +45,12 @@ def test_load_eps_by_group_with_old_python():
     mock_ep2 = MagicMock()
     mock_ep2.name = "test-ep2"
 
-    mock_eps_dict = {
-        "test-group": [mock_ep1, mock_ep2],
-        "other-group": []
-    }
+    mock_eps_dict = {"test-group": [mock_ep1, mock_ep2], "other-group": []}
 
-    with patch('mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS', False):
-        with patch('mxdev.entry_points.entry_points', return_value=mock_eps_dict) as mock_entry_points:
+    with patch("mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS", False):
+        with patch(
+            "mxdev.entry_points.entry_points", return_value=mock_eps_dict
+        ) as mock_entry_points:
             result = load_eps_by_group("test-group")
 
             # Should call entry_points without parameters
@@ -64,12 +65,10 @@ def test_load_eps_by_group_group_not_found():
     """Test load_eps_by_group when group doesn't exist (old Python API)."""
     from mxdev.entry_points import load_eps_by_group
 
-    mock_eps_dict = {
-        "other-group": []
-    }
+    mock_eps_dict = {"other-group": []}
 
-    with patch('mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS', False):
-        with patch('mxdev.entry_points.entry_points', return_value=mock_eps_dict):
+    with patch("mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS", False):
+        with patch("mxdev.entry_points.entry_points", return_value=mock_eps_dict):
             result = load_eps_by_group("nonexistent-group")
 
             # Should return empty list when group not found
@@ -87,8 +86,8 @@ def test_load_eps_by_group_deduplicates():
     mock_ep.__hash__ = lambda self: hash("test-ep")
     mock_eps = [mock_ep, mock_ep]  # Duplicate
 
-    with patch('mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS', True):
-        with patch('mxdev.entry_points.entry_points', return_value=mock_eps):
+    with patch("mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS", True):
+        with patch("mxdev.entry_points.entry_points", return_value=mock_eps):
             result = load_eps_by_group("test-group")
 
             # Should deduplicate - only one entry
@@ -100,8 +99,8 @@ def test_load_eps_by_group_empty_group():
     """Test load_eps_by_group with empty group results."""
     from mxdev.entry_points import load_eps_by_group
 
-    with patch('mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS', True):
-        with patch('mxdev.entry_points.entry_points', return_value=[]):
+    with patch("mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS", True):
+        with patch("mxdev.entry_points.entry_points", return_value=[]):
             result = load_eps_by_group("empty-group")
 
             # Should return empty list
@@ -112,12 +111,10 @@ def test_load_eps_by_group_old_python_empty_group():
     """Test load_eps_by_group with empty group on old Python API."""
     from mxdev.entry_points import load_eps_by_group
 
-    mock_eps_dict = {
-        "test-group": []
-    }
+    mock_eps_dict = {"test-group": []}
 
-    with patch('mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS', False):
-        with patch('mxdev.entry_points.entry_points', return_value=mock_eps_dict):
+    with patch("mxdev.entry_points.HAS_IMPORTLIB_ENTRYPOINTS", False):
+        with patch("mxdev.entry_points.entry_points", return_value=mock_eps_dict):
             result = load_eps_by_group("test-group")
 
             # Should return empty list

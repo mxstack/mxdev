@@ -325,13 +325,15 @@ def test_write(tmp_path):
 
     # Create a simple config
     config_file = tmp_path / "mx.ini"
-    config_file.write_text("""[settings]
+    config_file.write_text(
+        """[settings]
 requirements-in = requirements.txt
 requirements-out = requirements-out.txt
 constraints-out = constraints-out.txt
 version-overrides =
     requests==2.28.0
-""")
+"""
+    )
 
     config = Configuration(str(config_file))
     state = State(configuration=config)
@@ -340,6 +342,7 @@ version-overrides =
 
     # Change to tmp_path so output files go there
     import os
+
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
 
@@ -371,11 +374,13 @@ def test_write_no_constraints(tmp_path):
 
     # Create a simple config without constraints
     config_file = tmp_path / "mx.ini"
-    config_file.write_text("""[settings]
+    config_file.write_text(
+        """[settings]
 requirements-in = requirements.txt
 requirements-out = requirements-out.txt
 constraints-out = constraints-out.txt
-""")
+"""
+    )
 
     config = Configuration(str(config_file))
     state = State(configuration=config)
@@ -384,6 +389,7 @@ constraints-out = constraints-out.txt
 
     # Change to tmp_path so output files go there
     import os
+
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
 

@@ -98,4 +98,7 @@ def test_setup_logger_no_formatter_for_info():
     # The code only sets formatter for DEBUG
     if handler.formatter:
         # If a formatter exists, it shouldn't be the DEBUG formatter
-        assert "%(asctime)s" not in handler.formatter._fmt or handler.formatter._fmt is None
+        assert (
+            "%(asctime)s" not in handler.formatter._fmt
+            or handler.formatter._fmt is None
+        )
