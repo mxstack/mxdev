@@ -7,6 +7,23 @@ from .main import main
 from .processing import read  # noqa
 from .state import State  # noqa
 
+try:
+    from ._version import __version__
+except ImportError:
+    __version__ = "unknown"
+
+__all__ = [
+    "__version__",
+    "Configuration",
+    "Hook",
+    "load_hooks",
+    "read_hooks",
+    "setup_logger",
+    "main",
+    "read",
+    "State",
+]
+
 
 if __name__ == "__main__":  # pragma: no cover
     main()

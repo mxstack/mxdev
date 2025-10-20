@@ -1,7 +1,7 @@
 [project]
 name = "mxdev"
 description = "Enable to work with Python projects containing lots of packages, of which you only want to develop some."
-version = "4.1.1.dev0"
+dynamic = ["version", "readme"]
 keywords = ["pip", "vcs", "git", "development"]
 authors = [
   {name = "MX Stack Developers", email = "dev@bluedynamics.com" }
@@ -22,7 +22,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = ["packaging"]
-dynamic = ["readme"]
 
 [project.optional-dependencies]
 mypy = []
@@ -51,14 +50,56 @@ fs = "mxdev.vcs.filesystem:FilesystemWorkingCopy"
 darcs = "mxdev.vcs.darcs:DarcsWorkingCopy"
 
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs", "hatch-fancy-pypi-readme"]
+build-backend = "hatchling.build"
 
-[tool.setuptools]
-zip-safe = false
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools.dynamic]
-readme = {file = ["README.md", "CONTRIBUTING.md", "CHANGES.md", "LICENSE.md"], content-type = "text/markdown"}
+[tool.hatch.build.hooks.vcs]
+version-file = "src/mxdev/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mxdev"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/example",
+    "/README.md",
+    "/CONTRIBUTING.md",
+    "/CHANGES.md",
+    "/LICENSE.md",
+    "/RELEASE.md",
+    "/pyproject.toml",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = "\n\n---\n\n"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "CONTRIBUTING.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = "\n\n---\n\n"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "CHANGES.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = "\n\n---\n\n"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "LICENSE.md"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -90,12 +131,6 @@ max-line-length = 120
 # TODO: Remove current max-line-lengh ignore in follow-up and adopt black limit.
 # max-line-length = 88
 ignore = "D001"
-
-[tool.check-manifest]
-ignore = [
-    "Makefile",
-    "mx.ini"
-]
 
 [tool.tox]
 requires = ["tox>=4", "tox-uv>=1"]

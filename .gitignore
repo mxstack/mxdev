@@ -12,3 +12,4 @@ example/*-outfile.txt
 requirements-mxdev.txt
 .venv/
 dist/
+src/mxdev/_version.py
