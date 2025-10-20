@@ -254,6 +254,7 @@ def test_which_windows(mocker):
     exit_mock.assert_called_once_with(1)
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Unix-specific test")
 def test_which_unix(mocker):
     """Test which() on Unix platform."""
     mocker.patch("platform.system", return_value="Linux")
