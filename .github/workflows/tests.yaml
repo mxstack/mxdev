@@ -37,6 +37,10 @@ jobs:
             tox-env: "py311"
           - version: "3.12"
             tox-env: "py312"
+          - version: "3.13"
+            tox-env: "py313"
+          - version: "3.14"
+            tox-env: "py314"
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -76,8 +80,11 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
+      - name: Create virtual environment
+        run: uv venv
+
       - name: Install coverage
-        run: uv pip install --system coverage[toml]
+        run: uv pip install coverage[toml]
 
       # Download all coverage artifacts from matrix jobs
       - name: Download coverage data
@@ -89,12 +96,12 @@ jobs:
       # Combine all .coverage.* files into one .coverage database
       - name: Combine coverage data
         run: |
-          python -Im coverage combine
-          python -Im coverage html
-          python -Im coverage json
+          uv run python -Im coverage combine
+          uv run python -Im coverage html
+          uv run python -Im coverage json
 
           # Export total coverage percentage for badge
-          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          export TOTAL=$(uv run python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
 
@@ -103,7 +110,7 @@ jobs:
         run: |
           echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          python -Im coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+          uv run python -Im coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       # Upload HTML coverage report as artifact for debugging
