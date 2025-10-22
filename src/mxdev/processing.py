@@ -7,6 +7,7 @@ from urllib import parse
 from urllib import request
 from urllib.error import URLError
 
+import os
 import typing
 
 
@@ -271,9 +272,26 @@ def write(state: State) -> None:
     logger.info(f"Write [r]: {cfg.out_requirements}")
     with open(cfg.out_requirements, "w") as fio:
         if constraints or cfg.overrides:
+            # Calculate relative path from requirements-out directory to constraints-out file
+            # This ensures pip can find the constraints file regardless of where requirements
+            # and constraints files are located
+            req_path = Path(cfg.out_requirements)
+            const_path = Path(cfg.out_constraints)
+
+            # Calculate relative path from requirements directory to constraints file
+            try:
+                constraints_ref = os.path.relpath(const_path, req_path.parent)
+                # Convert backslashes to forward slashes for pip compatibility
+                # pip expects forward slashes even on Windows
+                constraints_ref = constraints_ref.replace("\\", "/")
+            except ValueError:
+                # On Windows, relpath can fail if paths are on different drives
+                # In that case, use absolute path with forward slashes
+                constraints_ref = str(const_path.absolute()).replace("\\", "/")
+
             fio.write("#" * 79 + "\n")
             fio.write("# mxdev combined constraints\n")
-            fio.write(f"-c {cfg.out_constraints}\n\n")
+            fio.write(f"-c {constraints_ref}\n\n")
         write_dev_sources(fio, cfg.packages)
         fio.writelines(requirements)
         write_main_package(fio, cfg.settings)

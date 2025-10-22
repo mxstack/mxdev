@@ -11,6 +11,9 @@
 - Fix #46: Git tags in branch option are now correctly detected and handled during updates. Previously, updating from one tag to another failed because tags were incorrectly treated as branches.
   [jensens]
 
+- Fix #22 and #25: Constraints file path in requirements-out is now correctly calculated as a relative path from the requirements file's directory. This allows requirements and constraints files to be in different directories. Previously, the path was written from the config file's perspective, causing pip to fail when looking for the constraints file. On Windows, paths are now normalized to use forward slashes for pip compatibility.
+  [jensens]
+
 - Fix #53: Per-package target setting now correctly overrides default-target when constructing checkout paths.
   [jensens]
 
