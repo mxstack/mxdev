@@ -271,9 +271,26 @@ def write(state: State) -> None:
     logger.info(f"Write [r]: {cfg.out_requirements}")
     with open(cfg.out_requirements, "w") as fio:
         if constraints or cfg.overrides:
+            # Calculate relative path from requirements-out directory to constraints-out file
+            # This ensures pip can find the constraints file regardless of where requirements
+            # and constraints files are located
+            from pathlib import Path
+            import os
+
+            req_path = Path(cfg.out_requirements)
+            const_path = Path(cfg.out_constraints)
+
+            # Calculate relative path from requirements directory to constraints file
+            try:
+                constraints_ref = os.path.relpath(const_path, req_path.parent)
+            except ValueError:
+                # On Windows, relpath can fail if paths are on different drives
+                # In that case, use absolute path
+                constraints_ref = str(const_path.absolute())
+
             fio.write("#" * 79 + "\n")
             fio.write("# mxdev combined constraints\n")
-            fio.write(f"-c {cfg.out_constraints}\n\n")
+            fio.write(f"-c {constraints_ref}\n\n")
         write_dev_sources(fio, cfg.packages)
         fio.writelines(requirements)
         write_main_package(fio, cfg.settings)
