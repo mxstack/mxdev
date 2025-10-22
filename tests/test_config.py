@@ -201,16 +201,30 @@ def test_per_package_target_override():
     # Package without custom target should use default-target
     pkg_default = config.packages["package.with.default.target"]
     assert pkg_default["target"] == "./sources"
-    assert pkg_default["path"] == "./sources/package.with.default.target"
+    # Normalize paths for comparison (handles both Unix / and Windows \)
+    assert (
+        pathlib.Path(pkg_default["path"]).as_posix()
+        == pathlib.Path(pkg_default["target"])
+        .joinpath("package.with.default.target")
+        .as_posix()
+    )
 
     # Package with custom target should use its own target
     pkg_custom = config.packages["package.with.custom.target"]
     assert pkg_custom["target"] == "custom-dir"
-    # BUG: This will fail because config.py uses wrong variable at line 103
-    assert pkg_custom["path"] == "custom-dir/package.with.custom.target"
+    assert (
+        pathlib.Path(pkg_custom["path"]).as_posix()
+        == pathlib.Path(pkg_custom["target"])
+        .joinpath("package.with.custom.target")
+        .as_posix()
+    )
 
     # Package with interpolated target should use the interpolated value
     pkg_interpolated = config.packages["package.with.interpolated.target"]
     assert pkg_interpolated["target"] == "documentation"
-    # BUG: This will also fail for the same reason
-    assert pkg_interpolated["path"] == "documentation/package.with.interpolated.target"
+    assert (
+        pathlib.Path(pkg_interpolated["path"]).as_posix()
+        == pathlib.Path(pkg_interpolated["target"])
+        .joinpath("package.with.interpolated.target")
+        .as_posix()
+    )
