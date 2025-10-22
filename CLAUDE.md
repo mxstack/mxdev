@@ -599,13 +599,22 @@ Quick summary:
    - Create unreleased section if it doesn't exist
    - Include issue number when applicable
 
-3. **Run relevant tests locally**
+3. **Always check and update documentation**
+   - **README.md**: Update configuration tables, usage examples, or feature descriptions
+   - **EXTENDING.md**: Update if hooks API changed
+   - **RELEASE.md**: Update if release process changed
+   - Check if new configuration options need documentation
+   - Check if new features need usage examples
+   - Update any affected sections (don't just append)
+   - **MANDATORY**: After any code change that adds/modifies features or configuration, verify documentation is updated
+
+4. **Run relevant tests locally**
    ```bash
    source .venv/bin/activate
    pytest tests/test_*.py -v
    ```
 
-4. **Check CI status before marking PR ready**
+5. **Check CI status before marking PR ready**
    ```bash
    gh pr checks <PR_NUMBER>
    ```

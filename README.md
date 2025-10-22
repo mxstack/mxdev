@@ -84,10 +84,22 @@ The **main section** must be called `[settings]`, even if kept empty.
 |--------|-------------|---------|
 | `default-target` | Target directory for VCS checkouts | `./sources` |
 | `threads` | Number of parallel threads for fetching sources | `4` |
+| `smart-threading` | Process HTTPS packages serially to avoid overlapping credential prompts (see below) | `True` |
 | `offline` | Skip all VCS fetch operations (handy for offline work) | `False` |
 | `default-install-mode` | Default `install-mode` for packages: `direct` or `skip` | `direct` |
 | `default-update` | Default update behavior: `yes` or `no` | `yes` |
 | `default-use` | Default use behavior (when false, sources not checked out) | `True` |
+
+##### Smart Threading
+
+When `smart-threading` is enabled (default), mxdev uses a two-phase approach to prevent credential prompts from overlapping:
+
+1. **Phase 1**: HTTPS packages are processed serially (one at a time) to ensure clean, visible credential prompts
+2. **Phase 2**: Remaining packages (SSH, local) are processed in parallel for speed
+
+This solves the problem where parallel git operations would cause multiple credential prompts to overlap, making it confusing which package needs credentials.
+
+**When to disable**: Set `smart-threading = false` if you have git credential helpers configured (e.g., credential cache, credential store) and never see prompts.
 
 #### Package Overrides
 
