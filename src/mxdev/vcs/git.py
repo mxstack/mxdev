@@ -231,12 +231,25 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             raise GitError(f"git checkout of branch '{branch}' failed.\n{stderr}")
         return (stdout_in + stdout, stderr_in + stderr)
 
+    def git_is_tag(self, tag_name: str) -> bool:
+        """Check if the given name is a git tag.
+
+        Returns True if tag_name exists as a tag in the repository.
+        """
+        path = self.source["path"]
+        cmd = self.run_git(["tag", "-l", tag_name], cwd=path)
+        stdout, stderr = cmd.communicate()
+        if cmd.returncode != 0:
+            return False
+        # git tag -l returns the tag name if it exists, empty if not
+        return tag_name in stdout.strip().split("\n")
+
     def git_update(self, **kwargs) -> typing.Union[str, None]:
         name = self.source["name"]
         path = self.source["path"]
         self.output((logger.info, "Updated '%s' with git." % name))
         # First we fetch.  This should always be possible.
-        argv = ["fetch"]
+        argv = ["fetch", "--tags"]  # Also fetch tags explicitly
         update_git_submodules = self.source.get("submodules", kwargs["submodules"])
         if update_git_submodules == "recursive":
             argv.append("--recurse-submodules")
@@ -247,8 +260,23 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         if "rev" in self.source:
             stdout, stderr = self.git_switch_branch(stdout, stderr)
         elif "branch" in self.source:
-            stdout, stderr = self.git_switch_branch(stdout, stderr)
-            stdout, stderr = self.git_merge_rbranch(stdout, stderr)
+            # Check if 'branch' is actually a tag (#46)
+            branch_value = self.source["branch"]
+            if self.git_is_tag(branch_value):
+                # It's a tag - checkout directly without merge
+                cmd = self.run_git(["checkout", branch_value], cwd=path)
+                tag_stdout, tag_stderr = cmd.communicate()
+                if cmd.returncode != 0:
+                    raise GitError(
+                        f"git checkout of tag '{branch_value}' failed.\n{tag_stderr}"
+                    )
+                stdout += tag_stdout
+                stderr += tag_stderr
+                self.output((logger.info, f"Switched to tag '{branch_value}'."))
+            else:
+                # It's a branch - use normal branch switch + merge
+                stdout, stderr = self.git_switch_branch(stdout, stderr)
+                stdout, stderr = self.git_merge_rbranch(stdout, stderr)
         else:
             # We may have specified a branch previously but not
             # anymore.  In that case, we want to revert to master.
