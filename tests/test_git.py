@@ -1,15 +1,13 @@
 # pylint: disable=redefined-outer-name
 from logging import getLogger
 from logging import Logger
-from struct import pack
 from unittest.mock import patch
-
-import os
-import pytest
-
 from utils import vcs_checkout
 from utils import vcs_status
 from utils import vcs_update
+
+import os
+import pytest
 
 
 logger: Logger = getLogger("vcs_test_git")
@@ -110,9 +108,7 @@ def test_update_with_revision_pin_branch(mkgitrepo, src):
     vcs_update(sources, packages, verbose)
 
     assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "foo2"}
-    sources = {
-        "egg": dict(vcs="git", name="egg", url=str(repository.base), path=str(path))
-    }
+    sources = {"egg": dict(vcs="git", name="egg", url=str(repository.base), path=str(path))}
     vcs_update(sources, packages, verbose)
 
     assert {x for x in path.iterdir()} == {path / ".git", path / "bar", path / "foo"}

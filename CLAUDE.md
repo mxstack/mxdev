@@ -117,14 +117,20 @@ Key settings:
 # Run all pre-commit hooks (using uvx with tox-uv)
 uvx --with tox-uv tox -e lint
 
+# Run ruff linter (with auto-fix)
+uvx ruff check --fix src/mxdev tests
+
+# Run ruff formatter
+uvx ruff format src/mxdev tests
+
+# Sort imports with isort
+uvx isort src/mxdev tests
+
 # Run type checking
-mypy src/mxdev
+uvx mypy src/mxdev
 
-# Run flake8
-flake8 src/mxdev
-
-# Sort imports
-isort src/mxdev
+# Run all pre-commit hooks manually
+uvx pre-commit run --all-files
 ```
 
 ### Testing Multiple Python Versions (using uvx tox with uv)
@@ -401,9 +407,16 @@ myext-package_setting = value
 
 ## Code Style
 
-- **Formatting**: Black-compatible (max line length: 120)
-- **Import sorting**: isort with `force_alphabetical_sort = true`, `force_single_line = true`
-- **Type hints**: Use throughout (Python 3.10+ compatible)
+- **Formatting**: Ruff formatter (max line length: 120, target Python 3.10+)
+  - Configured in [pyproject.toml](pyproject.toml) under `[tool.ruff]`
+  - Rules: E, W, F, UP, D (with selective ignores for docstrings)
+  - Automatically enforced via pre-commit hooks
+- **Import sorting**: isort with plone profile, `force_alphabetical_sort = true`, `force_single_line = true`
+  - Configured in [pyproject.toml](pyproject.toml) under `[tool.isort]`
+  - Runs after ruff in pre-commit pipeline
+- **Type hints**: Use throughout (Python 3.10+ syntax)
+  - Use `X | Y` instead of `Union[X, Y]`
+  - Use `list[T]`, `dict[K, V]` instead of `List[T]`, `Dict[K, V]`
 - **Path handling**: Prefer `pathlib.Path` over `os.path` for path operations
   - Use `pathlib.Path().as_posix()` for cross-platform path comparison
   - Use `/` operator for path joining: `Path("dir") / "file.txt"`

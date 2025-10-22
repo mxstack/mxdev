@@ -111,27 +111,51 @@ testpaths = [
 ]
 
 [tool.isort]
-profile = "black"
+profile = "plone"
 force_alphabetical_sort = true
 force_single_line = true
 lines_after_imports = 2
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+# Enable pycodestyle (E/W), pyflakes (F), and pyupgrade (UP) rules
+# Note: isort (I) rules are disabled because we use isort directly
+select = ["E", "W", "F", "UP", "D"]
+# Ignore specific rules that conflict with our style or are too strict
+ignore = [
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",  # Missing docstrings
+    "D202",  # No blank lines allowed after function docstring
+    "D205",  # 1 blank line required between summary line and description
+    "D301",  # Use r""" if any backslashes in a docstring
+    "D400",  # First line should end with a period
+    "D401",  # First line should be in imperative mood
+    "D415",  # First line should end with a period, question mark, or exclamation point
+]
+
+[tool.ruff.format]
+# Use tabs instead of spaces (if needed), but default is spaces
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore unused variables in tests (often used for mocking)
+"tests/**/*.py" = ["F841"]
 
 [tool.mypy]
 ignore_missing_imports = true
 
 [tool.flake8]
-# Excludes due to known issues or incompatibilities with black:
-# BLK100: Black would make changes. https://pypi.org/project/flake8-black/
-# W503: https://github.com/psf/black/search?q=W503&unscoped_q=W503
-# E231: https://github.com/psf/black/issues/1202
-ignore = "BLK100,E231,W503,D100,D101,D102,D102,D103,D104,D105,D106,D107,D202,D205"
+# Note: flake8 is now largely replaced by ruff, but keeping config for compatibility
+# Excludes for docstring rules (now handled by ruff)
+ignore = "D100,D101,D102,D103,D104,D105,D106,D107,D202,D205"
 statistics = 1
-# black official is 88, but can get longer
 max-line-length = 120
 
 [tool.doc8]
-# TODO: Remove current max-line-lengh ignore in follow-up and adopt black limit.
-# max-line-length = 88
+# Using 120 character line length to match ruff configuration
 ignore = "D001"
 
 [tool.coverage.run]

@@ -1,11 +1,10 @@
-import os
 import pytest
 
 
 def test_filesystem_error_exists():
     """Test FilesystemError exception class exists."""
-    from mxdev.vcs.filesystem import FilesystemError
     from mxdev.vcs.common import WCError
+    from mxdev.vcs.filesystem import FilesystemError
 
     # Should be a subclass of WCError
     assert issubclass(FilesystemError, WCError)
@@ -13,8 +12,8 @@ def test_filesystem_error_exists():
 
 def test_filesystem_working_copy_class_exists():
     """Test FilesystemWorkingCopy class exists."""
-    from mxdev.vcs.filesystem import FilesystemWorkingCopy
     from mxdev.vcs.common import BaseWorkingCopy
+    from mxdev.vcs.filesystem import FilesystemWorkingCopy
 
     # Should be a subclass of BaseWorkingCopy
     assert issubclass(FilesystemWorkingCopy, BaseWorkingCopy)
@@ -43,7 +42,8 @@ def test_checkout_path_exists_and_matches(tmp_path):
 
 def test_checkout_path_exists_but_doesnt_match(tmp_path):
     """Test checkout when path exists but doesn't match expected name."""
-    from mxdev.vcs.filesystem import FilesystemWorkingCopy, FilesystemError
+    from mxdev.vcs.filesystem import FilesystemError
+    from mxdev.vcs.filesystem import FilesystemWorkingCopy
 
     # Create a directory with different name than expected
     test_dir = tmp_path / "actual-name"
@@ -57,15 +57,14 @@ def test_checkout_path_exists_but_doesnt_match(tmp_path):
 
     wc = FilesystemWorkingCopy(source)
 
-    with pytest.raises(
-        FilesystemError, match="Directory name for existing package .* differs"
-    ):
+    with pytest.raises(FilesystemError, match="Directory name for existing package .* differs"):
         wc.checkout()
 
 
 def test_checkout_path_doesnt_exist(tmp_path):
     """Test checkout when path doesn't exist."""
-    from mxdev.vcs.filesystem import FilesystemWorkingCopy, FilesystemError
+    from mxdev.vcs.filesystem import FilesystemError
+    from mxdev.vcs.filesystem import FilesystemWorkingCopy
 
     # Don't create the directory
     test_dir = tmp_path / "nonexistent"
@@ -78,9 +77,7 @@ def test_checkout_path_doesnt_exist(tmp_path):
 
     wc = FilesystemWorkingCopy(source)
 
-    with pytest.raises(
-        FilesystemError, match="Directory .* for package .* doesn't exist"
-    ):
+    with pytest.raises(FilesystemError, match="Directory .* for package .* doesn't exist"):
         wc.checkout()
 
 
@@ -188,7 +185,8 @@ def test_update_when_matches(tmp_path):
 
 def test_update_when_doesnt_match(tmp_path):
     """Test update() when path doesn't match raises error."""
-    from mxdev.vcs.filesystem import FilesystemWorkingCopy, FilesystemError
+    from mxdev.vcs.filesystem import FilesystemError
+    from mxdev.vcs.filesystem import FilesystemWorkingCopy
 
     test_dir = tmp_path / "actual-name"
     test_dir.mkdir()
@@ -201,16 +199,14 @@ def test_update_when_doesnt_match(tmp_path):
 
     wc = FilesystemWorkingCopy(source)
 
-    with pytest.raises(
-        FilesystemError, match="Directory name for existing package .* differs"
-    ):
+    with pytest.raises(FilesystemError, match="Directory name for existing package .* differs"):
         wc.update()
 
 
 def test_logger_exists():
     """Test that logger is imported from common."""
-    from mxdev.vcs.filesystem import logger
     from mxdev.vcs.common import logger as common_logger
+    from mxdev.vcs.filesystem import logger
 
     # Should be the same logger instance
     assert logger is common_logger

@@ -42,10 +42,7 @@ def test_configuration_basic():
     assert config.settings["requirements-out"] == "requirements-mxdev.txt"
     assert config.settings["constraints-out"] == "constraints-mxdev.txt"
     assert "example.package" in config.packages
-    assert (
-        config.packages["example.package"]["url"]
-        == "https://github.com/example/package.git"
-    )
+    assert config.packages["example.package"]["url"] == "https://github.com/example/package.git"
     assert config.packages["example.package"]["branch"] == "main"
 
 
@@ -123,10 +120,7 @@ def test_configuration_direct_mode_deprecated(caplog):
     assert config.packages["example.package"]["install-mode"] == "editable"
 
     # Should have logged deprecation warning
-    assert any(
-        "install-mode 'direct' is deprecated" in record.message
-        for record in caplog.records
-    )
+    assert any("install-mode 'direct' is deprecated" in record.message for record in caplog.records)
 
 
 def test_configuration_package_direct_mode_deprecated(caplog):
@@ -140,10 +134,7 @@ def test_configuration_package_direct_mode_deprecated(caplog):
     assert config.packages["example.package"]["install-mode"] == "editable"
 
     # Should have logged deprecation warning
-    assert any(
-        "install-mode 'direct' is deprecated" in record.message
-        for record in caplog.records
-    )
+    assert any("install-mode 'direct' is deprecated" in record.message for record in caplog.records)
 
 
 def test_configuration_invalid_default_install_mode():
@@ -201,9 +192,7 @@ def test_configuration_override_args_offline():
     from mxdev.config import Configuration
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
-    config = Configuration(
-        str(base / "basic_config.ini"), override_args={"offline": True}
-    )
+    config = Configuration(str(base / "basic_config.ini"), override_args={"offline": True})
 
     assert config.settings["offline"] == "true"
     # Package should inherit offline setting
@@ -215,9 +204,7 @@ def test_configuration_override_args_threads():
     from mxdev.config import Configuration
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
-    config = Configuration(
-        str(base / "basic_config.ini"), override_args={"threads": 16}
-    )
+    config = Configuration(str(base / "basic_config.ini"), override_args={"threads": 16})
 
     assert config.settings["threads"] == "16"
 
@@ -267,9 +254,7 @@ def test_per_package_target_override():
     # Normalize paths for comparison (handles both Unix / and Windows \)
     assert (
         pathlib.Path(pkg_default["path"]).as_posix()
-        == pathlib.Path(pkg_default["target"])
-        .joinpath("package.with.default.target")
-        .as_posix()
+        == pathlib.Path(pkg_default["target"]).joinpath("package.with.default.target").as_posix()
     )
 
     # Package with custom target should use its own target
@@ -277,9 +262,7 @@ def test_per_package_target_override():
     assert pkg_custom["target"] == "custom-dir"
     assert (
         pathlib.Path(pkg_custom["path"]).as_posix()
-        == pathlib.Path(pkg_custom["target"])
-        .joinpath("package.with.custom.target")
-        .as_posix()
+        == pathlib.Path(pkg_custom["target"]).joinpath("package.with.custom.target").as_posix()
     )
 
     # Package with interpolated target should use the interpolated value
@@ -287,7 +270,5 @@ def test_per_package_target_override():
     assert pkg_interpolated["target"] == "documentation"
     assert (
         pathlib.Path(pkg_interpolated["path"]).as_posix()
-        == pathlib.Path(pkg_interpolated["target"])
-        .joinpath("package.with.interpolated.target")
-        .as_posix()
+        == pathlib.Path(pkg_interpolated["target"]).joinpath("package.with.interpolated.target").as_posix()
     )

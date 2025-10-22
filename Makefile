@@ -6,9 +6,9 @@
 #: core.mxenv
 #: core.mxfiles
 #: core.packages
-#: qa.black
 #: qa.isort
 #: qa.mypy
+#: qa.ruff
 #: qa.test
 #
 # SETTINGS (ALL CHANGES MADE BELOW SETTINGS WILL BE LOST)
@@ -54,18 +54,19 @@ PRIMARY_PYTHON?=3.14
 PYTHON_MIN_VERSION?=3.10
 
 # Install packages using the given package installer method.
-# Supported are `pip` and `uv`. If uv is used, its global availability is
-# checked. Otherwise, it is installed, either in the virtual environment or
-# using the `PRIMARY_PYTHON`, dependent on the `VENV_ENABLED` setting. If
-# `VENV_ENABLED` and uv is selected, uv is used to create the virtual
-# environment.
+# Supported are `pip` and `uv`. When `uv` is selected, a global installation
+# is auto-detected and used if available. Otherwise, uv is installed in the
+# virtual environment or using `PRIMARY_PYTHON`, depending on the
+# `VENV_ENABLED` setting.
 # Default: pip
 PYTHON_PACKAGE_INSTALLER?=uv
 
-# Flag whether to use a global installed 'uv' or install
-# it in the virtual environment.
-# Default: false
-MXENV_UV_GLOBAL?=true
+# Python version for UV to install/use when creating virtual
+# environments with global UV. Passed to `uv venv -p VALUE`. Supports version
+# specs like `3.11`, `3.14`, `cpython@3.14`. Defaults to PRIMARY_PYTHON value
+# for backward compatibility.
+# Default: $(PRIMARY_PYTHON)
+UV_PYTHON?=$(PRIMARY_PYTHON)
 
 # Flag whether to use virtual environment. If `false`, the
 # interpreter according to `PRIMARY_PYTHON` found in `PATH` is used.
@@ -94,17 +95,17 @@ MXDEV?=mxdev
 # Default: mxmake
 MXMAKE?=mxmake
 
+## qa.ruff
+
+# Source folder to scan for Python files to run ruff on.
+# Default: src
+RUFF_SRC?=src
+
 ## qa.isort
 
 # Source folder to scan for Python files to run isort on.
 # Default: src
 ISORT_SRC?=src
-
-## qa.black
-
-# Source folder to scan for Python files to run black on.
-# Default: src
-BLACK_SRC?=src
 
 ## core.mxfiles
 
@@ -199,30 +200,57 @@ else
 MXENV_PYTHON=$(PRIMARY_PYTHON)
 endif
 
-# Determine the package installer
+# Determine the package installer with non-interactive flags
 ifeq ("$(PYTHON_PACKAGE_INSTALLER)","uv")
-PYTHON_PACKAGE_COMMAND=uv pip
+PYTHON_PACKAGE_COMMAND=uv pip --quiet --no-progress
 else
 PYTHON_PACKAGE_COMMAND=$(MXENV_PYTHON) -m pip
 endif
 
+# Auto-detect global uv availability (simple existence check)
+ifeq ("$(PYTHON_PACKAGE_INSTALLER)","uv")
+UV_AVAILABLE:=$(shell command -v uv >/dev/null 2>&1 && echo "true" || echo "false")
+else
+UV_AVAILABLE:=false
+endif
+
+# Determine installation strategy
+USE_GLOBAL_UV:=$(shell [[ "$(PYTHON_PACKAGE_INSTALLER)" == "uv" && "$(UV_AVAILABLE)" == "true" ]] && echo "true" || echo "false")
+USE_LOCAL_UV:=$(shell [[ "$(PYTHON_PACKAGE_INSTALLER)" == "uv" && "$(UV_AVAILABLE)" == "false" ]] && echo "true" || echo "false")
+
+# Check if global UV is outdated (non-blocking warning)
+ifeq ("$(USE_GLOBAL_UV)","true")
+UV_OUTDATED:=$(shell uv self update --dry-run 2>&1 | grep -q "Would update" && echo "true" || echo "false")
+else
+UV_OUTDATED:=false
+endif
+
 MXENV_TARGET:=$(SENTINEL_FOLDER)/mxenv.sentinel
 $(MXENV_TARGET): $(SENTINEL)
-ifneq ("$(PYTHON_PACKAGE_INSTALLER)$(MXENV_UV_GLOBAL)","uvfalse")
+	# Validation: Check Python version if not using global uv
+ifneq ("$(USE_GLOBAL_UV)","true")
 	@$(PRIMARY_PYTHON) -c "import sys; vi = sys.version_info; sys.exit(1 if (int(vi[0]), int(vi[1])) >= tuple(map(int, '$(PYTHON_MIN_VERSION)'.split('.'))) else 0)" \
 		&& echo "Need Python >= $(PYTHON_MIN_VERSION)" && exit 1 || :
 else
-	@echo "Use Python $(PYTHON_MIN_VERSION) over uv"
+	@echo "Using global uv for Python $(UV_PYTHON)"
 endif
+	# Validation: Check VENV_FOLDER is set if venv enabled
 	@[[ "$(VENV_ENABLED)" == "true" && "$(VENV_FOLDER)" == "" ]] \
 		&& echo "VENV_FOLDER must be configured if VENV_ENABLED is true" && exit 1 || :
-	@[[ "$(VENV_ENABLED)$(PYTHON_PACKAGE_INSTALLER)" == "falseuv" ]] \
+	# Validation: Check uv not used with system Python
+	@[[ "$(VENV_ENABLED)" == "false" && "$(PYTHON_PACKAGE_INSTALLER)" == "uv" ]] \
 		&& echo "Package installer uv does not work with a global Python interpreter." && exit 1 || :
+	# Warning: Notify if global UV is outdated
+ifeq ("$(UV_OUTDATED)","true")
+	@echo "WARNING: A newer version of uv is available. Run 'uv self update' to upgrade."
+endif
+
+	# Create virtual environment
 ifeq ("$(VENV_ENABLED)", "true")
 ifeq ("$(VENV_CREATE)", "true")
-ifeq ("$(PYTHON_PACKAGE_INSTALLER)$(MXENV_UV_GLOBAL)","uvtrue")
-	@echo "Setup Python Virtual Environment using package 'uv' at '$(VENV_FOLDER)'"
-	@uv venv -p $(PRIMARY_PYTHON) --seed $(VENV_FOLDER)
+ifeq ("$(USE_GLOBAL_UV)","true")
+	@echo "Setup Python Virtual Environment using global uv at '$(VENV_FOLDER)'"
+	@uv venv --quiet --no-progress -p $(UV_PYTHON) --seed $(VENV_FOLDER)
 else
 	@echo "Setup Python Virtual Environment using module 'venv' at '$(VENV_FOLDER)'"
 	@$(PRIMARY_PYTHON) -m venv $(VENV_FOLDER)
@@ -232,10 +260,14 @@ endif
 else
 	@echo "Using system Python interpreter"
 endif
-ifeq ("$(PYTHON_PACKAGE_INSTALLER)$(MXENV_UV_GLOBAL)","uvfalse")
-	@echo "Install uv"
+
+	# Install uv locally if needed
+ifeq ("$(USE_LOCAL_UV)","true")
+	@echo "Install uv in virtual environment"
 	@$(MXENV_PYTHON) -m pip install uv
 endif
+
+	# Install/upgrade core packages
 	@$(PYTHON_PACKAGE_COMMAND) install -U pip setuptools wheel
 	@echo "Install/Update MXStack Python packages"
 	@$(PYTHON_PACKAGE_COMMAND) install -U $(MXDEV) $(MXMAKE)
@@ -262,6 +294,41 @@ endif
 INSTALL_TARGETS+=mxenv
 DIRTY_TARGETS+=mxenv-dirty
 CLEAN_TARGETS+=mxenv-clean
+
+##############################################################################
+# ruff
+##############################################################################
+
+RUFF_TARGET:=$(SENTINEL_FOLDER)/ruff.sentinel
+$(RUFF_TARGET): $(MXENV_TARGET)
+	@echo "Install Ruff"
+	@$(PYTHON_PACKAGE_COMMAND) install ruff
+	@touch $(RUFF_TARGET)
+
+.PHONY: ruff-check
+ruff-check: $(RUFF_TARGET)
+	@echo "Run ruff check"
+	@ruff check $(RUFF_SRC)
+
+.PHONY: ruff-format
+ruff-format: $(RUFF_TARGET)
+	@echo "Run ruff format"
+	@ruff format $(RUFF_SRC)
+
+.PHONY: ruff-dirty
+ruff-dirty:
+	@rm -f $(RUFF_TARGET)
+
+.PHONY: ruff-clean
+ruff-clean: ruff-dirty
+	@test -e $(MXENV_PYTHON) && $(MXENV_PYTHON) -m pip uninstall -y ruff || :
+	@rm -rf .ruff_cache
+
+INSTALL_TARGETS+=$(RUFF_TARGET)
+CHECK_TARGETS+=ruff-check
+FORMAT_TARGETS+=ruff-format
+DIRTY_TARGETS+=ruff-dirty
+CLEAN_TARGETS+=ruff-clean
 
 ##############################################################################
 # isort
@@ -296,40 +363,6 @@ CHECK_TARGETS+=isort-check
 FORMAT_TARGETS+=isort-format
 DIRTY_TARGETS+=isort-dirty
 CLEAN_TARGETS+=isort-clean
-
-##############################################################################
-# black
-##############################################################################
-
-BLACK_TARGET:=$(SENTINEL_FOLDER)/black.sentinel
-$(BLACK_TARGET): $(MXENV_TARGET)
-	@echo "Install Black"
-	@$(PYTHON_PACKAGE_COMMAND) install black
-	@touch $(BLACK_TARGET)
-
-.PHONY: black-check
-black-check: $(BLACK_TARGET)
-	@echo "Run black checks"
-	@black --check $(BLACK_SRC)
-
-.PHONY: black-format
-black-format: $(BLACK_TARGET)
-	@echo "Run black format"
-	@black $(BLACK_SRC)
-
-.PHONY: black-dirty
-black-dirty:
-	@rm -f $(BLACK_TARGET)
-
-.PHONY: black-clean
-black-clean: black-dirty
-	@test -e $(MXENV_PYTHON) && $(MXENV_PYTHON) -m pip uninstall -y black || :
-
-INSTALL_TARGETS+=$(BLACK_TARGET)
-CHECK_TARGETS+=black-check
-FORMAT_TARGETS+=black-format
-DIRTY_TARGETS+=black-dirty
-CLEAN_TARGETS+=black-clean
 
 ##############################################################################
 # mxfiles

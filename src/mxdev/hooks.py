@@ -1,8 +1,6 @@
 from .entry_points import load_eps_by_group
 from .state import State
 
-import typing
-
 
 try:
     # do we have Python 3.12+

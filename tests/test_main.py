@@ -1,9 +1,5 @@
-import io
-import pathlib
-import pytest
-import sys
-from unittest.mock import patch, MagicMock
-import logging
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 
 def test_parser_defaults():

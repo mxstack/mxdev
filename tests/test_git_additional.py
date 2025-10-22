@@ -1,15 +1,15 @@
 """Additional tests for git.py to increase coverage to >90%."""
 
-import os
+from unittest.mock import Mock
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-import sys
 
 
 def test_git_error_class():
     """Test GitError exception class."""
-    from mxdev.vcs.git import GitError
     from mxdev.vcs.common import WCError
+    from mxdev.vcs.git import GitError
 
     assert issubclass(GitError, WCError)
 
@@ -228,7 +228,8 @@ def test_remote_branch_prefix_new_git():
 
 def test_git_merge_rbranch_failure():
     """Test git_merge_rbranch handles git branch failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -298,7 +299,8 @@ def test_git_merge_rbranch_missing_branch_no_accept():
 
 def test_git_merge_rbranch_merge_failure():
     """Test git_merge_rbranch handles merge failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -349,7 +351,8 @@ def test_git_checkout_existing_path(tmp_path):
 
 def test_git_checkout_clone_failure():
     """Test git_checkout handles clone failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -442,9 +445,7 @@ def test_git_checkout_with_pushurl():
         mock_process.communicate.return_value = ("", "")
 
         with patch.object(wc, "run_git", return_value=mock_process):
-            with patch.object(
-                wc, "git_set_pushurl", return_value=("", "")
-            ) as mock_pushurl:
+            with patch.object(wc, "git_set_pushurl", return_value=("", "")) as mock_pushurl:
                 wc.git_checkout(submodules="never")
                 # Verify git_set_pushurl was called
                 mock_pushurl.assert_called_once()
@@ -452,7 +453,8 @@ def test_git_checkout_with_pushurl():
 
 def test_git_set_pushurl_failure():
     """Test git_set_pushurl handles failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -475,7 +477,8 @@ def test_git_set_pushurl_failure():
 
 def test_git_init_submodules_failure():
     """Test git_init_submodules handles failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -522,7 +525,8 @@ def test_git_init_submodules_stderr_output():
 
 def test_git_update_submodules_failure():
     """Test git_update_submodules handles failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -606,9 +610,7 @@ def test_checkout_path_not_exist():
 
         wc = GitWorkingCopy(source)
 
-        with patch.object(
-            wc, "git_checkout", return_value="checkout output"
-        ) as mock_checkout:
+        with patch.object(wc, "git_checkout", return_value="checkout output") as mock_checkout:
             result = wc.checkout(submodules="never")
 
             # Should call git_checkout
@@ -631,9 +633,7 @@ def test_checkout_update_needed():
 
         with patch("os.path.exists", return_value=True):
             with patch.object(wc, "should_update", return_value=True):
-                with patch.object(
-                    wc, "update", return_value="update output"
-                ) as mock_update:
+                with patch.object(wc, "update", return_value="update output") as mock_update:
                     result = wc.checkout()
 
                     mock_update.assert_called_once()
@@ -664,7 +664,8 @@ def test_checkout_no_update_doesnt_match():
 
 def test_matches_failure():
     """Test matches() handles git remote failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -699,9 +700,7 @@ def test_update_not_matching():
 
         with patch.object(wc, "matches", return_value=False):
             with patch.object(wc, "status", return_value="clean"):
-                with patch.object(
-                    wc, "git_update", return_value="updated"
-                ) as mock_git_update:
+                with patch.object(wc, "git_update", return_value="updated") as mock_git_update:
                     result = wc.update()
 
                     # Should still call git_update even if not matching
@@ -710,7 +709,8 @@ def test_update_not_matching():
 
 def test_update_dirty_no_force():
     """Test update with dirty status and no force."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -742,9 +742,7 @@ def test_update_dirty_with_force():
 
         with patch.object(wc, "matches", return_value=True):
             with patch.object(wc, "status", return_value="dirty"):
-                with patch.object(
-                    wc, "git_update", return_value="updated"
-                ) as mock_git_update:
+                with patch.object(wc, "git_update", return_value="updated") as mock_git_update:
                     result = wc.update(force=True)
 
                     # Should call git_update when forced
@@ -753,7 +751,8 @@ def test_update_dirty_with_force():
 
 def test_git_update_fetch_failure():
     """Test git_update handles fetch failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -865,7 +864,8 @@ def test_status_verbose():
 
 def test_git_switch_branch_failure():
     """Test git_switch_branch handles branch -a failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {
@@ -936,7 +936,8 @@ def test_git_switch_branch_missing_accept():
 
 def test_git_switch_branch_checkout_failure():
     """Test git_switch_branch handles checkout failure."""
-    from mxdev.vcs.git import GitWorkingCopy, GitError
+    from mxdev.vcs.git import GitError
+    from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
         source = {

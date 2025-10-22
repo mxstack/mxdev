@@ -1,20 +1,15 @@
 from unittest.mock import patch
-
-import os
-import pytest
-
 from utils import GitRepo
 from utils import vcs_checkout
 from utils import vcs_update
 
+import os
+import pytest
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
+
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
 def test_checkout_with_submodule(mkgitrepo, src, caplog, git_allow_file_protocol):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in itith
-    """
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in itith"""
 
     submodule_name = "submodule_a"
     submodule_a = mkgitrepo(submodule_name)
@@ -48,12 +43,9 @@ def test_checkout_with_submodule(mkgitrepo, src, caplog, git_allow_file_protocol
         )
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
 def test_checkout_with_two_submodules(mkgitrepo, src, git_allow_file_protocol):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a'
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a'
     and a submodule 'submodule_b' in it.
     """
 
@@ -100,14 +92,9 @@ def test_checkout_with_two_submodules(mkgitrepo, src, git_allow_file_protocol):
         ]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
-def test_checkout_with_two_submodules_recursive(
-    mkgitrepo, src, git_allow_file_protocol
-):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a'
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
+def test_checkout_with_two_submodules_recursive(mkgitrepo, src, git_allow_file_protocol):
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a'
     and a submodule 'submodule_b' in it.
     but this time we test it with the "recursive" option
     """
@@ -145,12 +132,9 @@ def test_checkout_with_two_submodules_recursive(
         ]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
 def test_update_with_submodule(mkgitrepo, src, git_allow_file_protocol):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
     Add a new 'submodule_b' to 'egg' and check it succesfully initializes.
     """
     submodule_name = "submodule_a"
@@ -208,12 +192,9 @@ def test_update_with_submodule(mkgitrepo, src, git_allow_file_protocol):
         ]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
 def test_update_with_submodule_recursive(mkgitrepo, src, git_allow_file_protocol):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
     Add a new 'submodule_b' to 'egg' and check it succesfully initializes.
     """
     submodule_name = "submodule_a"
@@ -256,8 +237,8 @@ def test_update_with_submodule_recursive(mkgitrepo, src, git_allow_file_protocol
             "foo_b",
         }
         assert log.method_calls == [
-            ("info", (f"Updated 'egg' with git.",)),
-            ("info", (f"Switching to branch 'master'.",)),
+            ("info", ("Updated 'egg' with git.",)),
+            ("info", ("Switching to branch 'master'.",)),
             (
                 "info",
                 (f"Initialized 'egg' submodule at '{submodule_b_name}' with git.",),
@@ -265,12 +246,9 @@ def test_update_with_submodule_recursive(mkgitrepo, src, git_allow_file_protocol
         ]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
 def test_checkout_with_submodules_option_never(mkgitrepo, src, git_allow_file_protocol):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
     without initializing the submodule, restricted by global 'never'
     """
 
@@ -292,19 +270,12 @@ def test_checkout_with_submodules_option_never(mkgitrepo, src, git_allow_file_pr
             ".gitmodules",
         }
         assert set(os.listdir(src / "egg" / submodule_name)) == set()
-        assert log.method_calls == [
-            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {})
-        ]
+        assert log.method_calls == [("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {})]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
-def test_checkout_with_submodules_option_never_source_always(
-    mkgitrepo, src, git_allow_file_protocol
-):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
+def test_checkout_with_submodules_option_never_source_always(mkgitrepo, src, git_allow_file_protocol):
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
     and a module 'egg2' with the same submodule, initializing only the submodule
     on egg that has the 'always' option
     """
@@ -331,9 +302,7 @@ def test_checkout_with_submodules_option_never_source_always(
         "egg2": dict(vcs="git", name="egg2", url=egg2.url, path=src / "egg2"),
     }
     with patch("mxdev.vcs.git.logger") as log:
-        vcs_checkout(
-            sources, ["egg", "egg2"], verbose=False, update_git_submodules="never"
-        )
+        vcs_checkout(sources, ["egg", "egg2"], verbose=False, update_git_submodules="never")
         assert set(os.listdir(src / "egg")) == {
             "submodule_a",
             ".git",
@@ -360,14 +329,9 @@ def test_checkout_with_submodules_option_never_source_always(
         ]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
-def test_checkout_with_submodules_option_always_source_never(
-    mkgitrepo, src, git_allow_file_protocol
-):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
+def test_checkout_with_submodules_option_always_source_never(mkgitrepo, src, git_allow_file_protocol):
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it
     and a module 'egg2' with the same submodule, not initializing the submodule
     on egg2 that has the 'never' option
 
@@ -422,12 +386,9 @@ def test_checkout_with_submodules_option_always_source_never(
         ]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
 def test_update_with_submodule_checkout(mkgitrepo, src, git_allow_file_protocol):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
     Add a new 'submodule_b' to 'egg' and check it doesn't get initialized.
     """
 
@@ -486,14 +447,9 @@ def test_update_with_submodule_checkout(mkgitrepo, src, git_allow_file_protocol)
         ]
 
 
-@pytest.mark.skipif(
-    condition=os.name == "nt", reason="submodules seem not to work on windows"
-)
-def test_update_with_submodule_dont_update_previous_submodules(
-    mkgitrepo, src, git_allow_file_protocol
-):
-    """
-    Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
+@pytest.mark.skipif(condition=os.name == "nt", reason="submodules seem not to work on windows")
+def test_update_with_submodule_dont_update_previous_submodules(mkgitrepo, src, git_allow_file_protocol):
+    """Tests the checkout of a module 'egg' with a submodule 'submodule_a' in it.
     Commits changes in the detached submodule, and checks update didn't break
     the changes.
     """

@@ -66,13 +66,10 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
             if update:
                 self.update(**kwargs)
             elif self.matches():
-                self.output(
-                    (logger.info, f"Skipped checkout of existing package {name!r}.")
-                )
+                self.output((logger.info, f"Skipped checkout of existing package {name!r}."))
             else:
                 raise BazaarError(
-                    "Source URL for existing package {!r} differs. "
-                    "Expected {!r}.".format(name, self.source["url"])
+                    "Source URL for existing package {!r} differs. " "Expected {!r}.".format(name, self.source["url"])
                 )
         else:
             return self.bzr_branch(**kwargs)
@@ -114,9 +111,7 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
     def update(self, **kwargs):
         name = self.source["name"]
         if not self.matches():
-            raise BazaarError(
-                f"Can't update package {name!r} because its URL doesn't match."
-            )
+            raise BazaarError(f"Can't update package {name!r} because its URL doesn't match.")
         if self.status() != "clean" and not kwargs.get("force", False):
             raise BazaarError(f"Can't update package {name!r} because it's dirty.")
         return self.bzr_pull(**kwargs)

@@ -99,10 +99,7 @@ def test_setup_logger_no_formatter_for_info():
     # The code only sets formatter for DEBUG
     if handler.formatter:
         # If a formatter exists, it shouldn't be the DEBUG formatter
-        assert (
-            "%(asctime)s" not in handler.formatter._fmt
-            or handler.formatter._fmt is None
-        )
+        assert "%(asctime)s" not in handler.formatter._fmt or handler.formatter._fmt is None
 
 
 def test_emoji_logging_with_cp1252_encoding(capsys, caplog):
@@ -123,9 +120,7 @@ def test_emoji_logging_with_cp1252_encoding(capsys, caplog):
 
     # Create a stream with cp1252 encoding (simulating Windows console)
     # Use errors='strict' to ensure it raises on unencodable characters
-    stream = io.TextIOWrapper(
-        io.BytesIO(), encoding="cp1252", errors="strict", line_buffering=True
-    )
+    stream = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", errors="strict", line_buffering=True)
 
     # Set up handler with the cp1252 stream
     handler = logging.StreamHandler(stream)
