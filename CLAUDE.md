@@ -519,6 +519,70 @@ Quick summary:
 
 **CRITICAL: Always follow these steps before pushing code:**
 
+### Bug Fix Workflow (Test-Driven Development - MANDATORY)
+
+**IMPORTANT**: All bug fixes MUST follow the TDD (Test-Driven Development) approach:
+
+1. **Analysis**
+   - Investigate and understand the root cause
+   - Identify the exact location and nature of the bug
+   - Document your findings
+
+2. **Comment on Issue with Analysis Only**
+   ```bash
+   gh issue comment <ISSUE_NUMBER> --body "Root cause analysis..."
+   ```
+   - Post detailed root cause analysis to the GitHub issue
+   - Do NOT include the solution or plan in the comment
+   - Include code references, line numbers, and explanation
+
+3. **Create Failing Test**
+   - Create branch: `git checkout -b fix/<issue-number>-description`
+   - Write a test that reproduces the bug
+   - Verify the test fails with the current code
+   - Commit: `git commit -m "Add failing test for issue #XX"`
+
+4. **Push and Create Draft PR**
+   ```bash
+   git push -u origin fix/<issue-number>-description
+   gh pr create --draft --title "..." --body "..."
+   ```
+   - PR body should explain the bug, show the failing test, and describe next steps
+
+5. **Implement the Fix**
+   - Write the minimal code needed to make the test pass
+   - Verify the test now passes
+   - Run all related tests to ensure no regressions
+
+6. **Commit and Push Fix**
+   ```bash
+   git add <files>
+   git commit -m "Fix issue #XX: description"
+   git push
+   ```
+   - Include issue reference in commit message
+   - Update CHANGES.md in the same commit or separately
+
+7. **Verify CI is Green**
+   ```bash
+   gh pr checks <PR_NUMBER>
+   ```
+   - Wait for all CI checks to pass
+   - Address any failures
+
+8. **Mark PR Ready for Review**
+   ```bash
+   gh pr ready <PR_NUMBER>
+   ```
+   - Only mark ready when all checks are green
+   - Update PR description if needed
+
+**Why TDD for Bug Fixes?**
+- Ensures the bug is actually fixed
+- Prevents regressions in the future
+- Documents the expected behavior
+- Provides confidence in the solution
+
 ### Pre-Push Checklist
 
 1. **Always run linting before push**

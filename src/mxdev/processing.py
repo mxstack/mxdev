@@ -182,6 +182,8 @@ def read(state: State) -> None:
 
 def fetch(state: State) -> None:
     """Fetch all configured sources from a VCS."""
+    from .config import to_bool
+
     packages = state.configuration.packages
     logger.info("#" * 79)
     if not packages:
@@ -192,13 +194,15 @@ def fetch(state: State) -> None:
     workingcopies = WorkingCopies(
         packages, threads=int(state.configuration.settings["threads"])
     )
+    # Pass offline setting from configuration instead of hardcoding False
+    offline = to_bool(state.configuration.settings.get("offline", False))
     workingcopies.checkout(
         sorted(packages),
         verbose=False,
         update=True,
         submodules="always",
         always_accept_server_certificate=True,
-        offline=False,
+        offline=offline,
     )
 
 

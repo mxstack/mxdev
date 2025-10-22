@@ -288,6 +288,11 @@ class WorkingCopies:
 
     def update(self, packages: typing.Iterable[str], **kwargs) -> None:
         the_queue: queue.Queue = queue.Queue()
+        # Check for offline mode early - skip all updates if offline
+        offline = kwargs.get("offline", False)
+        if offline:
+            logger.info("Skipped updates (offline mode)")
+            return
         for name in packages:
             kw = kwargs.copy()
             if name not in self.sources:

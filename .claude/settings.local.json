@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source .venv/bin/activate)",
+      "Bash(pytest:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh issue:*)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)",
+      "Bash(uvx:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh pr ready:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
