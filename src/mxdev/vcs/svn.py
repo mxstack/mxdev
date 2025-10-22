@@ -53,11 +53,15 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
             url[2] = path
         if "rev" in self.source and "revision" in self.source:
             raise ValueError(
-                "The source definition of '{}' contains duplicate revision options.".format(self.source["name"])
+                "The source definition of '{}' contains duplicate revision options.".format(
+                    self.source["name"]
+                )
             )
         if rev is not None and ("rev" in self.source or "revision" in self.source):
             raise ValueError(
-                "The url of '{}' contains a revision and there is an additional revision option.".format(self.source["name"])
+                "The url of '{}' contains a revision and there is an additional revision option.".format(
+                    self.source["name"]
+                )
             )
         elif rev is None:
             rev = self.source.get("revision", self.source.get("rev"))
@@ -101,7 +105,9 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
             sys.exit(1)
         if (version < (1, 5)) and not _svn_version_warning:
             logger.warning(
-                "The installed 'svn' command is too old. Expected 1.5 or newer, got {}.".format(".".join([str(x) for x in version]))
+                "The installed 'svn' command is too old. Expected 1.5 or newer, got {}.".format(
+                    ".".join([str(x) for x in version])
+                )
             )
             _svn_version_warning = True
 
@@ -134,7 +140,9 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
                     common.output_lock.release()
                     continue
                 print(
-                    "Authorization needed for '{}' at '{}'".format(self.source["name"], self.source["url"])
+                    "Authorization needed for '{}' at '{}'".format(
+                        self.source["name"], self.source["url"]
+                    )
                 )
                 user = input("Username: ")
                 passwd = getpass.getpass("Password: ")
@@ -181,7 +189,9 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
         stdout, stderr, returncode = self._svn_communicate(args, url, **kwargs)
         if returncode != 0:
             raise SVNError(
-                "Subversion checkout for '{}' failed.\n{}".format(name, stderr.decode("utf8"))
+                "Subversion checkout for '{}' failed.\n{}".format(
+                    name, stderr.decode("utf8")
+                )
             )
         if kwargs.get("verbose", False):
             return stdout.decode("utf8")
@@ -339,10 +349,14 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
                     url = self._svn_info().get("url", "")
                     if url:
                         msg = f"The current checkout of '{name}' is from '{url}'."
-                        msg += "\nCan't switch package to '{}' because it's dirty.".format(self.source["url"])
+                        msg += (
+                            "\nCan't switch package to '{}' because it's dirty.".format(
+                                self.source["url"]
+                            )
+                        )
                     else:
-                        msg = (
-                            "Can't switch package '{}' to '{}' because it's dirty.".format(name, self.source["url"])
+                        msg = "Can't switch package '{}' to '{}' because it's dirty.".format(
+                            name, self.source["url"]
                         )
                     raise SVNError(msg)
         else:

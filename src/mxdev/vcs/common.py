@@ -106,9 +106,7 @@ class BaseWorkingCopy(abc.ABC):
     def update(self, **kwargs) -> str | None: ...
 
 
-def yesno(
-    question: str, default: bool = True, all: bool = True
-) -> str | bool:
+def yesno(question: str, default: bool = True, all: bool = True) -> str | bool:
     if default:
         question = f"{question} [Yes/no"
         answers: dict[str | bool, tuple] = {
@@ -263,14 +261,18 @@ class WorkingCopies:
                 kwargs["update"] = False
             else:
                 logger.error(
-                    "Unknown value '{}' for always-checkout option.".format(kwargs["update"])
+                    "Unknown value '{}' for always-checkout option.".format(
+                        kwargs["update"]
+                    )
                 )
                 sys.exit(1)
         kwargs.setdefault("submodules", "always")
         # XXX: submodules is git related, move to GitWorkingCopy
         if kwargs["submodules"] not in ["always", "never", "checkout", "recursive"]:
             logger.error(
-                "Unknown value '{}' for update-git-submodules option.".format(kwargs["submodules"])
+                "Unknown value '{}' for update-git-submodules option.".format(
+                    kwargs["submodules"]
+                )
             )
             sys.exit(1)
         for name in packages:
@@ -328,9 +330,7 @@ class WorkingCopies:
             logger.exception("Can not get matches!")
             sys.exit(1)
 
-    def status(
-        self, source: dict[str, str], **kwargs
-    ) -> str | tuple[str, str]:
+    def status(self, source: dict[str, str], **kwargs) -> str | tuple[str, str]:
         name = source["name"]
         if name not in self.sources:
             logger.error(f"Status failed. No source defined for '{name}'.")

@@ -139,9 +139,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         path = str(self.source["path"])
         url = self.source["url"]
         if os.path.exists(path):
-            self.output(
-                (logger.info, f"Skipped cloning of existing package '{name}'.")
-            )
+            self.output((logger.info, f"Skipped cloning of existing package '{name}'."))
             return None
         msg = f"Cloned '{name}' with git"
         if "branch" in self.source:
@@ -205,7 +203,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         if "rev" in self.source:
             # A tag or revision was specified instead of a branch
             argv = ["checkout", self.source["rev"]]
-            self.output((logger.info, "Switching to rev '{}'.".format(self.source["rev"])))
+            self.output(
+                (logger.info, "Switching to rev '{}'.".format(self.source["rev"]))
+            )
         elif re.search(rf"^(\*| ) {re.escape(branch)}$", stdout, re.M):
             # the branch is local, normal checkout will work
             argv = ["checkout", branch]
@@ -322,7 +322,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             self.output(
                 (
                     logger.warning,
-                    "Checkout URL for existing package '{}' differs. Expected '{}'.".format(name, self.source["url"]),
+                    "Checkout URL for existing package '{}' differs. Expected '{}'.".format(
+                        name, self.source["url"]
+                    ),
                 )
             )
         return None
@@ -380,13 +382,13 @@ class GitWorkingCopy(common.BaseWorkingCopy):
 
         if cmd.returncode != 0:
             raise GitError(
-                "git config remote.{}.pushurl {} \nfailed.\n".format(self._upstream_name, self.source["pushurl"])
+                "git config remote.{}.pushurl {} \nfailed.\n".format(
+                    self._upstream_name, self.source["pushurl"]
+                )
             )
         return (stdout_in + stdout, stderr_in + stderr)
 
-    def git_init_submodules(
-        self, stdout_in, stderr_in
-    ) -> tuple[str, str, list]:
+    def git_init_submodules(self, stdout_in, stderr_in) -> tuple[str, str, list]:
         cmd = self.run_git(["submodule", "init"], cwd=self.source["path"])
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:

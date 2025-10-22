@@ -231,9 +231,7 @@ def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]]):
     fio.write("\n\n")
 
 
-def write_dev_overrides(
-    fio, overrides: dict[str, str], package_keys: list[str]
-):
+def write_dev_overrides(fio, overrides: dict[str, str], package_keys: list[str]):
     """Create requirements configuration for overridden packages."""
     fio.write("#" * 79 + "\n")
     fio.write("# mxdev constraint overrides\n")
