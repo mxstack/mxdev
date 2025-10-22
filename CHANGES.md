@@ -10,6 +10,8 @@
 - Modernize type hints to use Python 3.10+ syntax (PEP 604: `X | Y` instead of `Union[X, Y]`)
 - Use built-in generic types (`list`, `dict`, `tuple`) instead of `typing.List`, `typing.Dict`, `typing.Tuple`
   [jensens]
+- Replace black with ruff for faster linting and formatting. Configure ruff with line-length=120 and appropriate rule selections. Keep isort for import sorting with plone profile and force-alphabetical-sort. This modernizes the tooling stack for better Python 3.10+ support and faster CI runs.
+  [jensens]
 
 ## 4.1.2 (unreleased)
 
