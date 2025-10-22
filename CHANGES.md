@@ -2,6 +2,9 @@
 
 ## 4.1.2 (unreleased)
 
+- Fix #35: Add `smart-threading` configuration option to prevent overlapping credential prompts when using HTTPS URLs. When enabled (default), HTTPS packages are processed serially first to ensure clean credential prompts, then other packages are processed in parallel for speed. Can be disabled with `smart-threading = false` if you have credential helpers configured.
+  [jensens]
+
 - Fix #34: The `offline` configuration setting and `--offline` CLI flag are now properly respected to prevent VCS fetch/update operations. Previously, setting `offline = true` in mx.ini or using the `--offline` CLI flag was ignored, and VCS operations still occurred.
   [jensens]
 

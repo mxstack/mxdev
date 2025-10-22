@@ -46,6 +46,10 @@ class Configuration:
         else:
             settings["threads"] = "4"
 
+        # Set default for smart-threading (process HTTPS packages serially to avoid
+        # overlapping credential prompts)
+        settings.setdefault("smart-threading", "true")
+
         mode = settings.get("default-install-mode", "direct")
         if mode not in ["direct", "skip"]:
             raise ValueError("default-install-mode must be one of 'direct' or 'skip'")
