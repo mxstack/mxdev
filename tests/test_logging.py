@@ -124,10 +124,7 @@ def test_emoji_logging_with_cp1252_encoding(capsys, caplog):
     # Create a stream with cp1252 encoding (simulating Windows console)
     # Use errors='strict' to ensure it raises on unencodable characters
     stream = io.TextIOWrapper(
-        io.BytesIO(),
-        encoding='cp1252',
-        errors='strict',
-        line_buffering=True
+        io.BytesIO(), encoding="cp1252", errors="strict", line_buffering=True
     )
 
     # Set up handler with the cp1252 stream
