@@ -50,9 +50,22 @@ class Configuration:
         # overlapping credential prompts)
         settings.setdefault("smart-threading", "true")
 
-        mode = settings.get("default-install-mode", "direct")
-        if mode not in ["direct", "skip"]:
-            raise ValueError("default-install-mode must be one of 'direct' or 'skip'")
+        mode = settings.get("default-install-mode", "editable")
+
+        # Handle deprecated "direct" mode
+        if mode == "direct":
+            logger.warning(
+                "install-mode 'direct' is deprecated and will be removed in a future version. "
+                "Please use 'editable' instead."
+            )
+            mode = "editable"
+            settings["default-install-mode"] = "editable"
+
+        if mode not in ["editable", "fixed", "skip"]:
+            raise ValueError(
+                "default-install-mode must be one of 'editable', 'fixed', or 'skip' "
+                "('direct' is deprecated, use 'editable')"
+            )
 
         default_use = to_bool(settings.get("default-use", True))
         raw_overrides = settings.get("version-overrides", "").strip()
@@ -108,9 +121,21 @@ class Configuration:
             package.setdefault("path", os.path.join(package["target"], name))
             if not package.get("url"):
                 raise ValueError(f"Section {name} has no URL set!")
-            if package.get("install-mode") not in ["direct", "skip"]:
+
+            # Handle deprecated "direct" mode for per-package install-mode
+            pkg_mode = package.get("install-mode")
+            if pkg_mode == "direct":
+                logger.warning(
+                    f"install-mode 'direct' is deprecated and will be removed in a future version. "
+                    f"Please use 'editable' instead (package: {name})."
+                )
+                package["install-mode"] = "editable"
+                pkg_mode = "editable"
+
+            if pkg_mode not in ["editable", "fixed", "skip"]:
                 raise ValueError(
-                    f"install-mode in [{name}] must be one of 'direct' or 'skip'"
+                    f"install-mode in [{name}] must be one of 'editable', 'fixed', or 'skip' "
+                    f"('direct' is deprecated, use 'editable')"
                 )
 
             # repo_dir = os.path.abspath(f"{package['target']}/{name}")

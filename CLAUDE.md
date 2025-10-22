@@ -287,12 +287,23 @@ main-package = -e .[test]
 url = git+https://github.com/org/package1.git
 branch = feature-branch
 extras = test
+install-mode = editable
 
 [package2]
 url = git+https://github.com/org/package2.git
 branch = main
+install-mode = fixed
+
+[package3]
+url = git+https://github.com/org/package3.git
 install-mode = skip
 ```
+
+**Install mode options:**
+- `editable` (default): Installs with `-e` prefix for development
+- `fixed`: Installs without `-e` prefix for production/Docker deployments
+- `skip`: Only clones, doesn't install
+- `direct`: Deprecated alias for `editable` (logs warning)
 
 **Using includes for shared configurations:**
 ```ini

@@ -86,7 +86,7 @@ The **main section** must be called `[settings]`, even if kept empty.
 | `threads` | Number of parallel threads for fetching sources | `4` |
 | `smart-threading` | Process HTTPS packages serially to avoid overlapping credential prompts (see below) | `True` |
 | `offline` | Skip all VCS fetch operations (handy for offline work) | `False` |
-| `default-install-mode` | Default `install-mode` for packages: `direct` or `skip` | `direct` |
+| `default-install-mode` | Default `install-mode` for packages: `editable`, `fixed`, or `skip` (see below) | `editable` |
 | `default-update` | Default update behavior: `yes` or `no` | `yes` |
 | `default-use` | Default use behavior (when false, sources not checked out) | `True` |
 
@@ -220,7 +220,7 @@ For package sources, the section name is the package name: `[PACKAGENAME]`
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `install-mode` | `direct`: Install with `pip -e PACKAGEPATH`<br>`skip`: Only clone, don't install | `default-install-mode` |
+| `install-mode` | `editable`: Install with `-e` (development mode)<br>`fixed`: Install without `-e` (production/Docker)<br>`skip`: Only clone, don't install<br>⚠️ `direct` is deprecated, use `editable` | `default-install-mode` |
 | `use` | When `false`, source is not checked out and version not overridden | `default-use` |
 
 #### Git-Specific Options

@@ -221,9 +221,13 @@ def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.An
             continue
         extras = f"[{package['extras']}]" if package["extras"] else ""
         subdir = f"/{package['subdirectory']}" if package["subdirectory"] else ""
-        editable = f"""-e ./{package['target']}/{name}{subdir}{extras}\n"""
-        logger.debug(f"-> {editable.strip()}")
-        fio.write(editable)
+
+        # Add -e prefix only for 'editable' mode (not for 'fixed')
+        prefix = "-e " if package["install-mode"] == "editable" else ""
+        install_line = f"""{prefix}./{package['target']}/{name}{subdir}{extras}\n"""
+
+        logger.debug(f"-> {install_line.strip()}")
+        fio.write(install_line)
     fio.write("\n\n")
 
 

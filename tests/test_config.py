@@ -89,12 +89,72 @@ def test_configuration_with_ignores():
     assert "another.ignored" in config.ignore_keys
 
 
+def test_configuration_editable_install_mode():
+    """Test Configuration with editable install mode."""
+    from mxdev.config import Configuration
+
+    base = pathlib.Path(__file__).parent / "data" / "config_samples"
+    config = Configuration(str(base / "config_editable_mode.ini"))
+
+    assert config.settings["default-install-mode"] == "editable"
+    assert config.packages["example.package"]["install-mode"] == "editable"
+
+
+def test_configuration_fixed_install_mode():
+    """Test Configuration with fixed install mode."""
+    from mxdev.config import Configuration
+
+    base = pathlib.Path(__file__).parent / "data" / "config_samples"
+    config = Configuration(str(base / "config_fixed_mode.ini"))
+
+    assert config.settings["default-install-mode"] == "fixed"
+    assert config.packages["example.package"]["install-mode"] == "fixed"
+
+
+def test_configuration_direct_mode_deprecated(caplog):
+    """Test Configuration with deprecated 'direct' mode logs warning."""
+    from mxdev.config import Configuration
+
+    base = pathlib.Path(__file__).parent / "data" / "config_samples"
+    config = Configuration(str(base / "config_deprecated_direct.ini"))
+
+    # Mode should be treated as 'editable' internally
+    assert config.settings["default-install-mode"] == "editable"
+    assert config.packages["example.package"]["install-mode"] == "editable"
+
+    # Should have logged deprecation warning
+    assert any(
+        "install-mode 'direct' is deprecated" in record.message
+        for record in caplog.records
+    )
+
+
+def test_configuration_package_direct_mode_deprecated(caplog):
+    """Test per-package 'direct' mode logs deprecation warning."""
+    from mxdev.config import Configuration
+
+    base = pathlib.Path(__file__).parent / "data" / "config_samples"
+    config = Configuration(str(base / "config_package_direct.ini"))
+
+    # Package mode should be treated as 'editable' internally
+    assert config.packages["example.package"]["install-mode"] == "editable"
+
+    # Should have logged deprecation warning
+    assert any(
+        "install-mode 'direct' is deprecated" in record.message
+        for record in caplog.records
+    )
+
+
 def test_configuration_invalid_default_install_mode():
     """Test Configuration with invalid default-install-mode."""
     from mxdev.config import Configuration
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
-    with pytest.raises(ValueError, match="default-install-mode must be one of"):
+    with pytest.raises(
+        ValueError,
+        match=r"default-install-mode must be one of 'editable', 'fixed', or 'skip'",
+    ):
         Configuration(str(base / "config_invalid_mode.ini"))
 
 
@@ -103,7 +163,10 @@ def test_configuration_invalid_package_install_mode():
     from mxdev.config import Configuration
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
-    with pytest.raises(ValueError, match="install-mode in .* must be one of"):
+    with pytest.raises(
+        ValueError,
+        match=r"install-mode in .* must be one of 'editable', 'fixed', or 'skip'",
+    ):
         Configuration(str(base / "config_package_invalid_mode.ini"))
 
 
@@ -182,7 +245,7 @@ def test_configuration_package_defaults():
     assert pkg["extras"] == ""
     assert pkg["subdirectory"] == ""
     assert pkg["target"] == "sources"  # default-target not set, should be "sources"
-    assert pkg["install-mode"] == "direct"  # default mode
+    assert pkg["install-mode"] == "editable"  # default mode changed from 'direct'
     assert pkg["vcs"] == "git"
     assert "path" in pkg
 
