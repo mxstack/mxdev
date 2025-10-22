@@ -6,9 +6,9 @@
 #: core.mxenv
 #: core.mxfiles
 #: core.packages
-#: qa.black
 #: qa.isort
 #: qa.mypy
+#: qa.ruff
 #: qa.test
 #
 # SETTINGS (ALL CHANGES MADE BELOW SETTINGS WILL BE LOST)
@@ -94,17 +94,17 @@ MXDEV?=mxdev
 # Default: mxmake
 MXMAKE?=mxmake
 
+## qa.ruff
+
+# Source folder to scan for Python files to run ruff on.
+# Default: src
+RUFF_SRC?=src
+
 ## qa.isort
 
 # Source folder to scan for Python files to run isort on.
 # Default: src
 ISORT_SRC?=src
-
-## qa.black
-
-# Source folder to scan for Python files to run black on.
-# Default: src
-BLACK_SRC?=src
 
 ## core.mxfiles
 
@@ -264,6 +264,41 @@ DIRTY_TARGETS+=mxenv-dirty
 CLEAN_TARGETS+=mxenv-clean
 
 ##############################################################################
+# ruff
+##############################################################################
+
+RUFF_TARGET:=$(SENTINEL_FOLDER)/ruff.sentinel
+$(RUFF_TARGET): $(MXENV_TARGET)
+	@echo "Install Ruff"
+	@$(PYTHON_PACKAGE_COMMAND) install ruff
+	@touch $(RUFF_TARGET)
+
+.PHONY: ruff-check
+ruff-check: $(RUFF_TARGET)
+	@echo "Run ruff check"
+	@ruff check $(RUFF_SRC)
+
+.PHONY: ruff-format
+ruff-format: $(RUFF_TARGET)
+	@echo "Run ruff format"
+	@ruff format $(RUFF_SRC)
+
+.PHONY: ruff-dirty
+ruff-dirty:
+	@rm -f $(RUFF_TARGET)
+
+.PHONY: ruff-clean
+ruff-clean: ruff-dirty
+	@test -e $(MXENV_PYTHON) && $(MXENV_PYTHON) -m pip uninstall -y ruff || :
+	@rm -rf .ruff_cache
+
+INSTALL_TARGETS+=$(RUFF_TARGET)
+CHECK_TARGETS+=ruff-check
+FORMAT_TARGETS+=ruff-format
+DIRTY_TARGETS+=ruff-dirty
+CLEAN_TARGETS+=ruff-clean
+
+##############################################################################
 # isort
 ##############################################################################
 
@@ -296,40 +331,6 @@ CHECK_TARGETS+=isort-check
 FORMAT_TARGETS+=isort-format
 DIRTY_TARGETS+=isort-dirty
 CLEAN_TARGETS+=isort-clean
-
-##############################################################################
-# black
-##############################################################################
-
-BLACK_TARGET:=$(SENTINEL_FOLDER)/black.sentinel
-$(BLACK_TARGET): $(MXENV_TARGET)
-	@echo "Install Black"
-	@$(PYTHON_PACKAGE_COMMAND) install black
-	@touch $(BLACK_TARGET)
-
-.PHONY: black-check
-black-check: $(BLACK_TARGET)
-	@echo "Run black checks"
-	@black --check $(BLACK_SRC)
-
-.PHONY: black-format
-black-format: $(BLACK_TARGET)
-	@echo "Run black format"
-	@black $(BLACK_SRC)
-
-.PHONY: black-dirty
-black-dirty:
-	@rm -f $(BLACK_TARGET)
-
-.PHONY: black-clean
-black-clean: black-dirty
-	@test -e $(MXENV_PYTHON) && $(MXENV_PYTHON) -m pip uninstall -y black || :
-
-INSTALL_TARGETS+=$(BLACK_TARGET)
-CHECK_TARGETS+=black-check
-FORMAT_TARGETS+=black-format
-DIRTY_TARGETS+=black-dirty
-CLEAN_TARGETS+=black-clean
 
 ##############################################################################
 # mxfiles

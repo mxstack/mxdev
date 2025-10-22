@@ -49,9 +49,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise DarcsError(
-                f"darcs pull for '{name}' failed.\n{stderr.decode('utf8')}"
-            )
+            raise DarcsError(f"darcs pull for '{name}' failed.\n{stderr.decode('utf8')}")
         if kwargs.get("verbose", False):
             return stdout.decode("utf8")
         return None
@@ -66,13 +64,9 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             self.update(**kwargs)
             return None
         if self.matches():
-            self.output(
-                (logger.info, f"Skipped checkout of existing package '{name}'.")
-            )
+            self.output((logger.info, f"Skipped checkout of existing package '{name}'."))
             return None
-        raise DarcsError(
-            f"Checkout URL for existing package '{name}' differs. Expected '{self.source['url']}'."
-        )
+        raise DarcsError(f"Checkout URL for existing package '{name}' differs. Expected '{self.source['url']}'.")
 
     def _darcs_related_repositories(self) -> typing.Generator:
         name = self.source["name"]
@@ -134,9 +128,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
     def update(self, **kwargs) -> str | None:
         name = self.source["name"]
         if not self.matches():
-            raise DarcsError(
-                f"Can't update package '{name}' because it's URL doesn't match."
-            )
+            raise DarcsError(f"Can't update package '{name}' because it's URL doesn't match.")
         if self.status() != "clean" and not kwargs.get("force", False):
             raise DarcsError(f"Can't update package '{name}' because it's dirty.")
         return self.darcs_update(**kwargs)

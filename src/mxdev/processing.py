@@ -82,9 +82,7 @@ def process_io(
     and constraint lists.
     """
     for line in fio:
-        new_requirements, new_constraints = process_line(
-            line, package_keys, override_keys, ignore_keys, variety
-        )
+        new_requirements, new_constraints = process_line(line, package_keys, override_keys, ignore_keys, variety)
         requirements += new_requirements
         constraints += new_constraints
 
@@ -127,8 +125,7 @@ def resolve_dependencies(
                 )
         else:
             logger.info(
-                f"Can not read {variety_verbose} file '{file_or_url}', "
-                "it does not exist. Empty file assumed."
+                f"Can not read {variety_verbose} file '{file_or_url}', " "it does not exist. Empty file assumed."
             )
     else:
         try:
@@ -237,9 +234,7 @@ def write_dev_overrides(fio, overrides: dict[str, str], package_keys: list[str])
     fio.write("# mxdev constraint overrides\n")
     for pkg, line in overrides.items():
         if pkg.lower() in [k.lower() for k in package_keys]:
-            fio.write(
-                f"# {line} IGNORE mxdev constraint override. Source override wins!\n"
-            )
+            fio.write(f"# {line} IGNORE mxdev constraint override. Source override wins!\n")
         else:
             fio.write(f"{line}\n")
     fio.write("\n\n")

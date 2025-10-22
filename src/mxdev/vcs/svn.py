@@ -7,7 +7,6 @@ import os
 import re
 import subprocess
 import sys
-import typing
 import xml.etree.ElementTree as etree
 
 
@@ -53,9 +52,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
             url[2] = path
         if "rev" in self.source and "revision" in self.source:
             raise ValueError(
-                "The source definition of '{}' contains duplicate revision options.".format(
-                    self.source["name"]
-                )
+                "The source definition of '{}' contains duplicate revision options.".format(self.source["name"])
             )
         if rev is not None and ("rev" in self.source or "revision" in self.source):
             raise ValueError(
@@ -139,11 +136,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
                     common.input_lock.release()
                     common.output_lock.release()
                     continue
-                print(
-                    "Authorization needed for '{}' at '{}'".format(
-                        self.source["name"], self.source["url"]
-                    )
-                )
+                print("Authorization needed for '{}' at '{}'".format(self.source["name"], self.source["url"]))
                 user = input("Username: ")
                 passwd = getpass.getpass("Password: ")
                 self._svn_auth_cache[root] = dict(
@@ -170,9 +163,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
                     if answer.lower() in ["r", "t"]:
                         break
                     else:
-                        print(
-                            "Invalid answer, type 'r' for reject or 't' for temporarily."
-                        )
+                        print("Invalid answer, type 'r' for reject or 't' for temporarily.")
                 if answer == "r":
                     self._svn_cert_cache[root] = False
                 else:
@@ -188,11 +179,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
         args = [self.svn_executable, "checkout", url, path]
         stdout, stderr, returncode = self._svn_communicate(args, url, **kwargs)
         if returncode != 0:
-            raise SVNError(
-                "Subversion checkout for '{}' failed.\n{}".format(
-                    name, stderr.decode("utf8")
-                )
-            )
+            raise SVNError("Subversion checkout for '{}' failed.\n{}".format(name, stderr.decode("utf8")))
         if kwargs.get("verbose", False):
             return stdout.decode("utf8")
 
@@ -217,15 +204,9 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
             lines = stderr.strip().split(b"\n")
-            if (
-                "authorization failed" in lines[-1]
-                or "Could not authenticate to server" in lines[-1]
-            ):
+            if "authorization failed" in lines[-1] or "Could not authenticate to server" in lines[-1]:
                 raise SVNAuthorizationError(stderr.strip())
-            if (
-                "Server certificate verification failed: issuer is not trusted"
-                in lines[-1]
-            ):
+            if "Server certificate verification failed: issuer is not trusted" in lines[-1]:
                 cmd = subprocess.Popen(
                     interactive_args,
                     stdin=subprocess.PIPE,
@@ -248,11 +229,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise SVNError(
-                "Subversion info for '{}' failed.\n{}".format(
-                    name, stderr.decode("utf8")
-                )
-            )
+            raise SVNError("Subversion info for '{}' failed.\n{}".format(name, stderr.decode("utf8")))
         info = etree.fromstring(stdout)
         result = {}
         entry = info.find("entry")
@@ -280,11 +257,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
             args.insert(2, f"-r{rev}")
         stdout, stderr, returncode = self._svn_communicate(args, url, **kwargs)
         if returncode != 0:
-            raise SVNError(
-                "Subversion switch of '{}' failed.\n{}".format(
-                    name, stderr.decode("utf8")
-                )
-            )
+            raise SVNError("Subversion switch of '{}' failed.\n{}".format(name, stderr.decode("utf8")))
         if kwargs.get("verbose", False):
             return stdout.decode("utf8")
 
@@ -297,11 +270,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
             args.insert(2, f"-r{rev}")
         stdout, stderr, returncode = self._svn_communicate(args, url, **kwargs)
         if returncode != 0:
-            raise SVNError(
-                "Subversion update of '{}' failed.\n{}".format(
-                    name, stderr.decode("utf8")
-                )
-            )
+            raise SVNError("Subversion update of '{}' failed.\n{}".format(name, stderr.decode("utf8")))
         if kwargs.get("verbose", False):
             return stdout.decode("utf8")
 
@@ -309,9 +278,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
         name = self.source["name"]
         path = self.source["path"]
         if os.path.exists(path):
-            self.output(
-                (logger.info, f"Skipped checkout of existing package '{name}'.")
-            )
+            self.output((logger.info, f"Skipped checkout of existing package '{name}'."))
             return
         self.output((logger.info, f"Checked out '{name}' with subversion."))
         return self._svn_error_wrapper(self._svn_checkout, **kwargs)
@@ -349,15 +316,9 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
                     url = self._svn_info().get("url", "")
                     if url:
                         msg = f"The current checkout of '{name}' is from '{url}'."
-                        msg += (
-                            "\nCan't switch package to '{}' because it's dirty.".format(
-                                self.source["url"]
-                            )
-                        )
+                        msg += "\nCan't switch package to '{}' because it's dirty.".format(self.source["url"])
                     else:
-                        msg = "Can't switch package '{}' to '{}' because it's dirty.".format(
-                            name, self.source["url"]
-                        )
+                        msg = "Can't switch package '{}' to '{}' because it's dirty.".format(name, self.source["url"])
                     raise SVNError(msg)
         else:
             return self.svn_checkout(**kwargs)
@@ -370,13 +331,9 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
         if rev is None:
             rev = info.get("revision")
         if rev.startswith(">="):
-            return (info.get("url") == url) and (
-                int(info.get("revision")) >= int(rev[2:])
-            )
+            return (info.get("url") == url) and (int(info.get("revision")) >= int(rev[2:]))
         elif rev.startswith(">"):
-            return (info.get("url") == url) and (
-                int(info.get("revision")) > int(rev[1:])
-            )
+            return (info.get("url") == url) and (int(info.get("revision")) > int(rev[1:]))
         else:
             return (info.get("url") == url) and (info.get("revision") == rev)
 
@@ -390,7 +347,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
         )
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
-            raise SVNError(f"Subversion status for '{name}' failed.\n{s(stderr)}")
+            raise SVNError(f"Subversion status for '{name}' failed.\n{stderr.decode()}")
         info = etree.fromstring(stdout)
         clean = True
         for target in info.findall("target"):
@@ -408,9 +365,7 @@ class SVNWorkingCopy(common.BaseWorkingCopy):
             )
             stdout, stderr = cmd.communicate()
             if cmd.returncode != 0:
-                raise SVNError(
-                    f"Subversion status for '{name}' failed.\n{stderr.decode('utf8')}"
-                )
+                raise SVNError(f"Subversion status for '{name}' failed.\n{stderr.decode('utf8')}")
             return status, stdout.decode("utf8")
         return status
 

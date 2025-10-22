@@ -45,8 +45,7 @@ def which(name_root: str, default: str | None = None) -> str:
 
 
 def version_sorted(inp: list, *args, **kwargs) -> list:
-    """
-    Sorts components versions, it means that numeric parts of version
+    """Sorts components versions, it means that numeric parts of version
     treats as numeric and string as string.
 
     Eg.: version-1-0-1 < version-1-0-2 < version-1-0-10
@@ -173,9 +172,7 @@ class WorkingCopies:
         self.errors = False
         self.workingcopytypes = get_workingcopytypes()
 
-    def _separate_https_packages(
-        self, packages: list[str]
-    ) -> tuple[list[str], list[str]]:
+    def _separate_https_packages(self, packages: list[str]) -> tuple[list[str], list[str]]:
         """Separate HTTPS packages from others for smart threading.
 
         Returns (https_packages, other_packages)
@@ -260,20 +257,12 @@ class WorkingCopies:
             elif kwargs["update"].lower() in ("false", "no", "off"):
                 kwargs["update"] = False
             else:
-                logger.error(
-                    "Unknown value '{}' for always-checkout option.".format(
-                        kwargs["update"]
-                    )
-                )
+                logger.error("Unknown value '{}' for always-checkout option.".format(kwargs["update"]))
                 sys.exit(1)
         kwargs.setdefault("submodules", "always")
         # XXX: submodules is git related, move to GitWorkingCopy
         if kwargs["submodules"] not in ["always", "never", "checkout", "recursive"]:
-            logger.error(
-                "Unknown value '{}' for update-git-submodules option.".format(
-                    kwargs["submodules"]
-                )
-            )
+            logger.error("Unknown value '{}' for update-git-submodules option.".format(kwargs["submodules"]))
             sys.exit(1)
         for name in packages:
             kw = kwargs.copy()
@@ -295,9 +284,7 @@ class WorkingCopies:
                 continue
             elif update and not kw.get("force", False) and wc.status() != "clean":
                 print_stderr(f"The package '{name}' is dirty.")
-                answer = yesno(
-                    "Do you want to update it anyway?", default=False, all=True
-                )
+                answer = yesno("Do you want to update it anyway?", default=False, all=True)
                 if answer:
                     kw["force"] = True
                     if answer == "all":
@@ -409,9 +396,7 @@ class WorkingCopies:
             wc = wc_class(source)
             if wc.status() != "clean" and not kw.get("force", False):
                 print_stderr(f"The package '{name}' is dirty.")
-                answer = yesno(
-                    "Do you want to update it anyway?", default=False, all=True
-                )
+                answer = yesno("Do you want to update it anyway?", default=False, all=True)
                 if answer:
                     kw["force"] = True
                     if answer == "all":
@@ -444,11 +429,7 @@ def worker(working_copies: WorkingCopies, the_queue: queue.Queue) -> None:
             with output_lock:
                 for lvl, msg in wc._output:
                     lvl(msg)
-                if (
-                    kwargs.get("verbose", False)
-                    and output is not None
-                    and output.strip()
-                ):
+                if kwargs.get("verbose", False) and output is not None and output.strip():
                     if isinstance(output, bytes):
                         output = output.decode("utf8")
                     print(output)

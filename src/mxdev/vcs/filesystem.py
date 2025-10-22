@@ -1,7 +1,6 @@
 from . import common
 
 import os
-import typing
 
 
 logger = common.logger
@@ -25,8 +24,9 @@ class FilesystemWorkingCopy(common.BaseWorkingCopy):
                 )
             else:
                 raise FilesystemError(
-                    "Directory name for existing package {!r} differs. "
-                    "Expected {!r}.".format(name, self.source["url"])
+                    "Directory name for existing package {!r} differs. " "Expected {!r}.".format(
+                        name, self.source["url"]
+                    )
                 )
         else:
             raise FilesystemError(
@@ -48,8 +48,7 @@ class FilesystemWorkingCopy(common.BaseWorkingCopy):
         name = self.source["name"]
         if not self.matches():
             raise FilesystemError(
-                "Directory name for existing package {!r} differs. "
-                "Expected {!r}.".format(name, self.source["url"])
+                "Directory name for existing package {!r} differs. " "Expected {!r}.".format(name, self.source["url"])
             )
         self.output((logger.info, f"Filesystem package {name!r} doesn't need update."))
         return ""

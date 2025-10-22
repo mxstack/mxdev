@@ -58,9 +58,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
 
         if branch != "default":
             if rev:
-                raise ValueError(
-                    "'branch' and 'rev' parameters cannot be used simultanously"
-                )
+                raise ValueError("'branch' and 'rev' parameters cannot be used simultanously")
             else:
                 rev = branch
         else:
@@ -118,9 +116,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         return [tag for tag in tags if tag and tag != "tip"]
 
     def _get_newest_tag(self):
-        mask = self.source.get(
-            "newest_tag_prefix", self.source.get("newest_tag_mask", "")
-        )
+        mask = self.source.get("newest_tag_prefix", self.source.get("newest_tag_mask", ""))
         name = self.source["name"]
         tags = self._get_tags()
         if mask:
@@ -174,13 +170,10 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
             if update:
                 self.update(**kwargs)
             elif self.matches():
-                self.output(
-                    (logger.info, f"Skipped checkout of existing package {name!r}.")
-                )
+                self.output((logger.info, f"Skipped checkout of existing package {name!r}."))
             else:
                 raise MercurialError(
-                    "Source URL for existing package {!r} differs. "
-                    "Expected {!r}.".format(name, self.source["url"])
+                    "Source URL for existing package {!r} differs. " "Expected {!r}.".format(name, self.source["url"])
                 )
         else:
             return self.hg_clone(**kwargs)
@@ -235,9 +228,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
     def update(self, **kwargs):
         name = self.source["name"]
         if not self.matches():
-            raise MercurialError(
-                f"Can't update package {name!r} because its URL doesn't match."
-            )
+            raise MercurialError(f"Can't update package {name!r} because its URL doesn't match.")
         if self.status() != "clean" and not kwargs.get("force", False):
             raise MercurialError(f"Can't update package {name!r} because it's dirty.")
         return self.hg_pull(**kwargs)

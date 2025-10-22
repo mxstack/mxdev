@@ -6,7 +6,6 @@ from urllib import request
 
 import os
 import tempfile
-import typing
 
 
 def resolve_dependencies(

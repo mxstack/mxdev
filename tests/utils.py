@@ -1,8 +1,8 @@
+from collections.abc import Iterable
 from mxdev.vcs.common import WorkingCopies
 from subprocess import PIPE
 from subprocess import Popen
 from typing import Any
-from collections.abc import Iterable
 
 import os
 import sys

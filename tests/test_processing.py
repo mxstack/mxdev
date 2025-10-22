@@ -1,7 +1,7 @@
+from io import StringIO
+
 import os
 import pathlib
-import pytest
-from io import StringIO
 
 
 def test_process_line_plain():
@@ -159,6 +159,7 @@ def test_resolve_dependencies_file_not_found():
 def test_resolve_dependencies_with_constraints():
     """Test resolve_dependencies with -c constraint reference."""
     from mxdev.processing import resolve_dependencies
+
     import os
 
     base = pathlib.Path(__file__).parent / "data" / "requirements"
@@ -184,6 +185,7 @@ def test_resolve_dependencies_with_constraints():
 def test_resolve_dependencies_nested():
     """Test resolve_dependencies with -r nested requirements."""
     from mxdev.processing import resolve_dependencies
+
     import os
 
     base = pathlib.Path(__file__).parent / "data" / "requirements"
@@ -314,8 +316,8 @@ def test_write_dev_sources_mixed_modes(tmp_path):
 
 def test_write_dev_sources_empty():
     """Test write_dev_sources with no packages."""
-    from mxdev.processing import write_dev_sources
     from io import StringIO
+    from mxdev.processing import write_dev_sources
 
     fio = StringIO()
     write_dev_sources(fio, {})
@@ -376,8 +378,8 @@ def test_write_main_package(tmp_path):
 
 def test_write_main_package_not_set():
     """Test write_main_package when main-package not set."""
-    from mxdev.processing import write_main_package
     from io import StringIO
+    from mxdev.processing import write_main_package
 
     settings = {}
     fio = StringIO()
@@ -389,9 +391,9 @@ def test_write_main_package_not_set():
 
 def test_write(tmp_path):
     """Test write function creates output files correctly."""
+    from mxdev.config import Configuration
     from mxdev.processing import write
     from mxdev.state import State
-    from mxdev.config import Configuration
 
     # Create a simple config
     config_file = tmp_path / "mx.ini"
@@ -438,9 +440,9 @@ version-overrides =
 
 def test_write_no_constraints(tmp_path):
     """Test write function when there are no constraints."""
+    from mxdev.config import Configuration
     from mxdev.processing import write
     from mxdev.state import State
-    from mxdev.config import Configuration
 
     # Create a simple config without constraints
     config_file = tmp_path / "mx.ini"
@@ -486,9 +488,10 @@ def test_relative_constraints_path_in_subdirectory(tmp_path):
     This reproduces issue #22: when requirements-out and constraints-out are in subdirectories,
     the constraints reference should be relative to the requirements file's directory.
     """
-    from mxdev.processing import read, write
-    from mxdev.state import State
     from mxdev.config import Configuration
+    from mxdev.processing import read
+    from mxdev.processing import write
+    from mxdev.state import State
 
     old_cwd = os.getcwd()
     try:
@@ -530,8 +533,7 @@ constraints-out = requirements/constraints.txt
         # Bug: Currently writes "-c requirements/constraints.txt"
         # Expected: Should write "-c constraints.txt" (relative to requirements file's directory)
         assert "-c constraints.txt\n" in req_content, (
-            f"Expected '-c constraints.txt' (relative path), "
-            f"but got:\n{req_content}"
+            f"Expected '-c constraints.txt' (relative path), " f"but got:\n{req_content}"
         )
 
         # Should NOT contain the full path from config file's perspective
@@ -542,9 +544,10 @@ constraints-out = requirements/constraints.txt
 
 def test_relative_constraints_path_different_directories(tmp_path):
     """Test constraints path when requirements and constraints are in different directories."""
-    from mxdev.processing import read, write
-    from mxdev.state import State
     from mxdev.config import Configuration
+    from mxdev.processing import read
+    from mxdev.processing import write
+    from mxdev.state import State
 
     old_cwd = os.getcwd()
     try:
@@ -584,8 +587,7 @@ constraints-out = constraints/constraints.txt
         # Should write path relative to reqs/ directory
         # From reqs/ to constraints/constraints.txt = ../constraints/constraints.txt
         assert "-c ../constraints/constraints.txt\n" in req_content, (
-            f"Expected '-c ../constraints/constraints.txt' (relative path), "
-            f"but got:\n{req_content}"
+            f"Expected '-c ../constraints/constraints.txt' (relative path), " f"but got:\n{req_content}"
         )
     finally:
         os.chdir(old_cwd)

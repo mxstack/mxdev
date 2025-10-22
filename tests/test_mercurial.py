@@ -1,9 +1,8 @@
 from unittest.mock import patch
+from utils import Process
 
 import os
 import pytest
-
-from utils import Process
 
 
 class TestMercurial:
@@ -71,7 +70,7 @@ class TestMercurial:
 
         try:
             # XXX older version
-            rev = lines[0].split()[1].split(b(":"))[1]
+            rev = lines[0].split()[1].split(b":")[1]
         except Exception:
             rev = lines[0].split()[1]
 

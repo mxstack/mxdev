@@ -5,7 +5,6 @@ import logging
 import os
 import pytest
 import queue
-import typing
 
 
 def test_print_stderr(mocker):
@@ -182,9 +181,7 @@ def test_WorkingCopies_checkout(mocker, caplog, tmpdir):
 
     with pytest.raises(SysExit):
         wc.checkout(packages=[], submodules="invalid")
-    assert caplog.messages == [
-        "Unknown value 'invalid' for update-git-submodules option."
-    ]
+    assert caplog.messages == ["Unknown value 'invalid' for update-git-submodules option."]
     caplog.clear()
 
     with pytest.raises(SysExit):
@@ -209,9 +206,7 @@ def test_WorkingCopies_checkout(mocker, caplog, tmpdir):
     caplog.clear()
 
     package_dir = tmpdir.mkdir("package_dir")
-    os.symlink(
-        package_dir.strpath, tmpdir.join("package").strpath, target_is_directory=True
-    )
+    os.symlink(package_dir.strpath, tmpdir.join("package").strpath, target_is_directory=True)
     wc.checkout(packages=["package"], update=True)
     assert caplog.messages == ["Skipped update of linked 'package'."]
     caplog.clear()
@@ -322,9 +317,7 @@ def test_WorkingCopies_matches(mocker, caplog):
     exit_mock = mocker.patch("sys.exit")
     mocker.patch("mxdev.vcs.common._workingcopytypes", {"test": TestWorkingCopy})
 
-    wc = common.WorkingCopies(
-        sources={"package": {"vcs": "test", "name": "package", "url": "test://url"}}
-    )
+    wc = common.WorkingCopies(sources={"package": {"vcs": "test", "name": "package", "url": "test://url"}})
 
     # Test successful match
     result = wc.matches({"name": "package"})
@@ -385,9 +378,7 @@ def test_WorkingCopies_status(mocker, caplog):
     exit_mock = mocker.patch("sys.exit")
     mocker.patch("mxdev.vcs.common._workingcopytypes", {"test": TestWorkingCopy})
 
-    wc = common.WorkingCopies(
-        sources={"package": {"vcs": "test", "name": "package", "url": "test://url"}}
-    )
+    wc = common.WorkingCopies(sources={"package": {"vcs": "test", "name": "package", "url": "test://url"}})
 
     # Test successful status
     result = wc.status({"name": "package"})
@@ -455,9 +446,7 @@ def test_WorkingCopies_update(mocker, caplog, tmp_path):
     package_dir = tmp_path / "package"
     package_dir.mkdir()
     wc = common.WorkingCopies(
-        sources={
-            "package": {"vcs": "test", "name": "package", "path": str(package_dir)}
-        },
+        sources={"package": {"vcs": "test", "name": "package", "path": str(package_dir)}},
         threads=1,
     )
 
@@ -473,9 +462,7 @@ def test_WorkingCopies_update(mocker, caplog, tmp_path):
     caplog.clear()
 
     # Test with unregistered VCS type
-    wc.sources = {
-        "package": {"vcs": "unknown", "name": "package", "path": str(package_dir)}
-    }
+    wc.sources = {"package": {"vcs": "unknown", "name": "package", "path": str(package_dir)}}
     try:
         wc.update(packages=["package"])
     except TypeError:
@@ -492,9 +479,7 @@ def test_WorkingCopies_update(mocker, caplog, tmp_path):
     print_stderr = mocker.patch("mxdev.vcs.common.print_stderr")
 
     TestWorkingCopy.package_status = "dirty"
-    wc.sources = {
-        "package": {"vcs": "test", "name": "package", "path": str(package_dir)}
-    }
+    wc.sources = {"package": {"vcs": "test", "name": "package", "path": str(package_dir)}}
     wc.update(packages=["package"])
     print_stderr.assert_called_with("The package 'package' is dirty.")
     assert "Skipped update of 'package'." in caplog.text

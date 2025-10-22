@@ -1,5 +1,5 @@
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 
 def test_hook_class_exists():
@@ -25,9 +25,10 @@ def test_hook_class_can_be_instantiated():
 
 def test_hook_read_method():
     """Test Hook class has read method."""
+    from mxdev.config import Configuration
     from mxdev.hooks import Hook
     from mxdev.state import State
-    from mxdev.config import Configuration
+
     import pathlib
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
@@ -42,9 +43,10 @@ def test_hook_read_method():
 
 def test_hook_write_method():
     """Test Hook class has write method."""
+    from mxdev.config import Configuration
     from mxdev.hooks import Hook
     from mxdev.state import State
-    from mxdev.config import Configuration
+
     import pathlib
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
@@ -100,9 +102,7 @@ def test_load_hooks_filters_by_name():
     mock_ep_other = MagicMock()
     mock_ep_other.name = "other"
 
-    with patch(
-        "mxdev.hooks.load_eps_by_group", return_value=[mock_ep_hook, mock_ep_other]
-    ):
+    with patch("mxdev.hooks.load_eps_by_group", return_value=[mock_ep_hook, mock_ep_other]):
         hooks = load_hooks()
         assert len(hooks) == 1
         assert hooks[0] == mock_hook_instance
@@ -112,9 +112,10 @@ def test_load_hooks_filters_by_name():
 
 def test_read_hooks():
     """Test read_hooks calls read on all hooks."""
+    from mxdev.config import Configuration
     from mxdev.hooks import read_hooks
     from mxdev.state import State
-    from mxdev.config import Configuration
+
     import pathlib
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
@@ -133,9 +134,10 @@ def test_read_hooks():
 
 def test_read_hooks_empty_list():
     """Test read_hooks with empty hooks list."""
+    from mxdev.config import Configuration
     from mxdev.hooks import read_hooks
     from mxdev.state import State
-    from mxdev.config import Configuration
+
     import pathlib
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
@@ -148,9 +150,10 @@ def test_read_hooks_empty_list():
 
 def test_write_hooks():
     """Test write_hooks calls write on all hooks."""
+    from mxdev.config import Configuration
     from mxdev.hooks import write_hooks
     from mxdev.state import State
-    from mxdev.config import Configuration
+
     import pathlib
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"
@@ -169,9 +172,10 @@ def test_write_hooks():
 
 def test_write_hooks_empty_list():
     """Test write_hooks with empty hooks list."""
+    from mxdev.config import Configuration
     from mxdev.hooks import write_hooks
     from mxdev.state import State
-    from mxdev.config import Configuration
+
     import pathlib
 
     base = pathlib.Path(__file__).parent / "data" / "config_samples"

@@ -1,9 +1,8 @@
 from unittest.mock import patch
+from utils import Process
 
 import os
 import pytest
-
-from utils import Process
 
 
 class TestSVN:
@@ -31,11 +30,7 @@ class TestSVN:
         bar.create_file("bar")
         process.check_call(f"svn add {bar}", echo=False)
         process.check_call(f"svn commit {bar} -m bar", echo=False)
-        develop.sources = {
-            "egg": dict(
-                kind="svn", name="egg", url=f"file://{repository}", path=src["egg"]
-            )
-        }
+        develop.sources = {"egg": dict(kind="svn", name="egg", url=f"file://{repository}", path=src["egg"])}
         _log = patch("mxdev.vcs.svn.logger")
         log = _log.__enter__()
         try:
@@ -68,11 +63,7 @@ class TestSVN:
         bar.create_file("bar")
         process.check_call(f"svn add {bar}", echo=False)
         process.check_call(f"svn commit {bar} -m bar", echo=False)
-        develop.sources = {
-            "egg": dict(
-                kind="svn", name="egg", url=f"file://{repository}@1", path=src["egg"]
-            )
-        }
+        develop.sources = {"egg": dict(kind="svn", name="egg", url=f"file://{repository}@1", path=src["egg"])}
         CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))
         assert set(os.listdir(src["egg"])) == {".svn", "foo"}
         CmdUpdate(develop)(develop.parser.parse_args(["up", "egg"]))

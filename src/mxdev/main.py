@@ -27,15 +27,9 @@ parser.add_argument(
     type=str,
     default="mx.ini",
 )
-parser.add_argument(
-    "-n", "--no-fetch", help="Do not fetch sources", action="store_true"
-)
-parser.add_argument(
-    "-f", "--fetch-only", help="Only fetch sources", action="store_true"
-)
-parser.add_argument(
-    "-o", "--offline", help="Do not fetch sources, work offline", action="store_true"
-)
+parser.add_argument("-n", "--no-fetch", help="Do not fetch sources", action="store_true")
+parser.add_argument("-f", "--fetch-only", help="Only fetch sources", action="store_true")
+parser.add_argument("-o", "--offline", help="Do not fetch sources, work offline", action="store_true")
 parser.add_argument(
     "-t",
     "--threads",
