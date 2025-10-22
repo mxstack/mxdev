@@ -159,7 +159,7 @@ def test_update_without_revision_pin(mkgitrepo, src, capsys, caplog):
             path / "foo",
         }
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % repository.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{repository.url}'.",), {}),
             ("info", ("Updated 'egg' with git.",), {}),
             ("info", ("Switching to remote branch 'master'.",), {}),
         ]
@@ -193,7 +193,7 @@ def test_update_verbose(mkgitrepo, src, capsys):
             path / "foo",
         }
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % repository.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{repository.url}'.",), {}),
             ("info", ("Updated 'egg' with git.",), {}),
             ("info", ("Switching to remote branch 'master'.",), {}),
         ]

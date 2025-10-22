@@ -21,9 +21,9 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
         path = self.source["path"]
         url = self.source["url"]
         if os.path.exists(path):
-            self.output((logger.info, "Skipped branching existing package %r." % name))
+            self.output((logger.info, f"Skipped branching existing package {name!r}."))
             return
-        self.output((logger.info, "Branched %r with bazaar." % name))
+        self.output((logger.info, f"Branched {name!r} with bazaar."))
         env = dict(os.environ)
         env.pop("PYTHONPATH", None)
         cmd = subprocess.Popen(
@@ -42,7 +42,7 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
         name = self.source["name"]
         path = self.source["path"]
         url = self.source["url"]
-        self.output((logger.info, "Updated %r with bazaar." % name))
+        self.output((logger.info, f"Updated {name!r} with bazaar."))
         env = dict(os.environ)
         env.pop("PYTHONPATH", None)
         cmd = subprocess.Popen(
@@ -67,12 +67,12 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
                 self.update(**kwargs)
             elif self.matches():
                 self.output(
-                    (logger.info, "Skipped checkout of existing package %r." % name)
+                    (logger.info, f"Skipped checkout of existing package {name!r}.")
                 )
             else:
                 raise BazaarError(
-                    "Source URL for existing package %r differs. "
-                    "Expected %r." % (name, self.source["url"])
+                    "Source URL for existing package {!r} differs. "
+                    "Expected {!r}.".format(name, self.source["url"])
                 )
         else:
             return self.bzr_branch(**kwargs)
@@ -115,8 +115,8 @@ class BazaarWorkingCopy(common.BaseWorkingCopy):
         name = self.source["name"]
         if not self.matches():
             raise BazaarError(
-                "Can't update package %r because its URL doesn't match." % name
+                f"Can't update package {name!r} because its URL doesn't match."
             )
         if self.status() != "clean" and not kwargs.get("force", False):
-            raise BazaarError("Can't update package %r because it's dirty." % name)
+            raise BazaarError(f"Can't update package {name!r} because it's dirty.")
         return self.bzr_pull(**kwargs)

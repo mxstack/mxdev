@@ -8,5 +8,5 @@ import typing
 @dataclass
 class State:
     configuration: Configuration
-    requirements: typing.List[str] = field(default_factory=list)
-    constraints: typing.List[str] = field(default_factory=list)
+    requirements: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)

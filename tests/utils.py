@@ -2,9 +2,7 @@ from mxdev.vcs.common import WorkingCopies
 from subprocess import PIPE
 from subprocess import Popen
 from typing import Any
-from typing import Dict
-from typing import Iterable
-from typing import Union
+from collections.abc import Iterable
 
 import os
 import sys
@@ -121,7 +119,7 @@ class Off:
 class Process:
     """Process related functions using the tee module."""
 
-    def __init__(self, quiet: bool = False, env=None, cwd: Union[str, None] = None):
+    def __init__(self, quiet: bool = False, env=None, cwd: str | None = None):
         self.quiet = quiet
         self.env = env
         self.cwd = cwd
@@ -159,7 +157,7 @@ class GitRepo:
         repo_file = self.base / fname
         with open(repo_file, "w") as fio:
             fio.write(fname)
-        self("git add %s" % repo_file, echo=False)
+        self(f"git add {repo_file}", echo=False)
         if msg is None:
             msg = fname
         self(f"git commit {repo_file} -m {msg}", echo=False)
@@ -173,12 +171,12 @@ class GitRepo:
         self(f"git add {submodule_name}")
         self(f"git commit -m 'Add submodule {submodule_name}'")
 
-    def add_branch(self, bname: str, msg: Union[str, None] = None):
+    def add_branch(self, bname: str, msg: str | None = None):
         self(f"git checkout -b {bname}")
 
 
 def vcs_checkout(
-    sources: Dict[str, Any],
+    sources: dict[str, Any],
     packages: Iterable[str],
     verbose,
     update_git_submodules: str = "always",
@@ -196,7 +194,7 @@ def vcs_checkout(
 
 
 def vcs_update(
-    sources: Dict[str, Any],
+    sources: dict[str, Any],
     packages: Iterable[str],
     verbose,
     update_git_submodules: str = "always",
@@ -213,7 +211,7 @@ def vcs_update(
     )
 
 
-def vcs_status(sources: Dict[str, Any], verbose=False):
+def vcs_status(sources: dict[str, Any], verbose=False):
     workingcopies = WorkingCopies(sources=sources, threads=1)
     res = {}
     for k in sources:

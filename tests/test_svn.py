@@ -20,20 +20,20 @@ class TestSVN:
 
         process = Process()
         repository = tempdir["repository"]
-        process.check_call("svnadmin create %s" % repository)
+        process.check_call(f"svnadmin create {repository}")
         checkout = tempdir["checkout"]
         process.check_call(f"svn checkout file://{repository} {checkout}", echo=False)
         foo = checkout["foo"]
         foo.create_file("foo")
-        process.check_call("svn add %s" % foo, echo=False)
-        process.check_call("svn commit %s -m foo" % foo, echo=False)
+        process.check_call(f"svn add {foo}", echo=False)
+        process.check_call(f"svn commit {foo} -m foo", echo=False)
         bar = checkout["bar"]
         bar.create_file("bar")
-        process.check_call("svn add %s" % bar, echo=False)
-        process.check_call("svn commit %s -m bar" % bar, echo=False)
+        process.check_call(f"svn add {bar}", echo=False)
+        process.check_call(f"svn commit {bar} -m bar", echo=False)
         develop.sources = {
             "egg": dict(
-                kind="svn", name="egg", url="file://%s" % repository, path=src["egg"]
+                kind="svn", name="egg", url=f"file://{repository}", path=src["egg"]
             )
         }
         _log = patch("mxdev.vcs.svn.logger")
@@ -57,20 +57,20 @@ class TestSVN:
 
         process = Process()
         repository = tempdir["repository"]
-        process.check_call("svnadmin create %s" % repository)
+        process.check_call(f"svnadmin create {repository}")
         checkout = tempdir["checkout"]
         process.check_call(f"svn checkout file://{repository} {checkout}", echo=False)
         foo = checkout["foo"]
         foo.create_file("foo")
-        process.check_call("svn add %s" % foo, echo=False)
-        process.check_call("svn commit %s -m foo" % foo, echo=False)
+        process.check_call(f"svn add {foo}", echo=False)
+        process.check_call(f"svn commit {foo} -m foo", echo=False)
         bar = checkout["bar"]
         bar.create_file("bar")
-        process.check_call("svn add %s" % bar, echo=False)
-        process.check_call("svn commit %s -m bar" % bar, echo=False)
+        process.check_call(f"svn add {bar}", echo=False)
+        process.check_call(f"svn commit {bar} -m bar", echo=False)
         develop.sources = {
             "egg": dict(
-                kind="svn", name="egg", url="file://%s@1" % repository, path=src["egg"]
+                kind="svn", name="egg", url=f"file://{repository}@1", path=src["egg"]
             )
         }
         CmdCheckout(develop)(develop.parser.parse_args(["co", "egg"]))

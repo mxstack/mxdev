@@ -77,7 +77,7 @@ make coverage-html     # Run tests + combine + open HTML report
 Coverage is automatically collected and combined from all matrix test runs in GitHub Actions:
 
 **Process:**
-1. Each test job (Python 3.8-3.14, Ubuntu/Windows/macOS) uploads its `.coverage.*` file as an artifact
+1. Each test job (Python 3.10-3.14, Ubuntu/Windows/macOS) uploads its `.coverage.*` file as an artifact
 2. A dedicated `coverage` job downloads all artifacts
 3. Coverage is combined using `coverage combine`
 4. Reports are generated:
@@ -129,7 +129,7 @@ isort src/mxdev
 
 ### Testing Multiple Python Versions (using uvx tox with uv)
 ```bash
-# Run tests on all supported Python versions (Python 3.8-3.14)
+# Run tests on all supported Python versions (Python 3.10-3.14)
 # This uses uvx to run tox with tox-uv plugin for much faster testing (10-100x speedup)
 uvx --with tox-uv tox
 
@@ -254,7 +254,7 @@ The codebase follows a three-phase pipeline:
 1. **Minimal dependencies**: Only `packaging` at runtime - no requests, no YAML parsers
 2. **Standard library first**: Uses `configparser`, `urllib`, `threading` instead of third-party libs
 3. **No pip invocation**: mxdev generates files; users run pip separately
-4. **Backward compatibility**: Supports Python 3.8+ with version detection for Git commands
+4. **Backward compatibility**: Supports Python 3.10+ with version detection for Git commands
 
 ## Configuration System
 
@@ -403,7 +403,7 @@ myext-package_setting = value
 
 - **Formatting**: Black-compatible (max line length: 120)
 - **Import sorting**: isort with `force_alphabetical_sort = true`, `force_single_line = true`
-- **Type hints**: Use throughout (Python 3.8+ compatible)
+- **Type hints**: Use throughout (Python 3.10+ compatible)
 - **Path handling**: Prefer `pathlib.Path` over `os.path` for path operations
   - Use `pathlib.Path().as_posix()` for cross-platform path comparison
   - Use `/` operator for path joining: `Path("dir") / "file.txt"`
@@ -424,9 +424,9 @@ The project uses GitHub Actions for continuous integration, configured in [.gith
 
 **Test Job:**
 - **Matrix testing** across:
-  - Python versions: 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+  - Python versions: 3.10, 3.11, 3.12, 3.13, 3.14
   - Operating systems: Ubuntu, Windows, macOS
-  - Total: 21 combinations (7 Python × 3 OS)
+  - Total: 15 combinations (5 Python × 3 OS)
 - Uses: `uvx --with tox-uv tox -e py{version}`
 - Leverages `astral-sh/setup-uv@v7` action for uv installation
 
@@ -674,7 +674,7 @@ gh pr checks <PR_NUMBER>
 
 ## Requirements
 
-- **Python**: 3.8+
+- **Python**: 3.10+
 - **pip**: 23+ (required for proper operation)
 - **Runtime dependencies**: Only `packaging`
 - **VCS tools**: Install git, svn, hg, bzr, darcs as needed for VCS operations

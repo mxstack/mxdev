@@ -38,10 +38,10 @@ def test_checkout_with_submodule(mkgitrepo, src, caplog, git_allow_file_protocol
             log.method_calls
             == log.method_calls
             == [
-                ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+                ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
                 (
                     "info",
-                    ("Initialized 'egg' submodule at '%s' with git." % submodule_name,),
+                    (f"Initialized 'egg' submodule at '{submodule_name}' with git.",),
                     {},
                 ),
             ]
@@ -86,15 +86,15 @@ def test_checkout_with_two_submodules(mkgitrepo, src, git_allow_file_protocol):
             "foo_b",
         }
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_name,),
+                (f"Initialized 'egg' submodule at '{submodule_name}' with git.",),
                 {},
             ),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_b_name,),
+                (f"Initialized 'egg' submodule at '{submodule_b_name}' with git.",),
                 {},
             ),
         ]
@@ -141,7 +141,7 @@ def test_checkout_with_two_submodules_recursive(
             "foo_b",
         }
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
         ]
 
 
@@ -171,10 +171,10 @@ def test_update_with_submodule(mkgitrepo, src, git_allow_file_protocol):
         }
         assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_name,),
+                (f"Initialized 'egg' submodule at '{submodule_name}' with git.",),
                 {},
             ),
         ]
@@ -202,7 +202,7 @@ def test_update_with_submodule(mkgitrepo, src, git_allow_file_protocol):
             ("info", ("Switching to branch 'master'.",), {}),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_b_name,),
+                (f"Initialized 'egg' submodule at '{submodule_b_name}' with git.",),
                 {},
             ),
         ]
@@ -234,7 +234,7 @@ def test_update_with_submodule_recursive(mkgitrepo, src, git_allow_file_protocol
         }
         assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
         ]
 
     submodule_b_name = "submodule_b"
@@ -293,7 +293,7 @@ def test_checkout_with_submodules_option_never(mkgitrepo, src, git_allow_file_pr
         }
         assert set(os.listdir(src / "egg" / submodule_name)) == set()
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {})
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {})
         ]
 
 
@@ -350,13 +350,13 @@ def test_checkout_with_submodules_option_never_source_always(
         assert set(os.listdir(src / "egg2" / submodule_name)) == set()
 
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_name,),
+                (f"Initialized 'egg' submodule at '{submodule_name}' with git.",),
                 {},
             ),
-            ("info", ("Cloned 'egg2' with git from '%s'." % egg2.url,), {}),
+            ("info", (f"Cloned 'egg2' with git from '{egg2.url}'.",), {}),
         ]
 
 
@@ -412,13 +412,13 @@ def test_checkout_with_submodules_option_always_source_never(
         assert set(os.listdir(src / "egg2" / submodule_name)) == set()
 
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_name,),
+                (f"Initialized 'egg' submodule at '{submodule_name}' with git.",),
                 {},
             ),
-            ("info", ("Cloned 'egg2' with git from '%s'." % egg2.url,), {}),
+            ("info", (f"Cloned 'egg2' with git from '{egg2.url}'.",), {}),
         ]
 
 
@@ -457,10 +457,10 @@ def test_update_with_submodule_checkout(mkgitrepo, src, git_allow_file_protocol)
         }
         assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_name,),
+                (f"Initialized 'egg' submodule at '{submodule_name}' with git.",),
                 {},
             ),
         ]
@@ -516,10 +516,10 @@ def test_update_with_submodule_dont_update_previous_submodules(
         }
         assert set(os.listdir(src / "egg" / submodule_name)) == {".git", "foo"}
         assert log.method_calls == [
-            ("info", ("Cloned 'egg' with git from '%s'." % egg.url,), {}),
+            ("info", (f"Cloned 'egg' with git from '{egg.url}'.",), {}),
             (
                 "info",
-                ("Initialized 'egg' submodule at '%s' with git." % submodule_name,),
+                (f"Initialized 'egg' submodule at '{submodule_name}' with git.",),
                 {},
             ),
         ]

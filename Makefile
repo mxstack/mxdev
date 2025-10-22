@@ -51,7 +51,7 @@ PRIMARY_PYTHON?=3.14
 
 # Minimum required Python version.
 # Default: 3.9
-PYTHON_MIN_VERSION?=3.7
+PYTHON_MIN_VERSION?=3.10
 
 # Install packages using the given package installer method.
 # Supported are `pip` and `uv`. If uv is used, its global availability is

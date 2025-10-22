@@ -1,5 +1,16 @@
 ## Changes
 
+## 5.0.0 (unreleased)
+
+**Breaking Changes:**
+- Drop support for Python 3.8 and 3.9. Minimum required version is now Python 3.10.
+  [jensens]
+
+**Code Modernization:**
+- Modernize type hints to use Python 3.10+ syntax (PEP 604: `X | Y` instead of `Union[X, Y]`)
+- Use built-in generic types (`list`, `dict`, `tuple`) instead of `typing.List`, `typing.Dict`, `typing.Tuple`
+  [jensens]
+
 ## 4.1.2 (unreleased)
 
 - Fix #54: Add `fixed` install mode for non-editable installations to support production and Docker deployments. The new `editable` mode replaces `direct` as the default (same behavior, clearer naming). The `direct` mode is now deprecated but still works with a warning. Install modes: `editable` (with `-e`, for development), `fixed` (without `-e`, for production/Docker), `skip` (clone only).

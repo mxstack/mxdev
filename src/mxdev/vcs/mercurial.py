@@ -25,10 +25,10 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         url = self.source["url"]
 
         if os.path.exists(path):
-            self.output((logger.info, "Skipped cloning of existing package %r." % name))
+            self.output((logger.info, f"Skipped cloning of existing package {name!r}."))
             return
         rev = self.get_rev()
-        self.output((logger.info, "Cloned %r with mercurial." % name))
+        self.output((logger.info, f"Cloned {name!r} with mercurial."))
         env = dict(os.environ)
         env.pop("PYTHONPATH", None)
         cmd = subprocess.Popen(
@@ -143,7 +143,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         # However the 'rev' parameter works differently and forces revision
         name = self.source["name"]
         path = self.source["path"]
-        self.output((logger.info, "Updated %r with mercurial." % name))
+        self.output((logger.info, f"Updated {name!r} with mercurial."))
         env = dict(os.environ)
         env.pop("PYTHONPATH", None)
         cmd = subprocess.Popen(
@@ -175,12 +175,12 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
                 self.update(**kwargs)
             elif self.matches():
                 self.output(
-                    (logger.info, "Skipped checkout of existing package %r." % name)
+                    (logger.info, f"Skipped checkout of existing package {name!r}.")
                 )
             else:
                 raise MercurialError(
-                    "Source URL for existing package %r differs. "
-                    "Expected %r." % (name, self.source["url"])
+                    "Source URL for existing package {!r} differs. "
+                    "Expected {!r}.".format(name, self.source["url"])
                 )
         else:
             return self.hg_clone(**kwargs)
@@ -236,8 +236,8 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
         name = self.source["name"]
         if not self.matches():
             raise MercurialError(
-                "Can't update package %r because its URL doesn't match." % name
+                f"Can't update package {name!r} because its URL doesn't match."
             )
         if self.status() != "clean" and not kwargs.get("force", False):
-            raise MercurialError("Can't update package %r because it's dirty." % name)
+            raise MercurialError(f"Can't update package {name!r} because it's dirty.")
         return self.hg_pull(**kwargs)

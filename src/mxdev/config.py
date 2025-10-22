@@ -17,17 +17,17 @@ def to_bool(value):
 
 
 class Configuration:
-    settings: typing.Dict[str, str]
-    overrides: typing.Dict[str, str]
-    ignore_keys: typing.List[str]
-    packages: typing.Dict[str, typing.Dict[str, str]]
-    hooks: typing.Dict[str, typing.Dict[str, str]]
+    settings: dict[str, str]
+    overrides: dict[str, str]
+    ignore_keys: list[str]
+    packages: dict[str, dict[str, str]]
+    hooks: dict[str, dict[str, str]]
 
     def __init__(
         self,
         mxini: str,
-        override_args: typing.Dict = {},
-        hooks: typing.List["Hook"] = [],
+        override_args: dict = {},
+        hooks: list["Hook"] = [],
     ) -> None:
         logger.debug("Read configuration")
         data = read_with_included(mxini)
@@ -164,9 +164,9 @@ class Configuration:
         return self.settings.get("constraints-out", "constraints-mxdev.txt")
 
     @property
-    def package_keys(self) -> typing.List[str]:
+    def package_keys(self) -> list[str]:
         return [k.lower() for k in self.packages]
 
     @property
-    def override_keys(self) -> typing.List[str]:
+    def override_keys(self) -> list[str]:
         return [k.lower() for k in self.overrides]

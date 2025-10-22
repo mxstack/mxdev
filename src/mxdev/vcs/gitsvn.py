@@ -19,7 +19,7 @@ class GitSVNWorkingCopy(SVNWorkingCopy):
     def gitify_init(self, **kwargs):
         name = self.source["name"]
         path = self.source["path"]
-        self.output((logger.info, "Gitified '%s'." % name))
+        self.output((logger.info, f"Gitified '{name}'."))
         cmd = subprocess.Popen(
             [self.gitify_executable, "init"],
             cwd=path,
@@ -43,7 +43,7 @@ class GitSVNWorkingCopy(SVNWorkingCopy):
     def svn_update(self, **kwargs):
         name = self.source["name"]
         path = self.source["path"]
-        self.output((logger.info, "Updated '%s' with gitify." % name))
+        self.output((logger.info, f"Updated '{name}' with gitify."))
         cmd = subprocess.Popen(
             [self.gitify_executable, "update"],
             cwd=path,
