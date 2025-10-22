@@ -2,37 +2,25 @@
 
 ## 5.0.0 (unreleased)
 
-**Breaking Changes:**
-- Drop support for Python 3.8 and 3.9. Minimum required version is now Python 3.10.
+- **Breaking**:  support for Python 3.8 and 3.9. Minimum required version is now Python 3.10.
   [jensens]
-
-**Code Modernization:**
-- Modernize type hints to use Python 3.10+ syntax (PEP 604: `X | Y` instead of `Union[X, Y]`)
+- **Breaking**: Modernize type hints to use Python 3.10+ syntax (PEP 604: `X | Y` instead of `Union[X, Y]`)
 - Use built-in generic types (`list`, `dict`, `tuple`) instead of `typing.List`, `typing.Dict`, `typing.Tuple`
   [jensens]
-- Replace black with ruff for faster linting and formatting. Configure ruff with line-length=120 and appropriate rule selections. Keep isort for import sorting with plone profile and force-alphabetical-sort. This modernizes the tooling stack for better Python 3.10+ support and faster CI runs.
+- Chore: Replace black with ruff for faster linting and formatting. Configure ruff with line-length=120 and appropriate rule selections. Keep isort for import sorting with plone profile and force-alphabetical-sort. This modernizes the tooling stack for better Python 3.10+ support and faster CI runs.
   [jensens]
-
-## 4.1.2 (unreleased)
-
-- Fix #54: Add `fixed` install mode for non-editable installations to support production and Docker deployments. The new `editable` mode replaces `direct` as the default (same behavior, clearer naming). The `direct` mode is now deprecated but still works with a warning. Install modes: `editable` (with `-e`, for development), `fixed` (without `-e`, for production/Docker), `skip` (clone only).
+- Feature: #54: Add `fixed` install mode for non-editable installations to support production and Docker deployments. The new `editable` mode replaces `direct` as the default (same behavior, clearer naming). The `direct` mode is now deprecated but still works with a warning. Install modes: `editable` (with `-e`, for development), `fixed` (without `-e`, for production/Docker), `skip` (clone only).
   [jensens]
-
 - Fix #35: Add `smart-threading` configuration option to prevent overlapping credential prompts when using HTTPS URLs. When enabled (default), HTTPS packages are processed serially first to ensure clean credential prompts, then other packages are processed in parallel for speed. Can be disabled with `smart-threading = false` if you have credential helpers configured.
   [jensens]
-
 - Fix #34: The `offline` configuration setting and `--offline` CLI flag are now properly respected to prevent VCS fetch/update operations. Previously, setting `offline = true` in mx.ini or using the `--offline` CLI flag was ignored, and VCS operations still occurred.
   [jensens]
-
 - Fix #46: Git tags in branch option are now correctly detected and handled during updates. Previously, updating from one tag to another failed because tags were incorrectly treated as branches.
   [jensens]
-
 - Fix #22 and #25: Constraints file path in requirements-out is now correctly calculated as a relative path from the requirements file's directory. This allows requirements and constraints files to be in different directories. Previously, the path was written from the config file's perspective, causing pip to fail when looking for the constraints file. On Windows, paths are now normalized to use forward slashes for pip compatibility.
   [jensens]
-
 - Fix #53: Per-package target setting now correctly overrides default-target when constructing checkout paths.
   [jensens]
-
 - Fix #55: UnicodeEncodeError on Windows when logging emoji. The emoji is now conditionally displayed only when the console encoding supports it (UTF-8), avoiding errors on Windows cp1252 encoding.
   [jensens]
 
