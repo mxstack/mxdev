@@ -163,11 +163,40 @@ def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
 
 
 class WorkingCopies:
-    def __init__(self, sources: typing.Dict[str, typing.Dict], threads=5):
+    def __init__(
+        self,
+        sources: typing.Dict[str, typing.Dict],
+        threads=5,
+        smart_threading=True,
+    ):
         self.sources = sources
         self.threads = threads
+        self.smart_threading = smart_threading
         self.errors = False
         self.workingcopytypes = get_workingcopytypes()
+
+    def _separate_https_packages(
+        self, packages: typing.List[str]
+    ) -> typing.Tuple[typing.List[str], typing.List[str]]:
+        """Separate HTTPS packages from others for smart threading.
+
+        Returns (https_packages, other_packages)
+        """
+        https_packages = []
+        other_packages = []
+
+        for name in packages:
+            if name not in self.sources:
+                other_packages.append(name)
+                continue
+            source = self.sources[name]
+            url = source.get("url", "")
+            if url.startswith("https://"):
+                https_packages.append(name)
+            else:
+                other_packages.append(name)
+
+        return https_packages, other_packages
 
     def process(self, the_queue: queue.Queue) -> None:
         if self.threads < 2:
@@ -187,6 +216,43 @@ class WorkingCopies:
             sys.exit(1)
 
     def checkout(self, packages: typing.Iterable[str], **kwargs) -> None:
+        # Smart threading: process HTTPS packages serially to avoid overlapping prompts
+        packages_list = list(packages)
+        if self.smart_threading and self.threads > 1:
+            https_pkgs, other_pkgs = self._separate_https_packages(packages_list)
+            if https_pkgs and other_pkgs:
+                logger.info(
+                    "Smart threading: processing %d HTTPS package(s) serially...",
+                    len(https_pkgs),
+                )
+                # Save original thread count and process HTTPS packages serially
+                original_threads = self.threads
+                self.threads = 1
+                self._checkout_impl(https_pkgs, **kwargs)
+                self.threads = original_threads
+                # Process remaining packages in parallel
+                logger.info(
+                    "Smart threading: processing %d other package(s) in parallel...",
+                    len(other_pkgs),
+                )
+                self._checkout_impl(other_pkgs, **kwargs)
+                return
+            elif https_pkgs:
+                logger.info(
+                    "Smart threading: processing %d HTTPS package(s) serially...",
+                    len(https_pkgs),
+                )
+                original_threads = self.threads
+                self.threads = 1
+                self._checkout_impl(packages_list, **kwargs)
+                self.threads = original_threads
+                return
+
+        # Normal processing (smart_threading disabled or threads=1)
+        self._checkout_impl(packages_list, **kwargs)
+
+    def _checkout_impl(self, packages: typing.List[str], **kwargs) -> None:
+        """Internal implementation of checkout logic."""
         the_queue: queue.Queue = queue.Queue()
         if "update" in kwargs and not isinstance(kwargs["update"], bool):
             if kwargs["update"].lower() in ("true", "yes", "on", "force"):
@@ -287,12 +353,50 @@ class WorkingCopies:
             sys.exit(1)
 
     def update(self, packages: typing.Iterable[str], **kwargs) -> None:
-        the_queue: queue.Queue = queue.Queue()
         # Check for offline mode early - skip all updates if offline
         offline = kwargs.get("offline", False)
         if offline:
             logger.info("Skipped updates (offline mode)")
             return
+
+        # Smart threading: process HTTPS packages serially to avoid overlapping prompts
+        packages_list = list(packages)
+        if self.smart_threading and self.threads > 1:
+            https_pkgs, other_pkgs = self._separate_https_packages(packages_list)
+            if https_pkgs and other_pkgs:
+                logger.info(
+                    "Smart threading: updating %d HTTPS package(s) serially...",
+                    len(https_pkgs),
+                )
+                # Save original thread count and process HTTPS packages serially
+                original_threads = self.threads
+                self.threads = 1
+                self._update_impl(https_pkgs, **kwargs)
+                self.threads = original_threads
+                # Process remaining packages in parallel
+                logger.info(
+                    "Smart threading: updating %d other package(s) in parallel...",
+                    len(other_pkgs),
+                )
+                self._update_impl(other_pkgs, **kwargs)
+                return
+            elif https_pkgs:
+                logger.info(
+                    "Smart threading: updating %d HTTPS package(s) serially...",
+                    len(https_pkgs),
+                )
+                original_threads = self.threads
+                self.threads = 1
+                self._update_impl(packages_list, **kwargs)
+                self.threads = original_threads
+                return
+
+        # Normal processing (smart_threading disabled or threads=1)
+        self._update_impl(packages_list, **kwargs)
+
+    def _update_impl(self, packages: typing.List[str], **kwargs) -> None:
+        """Internal implementation of update logic."""
+        the_queue: queue.Queue = queue.Queue()
         for name in packages:
             kw = kwargs.copy()
             if name not in self.sources:

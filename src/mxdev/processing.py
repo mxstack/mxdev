@@ -191,8 +191,11 @@ def fetch(state: State) -> None:
         return
 
     logger.info("# Fetch sources from VCS")
+    smart_threading = to_bool(state.configuration.settings.get("smart-threading", True))
     workingcopies = WorkingCopies(
-        packages, threads=int(state.configuration.settings["threads"])
+        packages,
+        threads=int(state.configuration.settings["threads"]),
+        smart_threading=smart_threading,
     )
     # Pass offline setting from configuration instead of hardcoding False
     offline = to_bool(state.configuration.settings.get("offline", False))
