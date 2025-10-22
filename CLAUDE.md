@@ -393,6 +393,10 @@ myext-package_setting = value
 - **Formatting**: Black-compatible (max line length: 120)
 - **Import sorting**: isort with `force_alphabetical_sort = true`, `force_single_line = true`
 - **Type hints**: Use throughout (Python 3.8+ compatible)
+- **Path handling**: Prefer `pathlib.Path` over `os.path` for path operations
+  - Use `pathlib.Path().as_posix()` for cross-platform path comparison
+  - Use `/` operator for path joining: `Path("dir") / "file.txt"`
+  - Only use `os.path.join()` in production code where needed for compatibility
 - **Logging**: Use `logger = logging.getLogger("mxdev")` from [logging.py](src/mxdev/logging.py)
 - **Docstrings**: Document public APIs and complex logic
 

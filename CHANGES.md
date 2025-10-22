@@ -2,6 +2,9 @@
 
 ## 4.1.2 (unreleased)
 
+- Fix #53: Per-package target setting now correctly overrides default-target when constructing checkout paths.
+  [jensens]
+
 - Fix #55: UnicodeEncodeError on Windows when logging emoji. The emoji is now conditionally displayed only when the console encoding supports it (UTF-8), avoiding errors on Windows cp1252 encoding.
   [jensens]
 

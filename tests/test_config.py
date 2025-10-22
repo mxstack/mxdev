@@ -185,3 +185,46 @@ def test_configuration_package_defaults():
     assert pkg["install-mode"] == "direct"  # default mode
     assert pkg["vcs"] == "git"
     assert "path" in pkg
+
+
+def test_per_package_target_override():
+    """Test that per-package target setting overrides default-target.
+
+    This test demonstrates issue #53: the target setting for individual
+    packages should override the default-target setting.
+    """
+    from mxdev.config import Configuration
+
+    base = pathlib.Path(__file__).parent / "data" / "config_samples"
+    config = Configuration(str(base / "config_with_custom_target.ini"))
+
+    # Package without custom target should use default-target
+    pkg_default = config.packages["package.with.default.target"]
+    assert pkg_default["target"] == "./sources"
+    # Normalize paths for comparison (handles both Unix / and Windows \)
+    assert (
+        pathlib.Path(pkg_default["path"]).as_posix()
+        == pathlib.Path(pkg_default["target"])
+        .joinpath("package.with.default.target")
+        .as_posix()
+    )
+
+    # Package with custom target should use its own target
+    pkg_custom = config.packages["package.with.custom.target"]
+    assert pkg_custom["target"] == "custom-dir"
+    assert (
+        pathlib.Path(pkg_custom["path"]).as_posix()
+        == pathlib.Path(pkg_custom["target"])
+        .joinpath("package.with.custom.target")
+        .as_posix()
+    )
+
+    # Package with interpolated target should use the interpolated value
+    pkg_interpolated = config.packages["package.with.interpolated.target"]
+    assert pkg_interpolated["target"] == "documentation"
+    assert (
+        pathlib.Path(pkg_interpolated["path"]).as_posix()
+        == pathlib.Path(pkg_interpolated["target"])
+        .joinpath("package.with.interpolated.target")
+        .as_posix()
+    )

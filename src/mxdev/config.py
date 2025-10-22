@@ -100,7 +100,8 @@ class Configuration:
             package.setdefault("install-mode", mode)
             package.setdefault("vcs", "git")
             # XXX: path should not be necessary in WorkingCopies
-            package.setdefault("path", os.path.join(target, name))
+            # Use package["target"] not 'target' variable to respect per-package target setting (#53)
+            package.setdefault("path", os.path.join(package["target"], name))
             if not package.get("url"):
                 raise ValueError(f"Section {name} has no URL set!")
             if package.get("install-mode") not in ["direct", "skip"]:
