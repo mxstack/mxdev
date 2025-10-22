@@ -1,5 +1,10 @@
 ## Changes
 
+## 4.1.2 (unreleased)
+
+- Fix #55: UnicodeEncodeError on Windows when logging emoji. The emoji is now conditionally displayed only when the console encoding supports it (UTF-8), avoiding errors on Windows cp1252 encoding.
+  [jensens]
+
 ## 4.1.1 (2025-10-20)
 
 - Modernize release method with hatchling. See RELEASE.md [jensens]
