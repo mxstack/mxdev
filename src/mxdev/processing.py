@@ -7,6 +7,7 @@ from urllib import parse
 from urllib import request
 from urllib.error import URLError
 
+import os
 import typing
 
 
@@ -274,9 +275,6 @@ def write(state: State) -> None:
             # Calculate relative path from requirements-out directory to constraints-out file
             # This ensures pip can find the constraints file regardless of where requirements
             # and constraints files are located
-            from pathlib import Path
-            import os
-
             req_path = Path(cfg.out_requirements)
             const_path = Path(cfg.out_constraints)
 
