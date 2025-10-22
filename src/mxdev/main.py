@@ -1,4 +1,5 @@
 from .config import Configuration
+from .config import to_bool
 from .hooks import load_hooks
 from .hooks import read_hooks
 from .hooks import write_hooks
@@ -89,7 +90,9 @@ def main() -> None:
     read(state)
     if not args.fetch_only:
         read_hooks(state, hooks)
-    if not args.no_fetch:
+    # Skip fetch if --no-fetch flag is set OR if offline mode is enabled
+    offline = to_bool(state.configuration.settings.get("offline", False))
+    if not args.no_fetch and not offline:
         fetch(state)
     if args.fetch_only:
         return

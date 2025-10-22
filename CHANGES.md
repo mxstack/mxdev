@@ -2,6 +2,9 @@
 
 ## 4.1.2 (unreleased)
 
+- Fix #34: The `offline` configuration setting and `--offline` CLI flag are now properly respected to prevent VCS fetch/update operations. Previously, setting `offline = true` in mx.ini or using the `--offline` CLI flag was ignored, and VCS operations still occurred.
+  [jensens]
+
 - Fix #46: Git tags in branch option are now correctly detected and handled during updates. Previously, updating from one tag to another failed because tags were incorrectly treated as branches.
   [jensens]
 
