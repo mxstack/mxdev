@@ -12,7 +12,7 @@ class FilesystemError(common.WCError):
 
 
 class FilesystemWorkingCopy(common.BaseWorkingCopy):
-    def checkout(self, **kwargs) -> typing.Union[str, None]:
+    def checkout(self, **kwargs) -> str | None:
         name = self.source["name"]
         path = self.source["path"]
         if os.path.exists(path):
@@ -20,20 +20,19 @@ class FilesystemWorkingCopy(common.BaseWorkingCopy):
                 self.output(
                     (
                         logger.info,
-                        "Filesystem package %r doesn't need a checkout." % name,
+                        f"Filesystem package {name!r} doesn't need a checkout.",
                     )
                 )
             else:
                 raise FilesystemError(
-                    "Directory name for existing package %r differs. "
-                    "Expected %r." % (name, self.source["url"])
+                    "Directory name for existing package {!r} differs. "
+                    "Expected {!r}.".format(name, self.source["url"])
                 )
         else:
             raise FilesystemError(
-                "Directory %r for package %r doesn't exist. "
+                f"Directory {path!r} for package {name!r} doesn't exist. "
                 "Check in the documentation if you need to add/change a 'sources-dir' option in "
                 "your [buildout] section or a 'path' option in [sources]."
-                % (path, name)
             )
         return ""
 
@@ -49,8 +48,8 @@ class FilesystemWorkingCopy(common.BaseWorkingCopy):
         name = self.source["name"]
         if not self.matches():
             raise FilesystemError(
-                "Directory name for existing package %r differs. "
-                "Expected %r." % (name, self.source["url"])
+                "Directory name for existing package {!r} differs. "
+                "Expected {!r}.".format(name, self.source["url"])
             )
-        self.output((logger.info, "Filesystem package %r doesn't need update." % name))
+        self.output((logger.info, f"Filesystem package {name!r} doesn't need update."))
         return ""

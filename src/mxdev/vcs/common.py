@@ -22,7 +22,7 @@ def print_stderr(s: str):
 
 # taken from
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-def which(name_root: str, default: typing.Union[str, None] = None) -> str:
+def which(name_root: str, default: str | None = None) -> str:
     if platform.system() == "Windows":
         # http://www.voidspace.org.uk/python/articles/command_line.shtml#pathext
         pathext = os.environ["PATHEXT"]
@@ -44,7 +44,7 @@ def which(name_root: str, default: typing.Union[str, None] = None) -> str:
     sys.exit(1)
 
 
-def version_sorted(inp: typing.List, *args, **kwargs) -> typing.List:
+def version_sorted(inp: list, *args, **kwargs) -> list:
     """
     Sorts components versions, it means that numeric parts of version
     treats as numeric and string as string.
@@ -74,8 +74,8 @@ class WCError(Exception):
 
 
 class BaseWorkingCopy(abc.ABC):
-    def __init__(self, source: typing.Dict[str, typing.Any]):
-        self._output: typing.List[typing.Tuple[typing.Any, str]] = []
+    def __init__(self, source: dict[str, typing.Any]):
+        self._output: list[tuple[typing.Any, str]] = []
         self.output = self._output.append
         self.source = source
 
@@ -90,42 +90,42 @@ class BaseWorkingCopy(abc.ABC):
             elif update.lower() in ("false", "no"):
                 update = False
             else:
-                raise ValueError("Unknown value for 'update': %s" % update)
+                raise ValueError(f"Unknown value for 'update': {update}")
         return update
 
     @abc.abstractmethod
-    def checkout(self, **kwargs) -> typing.Union[str, None]: ...
+    def checkout(self, **kwargs) -> str | None: ...
 
     @abc.abstractmethod
-    def status(self, **kwargs) -> typing.Union[typing.Tuple[str, str], str]: ...
+    def status(self, **kwargs) -> tuple[str, str] | str: ...
 
     @abc.abstractmethod
     def matches(self) -> bool: ...
 
     @abc.abstractmethod
-    def update(self, **kwargs) -> typing.Union[str, None]: ...
+    def update(self, **kwargs) -> str | None: ...
 
 
 def yesno(
     question: str, default: bool = True, all: bool = True
-) -> typing.Union[str, bool]:
+) -> str | bool:
     if default:
-        question = "%s [Yes/no" % question
-        answers: typing.Dict[typing.Union[str, bool], typing.Tuple] = {
+        question = f"{question} [Yes/no"
+        answers: dict[str | bool, tuple] = {
             False: ("n", "no"),
             True: ("", "y", "yes"),
         }
     else:
-        question = "%s [yes/No" % question
+        question = f"{question} [yes/No"
         answers = {
             False: ("", "n", "no"),
             True: ("y", "yes"),
         }
     if all:
         answers["all"] = ("a", "all")
-        question = "%s/all] " % question
+        question = f"{question}/all] "
     else:
-        question = "%s] " % question
+        question = f"{question}] "
     while 1:
         answer = input(question).lower()
         for option in answers:
@@ -140,14 +140,14 @@ def yesno(
 # XXX: one lock, one name
 input_lock = output_lock = threading.RLock()
 
-_workingcopytypes: typing.Dict[str, typing.Type[BaseWorkingCopy]] = {}
+_workingcopytypes: dict[str, type[BaseWorkingCopy]] = {}
 
 
-def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
+def get_workingcopytypes() -> dict[str, type[BaseWorkingCopy]]:
     if _workingcopytypes:
         return _workingcopytypes
     group = "mxdev.workingcopytypes"
-    addons: dict[str, typing.Type[BaseWorkingCopy]] = {}
+    addons: dict[str, type[BaseWorkingCopy]] = {}
     for entrypoint in load_eps_by_group(group):
         key = entrypoint.name
         workingcopytype = entrypoint.load()
@@ -165,7 +165,7 @@ def get_workingcopytypes() -> typing.Dict[str, typing.Type[BaseWorkingCopy]]:
 class WorkingCopies:
     def __init__(
         self,
-        sources: typing.Dict[str, typing.Dict],
+        sources: dict[str, dict],
         threads=5,
         smart_threading=True,
     ):
@@ -176,8 +176,8 @@ class WorkingCopies:
         self.workingcopytypes = get_workingcopytypes()
 
     def _separate_https_packages(
-        self, packages: typing.List[str]
-    ) -> typing.Tuple[typing.List[str], typing.List[str]]:
+        self, packages: list[str]
+    ) -> tuple[list[str], list[str]]:
         """Separate HTTPS packages from others for smart threading.
 
         Returns (https_packages, other_packages)
@@ -251,7 +251,7 @@ class WorkingCopies:
         # Normal processing (smart_threading disabled or threads=1)
         self._checkout_impl(packages_list, **kwargs)
 
-    def _checkout_impl(self, packages: typing.List[str], **kwargs) -> None:
+    def _checkout_impl(self, packages: list[str], **kwargs) -> None:
         """Internal implementation of checkout logic."""
         the_queue: queue.Queue = queue.Queue()
         if "update" in kwargs and not isinstance(kwargs["update"], bool):
@@ -263,21 +263,20 @@ class WorkingCopies:
                 kwargs["update"] = False
             else:
                 logger.error(
-                    "Unknown value '%s' for always-checkout option." % kwargs["update"]
+                    "Unknown value '{}' for always-checkout option.".format(kwargs["update"])
                 )
                 sys.exit(1)
         kwargs.setdefault("submodules", "always")
         # XXX: submodules is git related, move to GitWorkingCopy
         if kwargs["submodules"] not in ["always", "never", "checkout", "recursive"]:
             logger.error(
-                "Unknown value '%s' for update-git-submodules option."
-                % kwargs["submodules"]
+                "Unknown value '{}' for update-git-submodules option.".format(kwargs["submodules"])
             )
             sys.exit(1)
         for name in packages:
             kw = kwargs.copy()
             if name not in self.sources:
-                logger.error("Checkout failed. No source defined for '%s'." % name)
+                logger.error(f"Checkout failed. No source defined for '{name}'.")
                 sys.exit(1)
             source = self.sources[name]
             vcs = source["vcs"]
@@ -302,16 +301,16 @@ class WorkingCopies:
                     if answer == "all":
                         kwargs["force"] = True
                 else:
-                    logger.info("Skipped update of '%s'." % name)
+                    logger.info(f"Skipped update of '{name}'.")
                     continue
             logger.info("Queued '%s' for checkout.", name)
             the_queue.put_nowait((wc, wc.checkout, kw))
         self.process(the_queue)
 
-    def matches(self, source: typing.Dict[str, str]) -> bool:
+    def matches(self, source: dict[str, str]) -> bool:
         name = source["name"]
         if name not in self.sources:
-            logger.error("Checkout failed. No source defined for '%s'." % name)
+            logger.error(f"Checkout failed. No source defined for '{name}'.")
             sys.exit(1)
         source = self.sources[name]
         try:
@@ -330,11 +329,11 @@ class WorkingCopies:
             sys.exit(1)
 
     def status(
-        self, source: typing.Dict[str, str], **kwargs
-    ) -> typing.Union[str, typing.Tuple[str, str]]:
+        self, source: dict[str, str], **kwargs
+    ) -> str | tuple[str, str]:
         name = source["name"]
         if name not in self.sources:
-            logger.error("Status failed. No source defined for '%s'." % name)
+            logger.error(f"Status failed. No source defined for '{name}'.")
             sys.exit(1)
         source = self.sources[name]
         try:
@@ -345,7 +344,7 @@ class WorkingCopies:
                 sys.exit(1)
             wc = wc_class(source)
             if wc is None:
-                logger.error("Unknown repository type '%s'." % vcs)
+                logger.error(f"Unknown repository type '{vcs}'.")
                 sys.exit(1)
             return wc.status(**kwargs)
         except WCError:
@@ -394,7 +393,7 @@ class WorkingCopies:
         # Normal processing (smart_threading disabled or threads=1)
         self._update_impl(packages_list, **kwargs)
 
-    def _update_impl(self, packages: typing.List[str], **kwargs) -> None:
+    def _update_impl(self, packages: list[str], **kwargs) -> None:
         """Internal implementation of update logic."""
         the_queue: queue.Queue = queue.Queue()
         for name in packages:
@@ -409,7 +408,7 @@ class WorkingCopies:
                 sys.exit(1)
             wc = wc_class(source)
             if wc.status() != "clean" and not kw.get("force", False):
-                print_stderr("The package '%s' is dirty." % name)
+                print_stderr(f"The package '{name}' is dirty.")
                 answer = yesno(
                     "Do you want to update it anyway?", default=False, all=True
                 )
@@ -418,7 +417,7 @@ class WorkingCopies:
                     if answer == "all":
                         kwargs["force"] = True
                 else:
-                    logger.info("Skipped update of '%s'." % name)
+                    logger.info(f"Skipped update of '{name}'.")
                     continue
             logger.info("Queued '%s' for update.", name)
             the_queue.put_nowait((wc, wc.update, kw))

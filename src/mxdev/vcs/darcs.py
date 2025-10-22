@@ -13,11 +13,11 @@ class DarcsError(common.WCError):
 
 
 class DarcsWorkingCopy(common.BaseWorkingCopy):
-    def __init__(self, source: typing.Dict[str, typing.Any]):
+    def __init__(self, source: dict[str, typing.Any]):
         super().__init__(source)
         self.darcs_executable = common.which("darcs")
 
-    def darcs_checkout(self, **kwargs) -> typing.Union[str, None]:
+    def darcs_checkout(self, **kwargs) -> str | None:
         name = self.source["name"]
         path = self.source["path"]
         url = self.source["url"]
@@ -37,10 +37,10 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             return stdout.decode("utf8")
         return None
 
-    def darcs_update(self, **kwargs) -> typing.Union[str, None]:
+    def darcs_update(self, **kwargs) -> str | None:
         name = self.source["name"]
         path = self.source["path"]
-        self.output((logger.info, "Updating '%s' with darcs." % name))
+        self.output((logger.info, f"Updating '{name}' with darcs."))
         cmd = subprocess.Popen(
             [self.darcs_executable, "pull", "-a"],
             cwd=path,
@@ -56,7 +56,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             return stdout.decode("utf8")
         return None
 
-    def checkout(self, **kwargs) -> typing.Union[str, None]:
+    def checkout(self, **kwargs) -> str | None:
         name = self.source["name"]
         path = self.source["path"]
         update = self.should_update(**kwargs)
@@ -113,7 +113,7 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
     def matches(self) -> bool:
         return self.source["url"] in self._darcs_related_repositories()
 
-    def status(self, **kwargs) -> typing.Union[str, typing.Tuple[str, str]]:
+    def status(self, **kwargs) -> str | tuple[str, str]:
         path = self.source["path"]
         cmd = subprocess.Popen(
             [self.darcs_executable, "whatsnew"],
@@ -131,12 +131,12 @@ class DarcsWorkingCopy(common.BaseWorkingCopy):
             return status, stdout.decode("utf8")
         return status
 
-    def update(self, **kwargs) -> typing.Union[str, None]:
+    def update(self, **kwargs) -> str | None:
         name = self.source["name"]
         if not self.matches():
             raise DarcsError(
-                "Can't update package '%s' because it's URL doesn't match." % name
+                f"Can't update package '{name}' because it's URL doesn't match."
             )
         if self.status() != "clean" and not kwargs.get("force", False):
-            raise DarcsError("Can't update package '%s' because it's dirty." % name)
+            raise DarcsError(f"Can't update package '{name}' because it's dirty.")
         return self.darcs_update(**kwargs)

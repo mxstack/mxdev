@@ -13,11 +13,11 @@ import typing
 
 def process_line(
     line: str,
-    package_keys: typing.List[str],
-    override_keys: typing.List[str],
-    ignore_keys: typing.List[str],
+    package_keys: list[str],
+    override_keys: list[str],
+    ignore_keys: list[str],
     variety: str,
-) -> typing.Tuple[typing.List[str], typing.List[str]]:
+) -> tuple[list[str], list[str]]:
     """Take line from a constraints or requirements file and process it recursively.
 
     The line is taken as is unless one of the following cases matches:
@@ -69,11 +69,11 @@ def process_line(
 
 def process_io(
     fio: typing.IO,
-    requirements: typing.List[str],
-    constraints: typing.List[str],
-    package_keys: typing.List[str],
-    override_keys: typing.List[str],
-    ignore_keys: typing.List[str],
+    requirements: list[str],
+    constraints: list[str],
+    package_keys: list[str],
+    override_keys: list[str],
+    ignore_keys: list[str],
     variety: str,
 ) -> None:
     """Read lines from an open file and trigger processing of each line
@@ -91,17 +91,17 @@ def process_io(
 
 def resolve_dependencies(
     file_or_url: str,
-    package_keys: typing.List[str],
-    override_keys: typing.List[str],
-    ignore_keys: typing.List[str],
+    package_keys: list[str],
+    override_keys: list[str],
+    ignore_keys: list[str],
     variety: str = "r",
-) -> typing.Tuple[typing.List[str], typing.List[str]]:
+) -> tuple[list[str], list[str]]:
     """Takes a file or url, loads it and trigger to recursivly processes its content.
 
     returns tuple of requirements and constraints
     """
-    requirements: typing.List[str] = []
-    constraints: typing.List[str] = []
+    requirements: list[str] = []
+    constraints: list[str] = []
     if not file_or_url.strip():
         logger.info("mxdev is configured to run without input requirements!")
         return ([], [])
@@ -210,7 +210,7 @@ def fetch(state: State) -> None:
     )
 
 
-def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.Any]]):
+def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]]):
     """Create requirements configuration for fetched source packages."""
     if not packages:
         return
@@ -232,7 +232,7 @@ def write_dev_sources(fio, packages: typing.Dict[str, typing.Dict[str, typing.An
 
 
 def write_dev_overrides(
-    fio, overrides: typing.Dict[str, str], package_keys: typing.List[str]
+    fio, overrides: dict[str, str], package_keys: list[str]
 ):
     """Create requirements configuration for overridden packages."""
     fio.write("#" * 79 + "\n")
@@ -247,7 +247,7 @@ def write_dev_overrides(
     fio.write("\n\n")
 
 
-def write_main_package(fio, settings: typing.Dict[str, str]):
+def write_main_package(fio, settings: dict[str, str]):
     """Write main package if configured."""
     main_package = settings.get("main-package")
     if main_package:

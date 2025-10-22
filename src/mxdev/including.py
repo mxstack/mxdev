@@ -10,10 +10,10 @@ import typing
 
 
 def resolve_dependencies(
-    file_or_url: typing.Union[str, Path],
+    file_or_url: str | Path,
     tmpdir: str,
     http_parent=None,
-) -> typing.List[Path]:
+) -> list[Path]:
     """Resolve dependencies of a file or url
 
     The result is a list of Path objects, starting with the
@@ -69,7 +69,7 @@ def resolve_dependencies(
     return file_list
 
 
-def read_with_included(file_or_url: typing.Union[str, Path]) -> ConfigParser:
+def read_with_included(file_or_url: str | Path) -> ConfigParser:
     """Read a file or url and include all referenced files,
 
     Parse the result as a ConfigParser and return it.

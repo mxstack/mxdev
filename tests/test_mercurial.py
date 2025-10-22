@@ -15,21 +15,21 @@ class TestMercurial:
         repository = tempdir["repository"]
         os.mkdir(repository)
         process = Process(cwd=repository)
-        process.check_call("hg init %s" % repository)
+        process.check_call(f"hg init {repository}")
 
         foo = repository["foo"]
         foo.create_file("foo")
-        process.check_call("hg add %s" % foo, echo=False)
-        process.check_call("hg commit %s -m foo -u test" % foo, echo=False)
+        process.check_call(f"hg add {foo}", echo=False)
+        process.check_call(f"hg commit {foo} -m foo -u test", echo=False)
         bar = repository["bar"]
         bar.create_file("bar")
-        process.check_call("hg add %s" % bar, echo=False)
-        process.check_call("hg commit %s -m bar -u test" % bar, echo=False)
+        process.check_call(f"hg add {bar}", echo=False)
+        process.check_call(f"hg commit {bar} -m bar -u test", echo=False)
         develop.sources = {
             "egg": dict(
                 kind="hg",
                 name="egg",
-                url="%s" % repository,
+                url=f"{repository}",
                 path=os.path.join(src, "egg"),
             )
         }
@@ -56,18 +56,18 @@ class TestMercurial:
         repository = tempdir["repository"]
         os.mkdir(repository)
         process = Process(cwd=repository)
-        lines = process.check_call("hg init %s" % repository)
+        lines = process.check_call(f"hg init {repository}")
         foo = repository["foo"]
         foo.create_file("foo")
-        lines = process.check_call("hg add %s" % foo, echo=False)
+        lines = process.check_call(f"hg add {foo}", echo=False)
 
         # create branch for testing
         lines = process.check_call("hg branch test", echo=False)
 
-        lines = process.check_call("hg commit %s -m foo -u test" % foo, echo=False)
+        lines = process.check_call(f"hg commit {foo} -m foo -u test", echo=False)
 
         # get comitted rev
-        lines = process.check_call("hg log %s" % foo, echo=False)
+        lines = process.check_call(f"hg log {foo}", echo=False)
 
         try:
             # XXX older version
@@ -80,8 +80,8 @@ class TestMercurial:
 
         bar = repository["bar"]
         bar.create_file("bar")
-        lines = process.check_call("hg add %s" % bar, echo=False)
-        lines = process.check_call("hg commit %s -m bar -u test" % bar, echo=False)
+        lines = process.check_call(f"hg add {bar}", echo=False)
+        lines = process.check_call(f"hg commit {bar} -m bar -u test", echo=False)
 
         # check rev
         develop.sources = {
@@ -89,7 +89,7 @@ class TestMercurial:
                 kind="hg",
                 name="egg",
                 rev=rev,
-                url="%s" % repository,
+                url=f"{repository}",
                 path=os.path.join(src, "egg"),
             )
         }
@@ -104,7 +104,7 @@ class TestMercurial:
                 kind="hg",
                 name="egg",
                 branch="test",
-                url="%s" % repository,
+                url=f"{repository}",
                 path=os.path.join(src, "egg"),
             )
         }
@@ -121,7 +121,7 @@ class TestMercurial:
                     name="egg",
                     branch="test",
                     rev=rev,
-                    url="%s" % repository,
+                    url=f"{repository}",
                     path=os.path.join(src, "egg-failed"),
                 )
             }

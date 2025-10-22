@@ -30,11 +30,11 @@ def load_hooks() -> list:
     return [ep.load()() for ep in load_eps_by_group("mxdev") if ep.name == "hook"]
 
 
-def read_hooks(state: State, hooks: typing.List[Hook]) -> None:
+def read_hooks(state: State, hooks: list[Hook]) -> None:
     for hook in hooks:
         hook.read(state)
 
 
-def write_hooks(state: State, hooks: typing.List[Hook]) -> None:
+def write_hooks(state: State, hooks: list[Hook]) -> None:
     for hook in hooks:
         hook.write(state)
