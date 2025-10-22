@@ -202,3 +202,60 @@ def test_update_verbose(mkgitrepo, src, capsys):
         assert "Already up to date" in captured.out.replace("-", " ")
         status = vcs_status(sources, verbose=True)
         assert status == {"egg": ("clean", "## master...origin/master\n")}
+
+
+def test_update_git_tag_to_new_tag(mkgitrepo, src):
+    """Test that updating from one git tag to another works correctly.
+
+    This test reproduces issue #46: changing the branch option from one tag
+    to another tag should update the checkout to the new tag.
+
+    Regression in v4.x - worked in v2.x
+    """
+    repository = mkgitrepo("repository")
+    # Create initial content and tag it as 1.0.0
+    repository.add_file("foo", msg="Initial")
+    repository("git tag 1.0.0", echo=False)
+
+    # Create more content and tag as 2.0.0
+    repository.add_file("bar", msg="Second")
+    repository("git tag 2.0.0", echo=False)
+
+    path = src / "egg"
+
+    # Initial checkout with tag 1.0.0
+    sources = {
+        "egg": dict(
+            vcs="git",
+            name="egg",
+            branch="1.0.0",  # This is actually a tag, not a branch
+            url=str(repository.base),
+            path=str(path),
+        )
+    }
+    packages = ["egg"]
+    verbose = False
+
+    # Checkout at tag 1.0.0
+    vcs_checkout(sources, packages, verbose)
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo"}
+
+    # Verify we're at tag 1.0.0
+    result = repository.process.check_call(f"git -C {path} describe --tags", echo=False)
+    current_tag = result[0].decode("utf8").strip()
+    assert current_tag == "1.0.0"
+
+    # Now update the sources to use tag 2.0.0
+    sources["egg"]["branch"] = "2.0.0"
+
+    # Update should switch to tag 2.0.0
+    # BUG: This will fail because the code treats tags as branches
+    vcs_update(sources, packages, verbose)
+
+    # After update, we should have both foo and bar (tag 2.0.0)
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "bar"}
+
+    # Verify we're now at tag 2.0.0
+    result = repository.process.check_call(f"git -C {path} describe --tags", echo=False)
+    current_tag = result[0].decode("utf8").strip()
+    assert current_tag == "2.0.0"

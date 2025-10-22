@@ -2,6 +2,9 @@
 
 ## 4.1.2 (unreleased)
 
+- Fix #46: Git tags in branch option are now correctly detected and handled during updates. Previously, updating from one tag to another failed because tags were incorrectly treated as branches.
+  [jensens]
+
 - Fix #53: Per-package target setting now correctly overrides default-target when constructing checkout paths.
   [jensens]
 
