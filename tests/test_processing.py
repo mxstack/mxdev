@@ -1,3 +1,4 @@
+import os
 import pathlib
 import pytest
 from io import StringIO
@@ -405,5 +406,116 @@ constraints-out = constraints-out.txt
         # Check constraints file was NOT created
         const_file = tmp_path / "constraints-out.txt"
         assert not const_file.exists()
+    finally:
+        os.chdir(old_cwd)
+
+
+def test_relative_constraints_path_in_subdirectory(tmp_path):
+    """Test that constraints path in requirements-out is relative to requirements file location.
+
+    This reproduces issue #22: when requirements-out and constraints-out are in subdirectories,
+    the constraints reference should be relative to the requirements file's directory.
+    """
+    from mxdev.processing import read, write
+    from mxdev.state import State
+    from mxdev.config import Configuration
+
+    old_cwd = os.getcwd()
+    try:
+        os.chdir(tmp_path)
+
+        # Create subdirectory for output files
+        (tmp_path / "requirements").mkdir()
+
+        # Create input constraints file
+        constraints_in = tmp_path / "constraints.txt"
+        constraints_in.write_text("requests==2.28.0\nurllib3==1.26.9\n")
+
+        # Create input requirements file with a constraint reference
+        requirements_in = tmp_path / "requirements.txt"
+        requirements_in.write_text("-c constraints.txt\nrequests\n")
+
+        # Create config with both output files in subdirectory
+        config_file = tmp_path / "mx.ini"
+        config_file.write_text(
+            """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements/plone.txt
+constraints-out = requirements/constraints.txt
+"""
+        )
+
+        config = Configuration(str(config_file))
+        state = State(configuration=config)
+
+        # Read and write
+        read(state)
+        write(state)
+
+        # Check requirements file contains relative path to constraints
+        req_file = tmp_path / "requirements" / "plone.txt"
+        assert req_file.exists()
+        req_content = req_file.read_text()
+
+        # Bug: Currently writes "-c requirements/constraints.txt"
+        # Expected: Should write "-c constraints.txt" (relative to requirements file's directory)
+        assert "-c constraints.txt\n" in req_content, (
+            f"Expected '-c constraints.txt' (relative path), "
+            f"but got:\n{req_content}"
+        )
+
+        # Should NOT contain the full path from config file's perspective
+        assert "-c requirements/constraints.txt" not in req_content
+    finally:
+        os.chdir(old_cwd)
+
+
+def test_relative_constraints_path_different_directories(tmp_path):
+    """Test constraints path when requirements and constraints are in different directories."""
+    from mxdev.processing import read, write
+    from mxdev.state import State
+    from mxdev.config import Configuration
+
+    old_cwd = os.getcwd()
+    try:
+        os.chdir(tmp_path)
+
+        # Create different subdirectories
+        (tmp_path / "reqs").mkdir()
+        (tmp_path / "constraints").mkdir()
+
+        # Create input constraints file
+        constraints_in = tmp_path / "constraints.txt"
+        constraints_in.write_text("requests==2.28.0\nurllib3==1.26.9\n")
+
+        # Create input requirements file with a constraint reference
+        requirements_in = tmp_path / "requirements.txt"
+        requirements_in.write_text("-c constraints.txt\nrequests\n")
+
+        config_file = tmp_path / "mx.ini"
+        config_file.write_text(
+            """[settings]
+requirements-in = requirements.txt
+requirements-out = reqs/requirements.txt
+constraints-out = constraints/constraints.txt
+"""
+        )
+
+        config = Configuration(str(config_file))
+        state = State(configuration=config)
+
+        read(state)
+        write(state)
+
+        req_file = tmp_path / "reqs" / "requirements.txt"
+        assert req_file.exists()
+        req_content = req_file.read_text()
+
+        # Should write path relative to reqs/ directory
+        # From reqs/ to constraints/constraints.txt = ../constraints/constraints.txt
+        assert "-c ../constraints/constraints.txt\n" in req_content, (
+            f"Expected '-c ../constraints/constraints.txt' (relative path), "
+            f"but got:\n{req_content}"
+        )
     finally:
         os.chdir(old_cwd)
