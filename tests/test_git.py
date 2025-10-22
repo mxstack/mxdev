@@ -259,3 +259,52 @@ def test_update_git_tag_to_new_tag(mkgitrepo, src):
     result = repository.process.check_call(f"git -C {path} describe --tags", echo=False)
     current_tag = result[0].decode("utf8").strip()
     assert current_tag == "2.0.0"
+
+
+def test_offline_prevents_vcs_operations(mkgitrepo, src):
+    """Test that offline mode prevents VCS fetch/update operations.
+
+    This test reproduces issue #34: offline setting should prevent VCS operations
+    but is currently being ignored.
+
+    When offline=True is set (either in config or via CLI --offline flag),
+    mxdev should NOT perform any VCS operations (no fetch, no update).
+    """
+    repository = mkgitrepo("repository")
+    path = src / "egg"
+
+    # Create initial content
+    repository.add_file("foo", msg="Initial")
+
+    sources = {
+        "egg": dict(
+            vcs="git",
+            name="egg",
+            url=str(repository.base),
+            path=str(path),
+        )
+    }
+    packages = ["egg"]
+    verbose = False
+
+    # Initial checkout (not offline)
+    vcs_checkout(sources, packages, verbose, offline=False)
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo"}
+
+    # Add new content to remote repository
+    repository.add_file("bar", msg="Second")
+
+    # Try to update with offline=True
+    # BUG: This should NOT fetch/update anything, but currently it does
+    # because offline parameter is ignored
+    vcs_update(sources, packages, verbose, offline=True)
+
+    # After offline update, should still have only initial content (foo)
+    # The "bar" file should NOT be present because offline prevented the update
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo"}
+
+    # Now update with offline=False to verify update works when not offline
+    vcs_update(sources, packages, verbose, offline=False)
+
+    # After normal update, should have both files
+    assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "bar"}
