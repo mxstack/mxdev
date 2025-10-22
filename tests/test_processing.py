@@ -215,7 +215,7 @@ def test_write_dev_sources(tmp_path):
             "target": "sources",
             "extras": "",
             "subdirectory": "",
-            "install-mode": "direct",
+            "install-mode": "editable",
         },
         "skip.package": {
             "target": "sources",
@@ -227,7 +227,7 @@ def test_write_dev_sources(tmp_path):
             "target": "sources",
             "extras": "test,docs",
             "subdirectory": "packages/core",
-            "install-mode": "direct",
+            "install-mode": "editable",
         },
     }
 
@@ -239,6 +239,76 @@ def test_write_dev_sources(tmp_path):
     assert "-e ./sources/example.package" in content
     assert "skip.package" not in content  # skip mode should not be written
     assert "-e ./sources/extras.package/packages/core[test,docs]" in content
+
+
+def test_write_dev_sources_fixed_mode(tmp_path):
+    """Test write_dev_sources with fixed install mode (no -e prefix)."""
+    from mxdev.processing import write_dev_sources
+
+    packages = {
+        "fixed.package": {
+            "target": "sources",
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "fixed",
+        },
+        "fixed.with.extras": {
+            "target": "sources",
+            "extras": "test",
+            "subdirectory": "packages/core",
+            "install-mode": "fixed",
+        },
+    }
+
+    outfile = tmp_path / "requirements.txt"
+    with open(outfile, "w") as fio:
+        write_dev_sources(fio, packages)
+
+    content = outfile.read_text()
+    # Fixed mode should NOT have -e prefix
+    assert "./sources/fixed.package" in content
+    assert "-e ./sources/fixed.package" not in content
+    assert "./sources/fixed.with.extras/packages/core[test]" in content
+    assert "-e ./sources/fixed.with.extras/packages/core[test]" not in content
+
+
+def test_write_dev_sources_mixed_modes(tmp_path):
+    """Test write_dev_sources with mixed install modes."""
+    from mxdev.processing import write_dev_sources
+
+    packages = {
+        "editable.package": {
+            "target": "sources",
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "editable",
+        },
+        "fixed.package": {
+            "target": "sources",
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "fixed",
+        },
+        "skip.package": {
+            "target": "sources",
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "skip",
+        },
+    }
+
+    outfile = tmp_path / "requirements.txt"
+    with open(outfile, "w") as fio:
+        write_dev_sources(fio, packages)
+
+    content = outfile.read_text()
+    # Editable should have -e prefix
+    assert "-e ./sources/editable.package" in content
+    # Fixed should NOT have -e prefix
+    assert "./sources/fixed.package" in content
+    assert "-e ./sources/fixed.package" not in content
+    # Skip should not appear at all
+    assert "skip.package" not in content
 
 
 def test_write_dev_sources_empty():
