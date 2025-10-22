@@ -11,6 +11,7 @@ from .state import State
 
 import argparse
 import logging
+import sys
 
 
 parser = argparse.ArgumentParser(
@@ -42,6 +43,23 @@ parser.add_argument(
 )
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
 parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
+
+
+def supports_unicode() -> bool:
+    """Check if stdout supports Unicode/emoji encoding.
+
+    Returns True if the console encoding can handle Unicode emojis,
+    False otherwise (e.g., cp1252 on Windows).
+    """
+    try:
+        encoding = sys.stdout.encoding
+        if not encoding:
+            return False
+        # Test if the encoding can handle the cake emoji
+        "🎂".encode(encoding)
+        return True
+    except (AttributeError, UnicodeEncodeError, LookupError):
+        return False
 
 
 def main() -> None:
@@ -78,5 +96,7 @@ def main() -> None:
     write(state)
     write_hooks(state, hooks)
     out_requirements = state.configuration.out_requirements
-    logger.info(f"🎂 You are now ready for: pip install -r {out_requirements}")
+    # Use emoji only if console encoding supports it (avoid cp1252 errors on Windows)
+    prefix = "🎂 " if supports_unicode() else ""
+    logger.info(f"{prefix}You are now ready for: pip install -r {out_requirements}")
     logger.info("   (path to pip may vary dependent on your installation method)")

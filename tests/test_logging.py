@@ -1,3 +1,4 @@
+import io
 import logging
 import sys
 
@@ -102,3 +103,51 @@ def test_setup_logger_no_formatter_for_info():
             "%(asctime)s" not in handler.formatter._fmt
             or handler.formatter._fmt is None
         )
+
+
+def test_emoji_logging_with_cp1252_encoding(capsys, caplog):
+    """Test that logging emojis with cp1252 encoding raises UnicodeEncodeError.
+
+    This reproduces the Windows CI error where the console uses cp1252 encoding
+    which cannot handle Unicode emojis like 🎂.
+
+    Error from Windows CI:
+    UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f382'
+    in position 0: character maps to <undefined>
+    """
+    from mxdev.logging import logger
+
+    # Clear any existing handlers
+    root = logging.getLogger()
+    root.handlers.clear()
+
+    # Create a stream with cp1252 encoding (simulating Windows console)
+    # Use errors='strict' to ensure it raises on unencodable characters
+    stream = io.TextIOWrapper(
+        io.BytesIO(), encoding="cp1252", errors="strict", line_buffering=True
+    )
+
+    # Set up handler with the cp1252 stream
+    handler = logging.StreamHandler(stream)
+    handler.setLevel(logging.INFO)
+    root.addHandler(handler)
+    root.setLevel(logging.INFO)
+
+    # This is the exact emoji from main.py:81 that causes the issue
+    emoji_message = "🎂 You are now ready for: pip install -r requirements-mxdev.txt"
+
+    # When logging fails due to encoding, Python's logging module catches
+    # the error and prints it to stderr via handleError(), but doesn't raise
+    logger.info(emoji_message)
+
+    # Capture stderr to check for the encoding error
+    captured = capsys.readouterr()
+
+    # Verify the UnicodeEncodeError was logged to stderr
+    assert "UnicodeEncodeError" in captured.err
+    assert "charmap" in captured.err or "cp1252" in captured.err
+    assert "\\U0001f382" in captured.err or "U0001f382" in captured.err
+    assert emoji_message in captured.err
+
+    # Clean up
+    root.handlers.clear()

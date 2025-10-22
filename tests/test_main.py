@@ -1,5 +1,7 @@
+import io
 import pathlib
 import pytest
+import sys
 from unittest.mock import patch, MagicMock
 import logging
 
@@ -93,3 +95,63 @@ def test_parser_verbose():
 
     args = parser.parse_args(["-v"])
     assert args.verbose is True
+
+
+def test_supports_unicode_with_utf8():
+    """Test supports_unicode returns True for UTF-8 encoding."""
+    from mxdev.main import supports_unicode
+
+    # Mock stdout with UTF-8 encoding
+    mock_stdout = MagicMock()
+    mock_stdout.encoding = "utf-8"
+
+    with patch("sys.stdout", mock_stdout):
+        assert supports_unicode() is True
+
+
+def test_supports_unicode_with_cp1252():
+    """Test supports_unicode returns False for cp1252 encoding."""
+    from mxdev.main import supports_unicode
+
+    # Mock stdout with cp1252 encoding
+    mock_stdout = MagicMock()
+    mock_stdout.encoding = "cp1252"
+
+    with patch("sys.stdout", mock_stdout):
+        assert supports_unicode() is False
+
+
+def test_supports_unicode_with_no_encoding():
+    """Test supports_unicode returns False when encoding is None."""
+    from mxdev.main import supports_unicode
+
+    # Mock stdout with no encoding
+    mock_stdout = MagicMock()
+    mock_stdout.encoding = None
+
+    with patch("sys.stdout", mock_stdout):
+        assert supports_unicode() is False
+
+
+def test_supports_unicode_with_ascii():
+    """Test supports_unicode returns False for ASCII encoding."""
+    from mxdev.main import supports_unicode
+
+    # Mock stdout with ASCII encoding
+    mock_stdout = MagicMock()
+    mock_stdout.encoding = "ascii"
+
+    with patch("sys.stdout", mock_stdout):
+        assert supports_unicode() is False
+
+
+def test_supports_unicode_with_latin1():
+    """Test supports_unicode returns False for latin-1 encoding."""
+    from mxdev.main import supports_unicode
+
+    # Mock stdout with latin-1 encoding
+    mock_stdout = MagicMock()
+    mock_stdout.encoding = "latin-1"
+
+    with patch("sys.stdout", mock_stdout):
+        assert supports_unicode() is False
