@@ -283,10 +283,13 @@ def write(state: State) -> None:
             # Calculate relative path from requirements directory to constraints file
             try:
                 constraints_ref = os.path.relpath(const_path, req_path.parent)
+                # Convert backslashes to forward slashes for pip compatibility
+                # pip expects forward slashes even on Windows
+                constraints_ref = constraints_ref.replace("\\", "/")
             except ValueError:
                 # On Windows, relpath can fail if paths are on different drives
-                # In that case, use absolute path
-                constraints_ref = str(const_path.absolute())
+                # In that case, use absolute path with forward slashes
+                constraints_ref = str(const_path.absolute()).replace("\\", "/")
 
             fio.write("#" * 79 + "\n")
             fio.write("# mxdev combined constraints\n")
