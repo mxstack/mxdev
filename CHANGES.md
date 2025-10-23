@@ -10,6 +10,8 @@
   [jensens]
 - Chore: Improved test coverage for main.py from 42% to 100%. Added comprehensive tests for the main() function covering all CLI argument combinations (--verbose, --silent, --offline, --threads, --no-fetch, --fetch-only), ensuring robust testing of the entry point and all code paths.
   [jensens]
+- Chore: Updated test fixture data versions to resolve Dependabot security alerts. Updated urllib3 from 1.26.9 to 2.5.0 and requests from 2.28.0 to 2.32.4 in test data files. These are test fixtures only and were never actual dependencies or security risks. Resolves GitHub Dependabot alerts #1-7.
+  [jensens]
 - Fix: Add 'synchronize' event to pull_request workflow triggers. This ensures CI runs when PRs are updated with new commits (e.g., after rebasing or pushing new changes), not just when opened or reopened.
   [jensens]
 - Chore: Optimize GitHub Actions to prevent duplicate workflow runs on pull requests. Restrict `push` trigger to only run on `main` branch, so PRs only trigger via `pull_request` event. This reduces CI resource usage by 50% for PR workflows.

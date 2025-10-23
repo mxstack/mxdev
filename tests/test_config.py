@@ -68,9 +68,9 @@ def test_configuration_with_overrides():
     config = Configuration(str(base / "config_with_overrides.ini"))
 
     assert "requests" in config.overrides
-    assert config.overrides["requests"] == "requests==2.28.0"
+    assert config.overrides["requests"] == "requests==2.32.4"
     assert "urllib3" in config.overrides
-    assert config.overrides["urllib3"] == "urllib3==1.26.9"
+    assert config.overrides["urllib3"] == "urllib3==2.5.0"
     assert "requests" in config.override_keys
     assert "urllib3" in config.override_keys
 
