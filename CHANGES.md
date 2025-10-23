@@ -2,7 +2,7 @@
 
 ## 5.0.1 (unreleased)
 
-- Fix: `process_line()` now correctly comments out packages in `override_keys` and `ignore_keys` for both requirements and constraints files. Previously, these settings only applied to constraints files (variety="c"). Now they work for requi## 5.0.0 (2025-10-25)rements files (variety="r") as well, with the message "-> mxdev disabled (version override)" for override_keys in requirements.
+- Chore: Optimize GitHub Actions to prevent duplicate workflow runs on pull requests. Restrict `push` trigger to only run on `main` branch, so PRs only trigger via `pull_request` event. This reduces CI resource usage by 50% for PR workflows.
   [jensens]
 
 ## 5.0.0 (2025-10-25)

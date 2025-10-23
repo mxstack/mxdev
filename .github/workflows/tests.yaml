@@ -2,10 +2,12 @@ name: Testing
 
 on:
   push:
+    branches:
+      - main
   pull_request:
-   types:
-     - "reopened"
-     - "opened"
+    types:
+      - "reopened"
+      - "opened"
   workflow_call:
   workflow_dispatch:
 
