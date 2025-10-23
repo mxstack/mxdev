@@ -58,9 +58,12 @@ def process_line(
         parsed_name_lower = parsed.name.lower()
         if parsed_name_lower in [k.lower() for k in package_keys]:
             line = f"# {line.strip()} -> mxdev disabled (source)\n"
-        if variety == "c" and parsed_name_lower in [k.lower() for k in override_keys]:
-            line = f"# {line.strip()} -> mxdev disabled (override)\n"
-        if variety == "c" and parsed_name_lower in [k.lower() for k in ignore_keys]:
+        if parsed_name_lower in [k.lower() for k in override_keys]:
+            if variety == "c":
+                line = f"# {line.strip()} -> mxdev disabled (override)\n"
+            else:
+                line = f"# {line.strip()} -> mxdev disabled (version override)\n"
+        if parsed_name_lower in [k.lower() for k in ignore_keys]:
             line = f"# {line.strip()} -> mxdev disabled (ignore)\n"
     if variety == "c":
         return [], [line]
