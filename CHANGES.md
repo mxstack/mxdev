@@ -1,6 +1,10 @@
 ## Changes
 
-## 5.0.1 (2025-10-25)
+## 5.0.2 (unreleased)
+
+- Nothing yet.
+
+## 5.0.1 (2025-10-23)
 
 - Fix #65: Check source directories exist before writing to requirements-mxdev.txt. In **offline mode**: missing sources log WARNING and are written as comments (expected behavior). In **non-offline mode**: missing sources log ERROR and mxdev exits with RuntimeError (fatal error indicating checkout failure). This fixes mxmake two-stage installation workflow and prevents silent failures when sources fail to check out.
   [jensens]
@@ -19,7 +23,7 @@
 - Fix: `process_line()` now correctly comments out packages in `override_keys` and `ignore_keys` for both requirements and constraints files. Previously, these settings only applied to constraints files (variety="c"). Now they work for requirements files (variety="r") as well, with the message "-> mxdev disabled (version override)" for override_keys in requirements.
   [jensens]
 
-## 5.0.0 (2025-10-25)
+## 5.0.0 (2025-10-22)
 
 - **Breaking**:  support for Python 3.8 and 3.9. Minimum required version is now Python 3.10.
   [jensens]
