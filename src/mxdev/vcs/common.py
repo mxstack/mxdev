@@ -175,6 +175,9 @@ class WorkingCopies:
     def _separate_https_packages(self, packages: list[str]) -> tuple[list[str], list[str]]:
         """Separate HTTPS packages from others for smart threading.
 
+        HTTPS packages WITH pushurl are safe for parallel processing
+        (pushurl implies the https url is read-only/public).
+
         Returns (https_packages, other_packages)
         """
         https_packages = []
@@ -186,9 +189,13 @@ class WorkingCopies:
                 continue
             source = self.sources[name]
             url = source.get("url", "")
-            if url.startswith("https://"):
+            has_pushurl = "pushurl" in source
+
+            if url.startswith("https://") and not has_pushurl:
+                # HTTPS without pushurl: may need credentials, process serially
                 https_packages.append(name)
             else:
+                # SSH, fs, or HTTPS with pushurl: safe for parallel
                 other_packages.append(name)
 
         return https_packages, other_packages
