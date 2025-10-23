@@ -177,19 +177,21 @@ constraints-out = constraints-out.txt
     # Mock command line arguments
     test_args = ["-c", str(config_file)]
 
+    import sys
+
+    main_module = sys.modules["mxdev.main"]
+
     with (
         patch("sys.argv", ["mxdev"] + test_args),
-        patch("mxdev.main.load_hooks", return_value=[]),
-        patch("mxdev.main.read") as mock_read,
-        patch("mxdev.main.read_hooks") as mock_read_hooks,
-        patch("mxdev.main.fetch") as mock_fetch,
-        patch("mxdev.main.write") as mock_write,
-        patch("mxdev.main.write_hooks") as mock_write_hooks,
-        patch("mxdev.main.setup_logger") as mock_setup_logger,
+        patch.object(main_module, "load_hooks", return_value=[]),
+        patch.object(main_module, "read") as mock_read,
+        patch.object(main_module, "read_hooks") as mock_read_hooks,
+        patch.object(main_module, "fetch") as mock_fetch,
+        patch.object(main_module, "write") as mock_write,
+        patch.object(main_module, "write_hooks") as mock_write_hooks,
+        patch.object(main_module, "setup_logger") as mock_setup_logger,
     ):
-        from mxdev.main import main
-
-        main()
+        main_module.main()
 
         # Verify logger was set up with INFO level (default)
         mock_setup_logger.assert_called_once_with(logging.INFO)
@@ -218,19 +220,21 @@ requirements-out = requirements-out.txt
 
     test_args = ["-c", str(config_file), "--verbose"]
 
+    import sys
+
+    main_module = sys.modules["mxdev.main"]
+
     with (
         patch("sys.argv", ["mxdev"] + test_args),
-        patch("mxdev.main.load_hooks", return_value=[]),
-        patch("mxdev.main.read"),
-        patch("mxdev.main.read_hooks"),
-        patch("mxdev.main.fetch"),
-        patch("mxdev.main.write"),
-        patch("mxdev.main.write_hooks"),
-        patch("mxdev.main.setup_logger") as mock_setup_logger,
+        patch.object(main_module, "load_hooks", return_value=[]),
+        patch.object(main_module, "read"),
+        patch.object(main_module, "read_hooks"),
+        patch.object(main_module, "fetch"),
+        patch.object(main_module, "write"),
+        patch.object(main_module, "write_hooks"),
+        patch.object(main_module, "setup_logger") as mock_setup_logger,
     ):
-        from mxdev.main import main
-
-        main()
+        main_module.main()
 
         # Verify logger was set up with INFO level when verbose flag is used
         mock_setup_logger.assert_called_once_with(logging.INFO)
@@ -252,19 +256,21 @@ requirements-out = requirements-out.txt
 
     test_args = ["-c", str(config_file), "--silent"]
 
+    import sys
+
+    main_module = sys.modules["mxdev.main"]
+
     with (
         patch("sys.argv", ["mxdev"] + test_args),
-        patch("mxdev.main.load_hooks", return_value=[]),
-        patch("mxdev.main.read"),
-        patch("mxdev.main.read_hooks"),
-        patch("mxdev.main.fetch"),
-        patch("mxdev.main.write"),
-        patch("mxdev.main.write_hooks"),
-        patch("mxdev.main.setup_logger") as mock_setup_logger,
+        patch.object(main_module, "load_hooks", return_value=[]),
+        patch.object(main_module, "read"),
+        patch.object(main_module, "read_hooks"),
+        patch.object(main_module, "fetch"),
+        patch.object(main_module, "write"),
+        patch.object(main_module, "write_hooks"),
+        patch.object(main_module, "setup_logger") as mock_setup_logger,
     ):
-        from mxdev.main import main
-
-        main()
+        main_module.main()
 
         # Verify logger was set up with WARNING level when silent flag is used
         mock_setup_logger.assert_called_once_with(logging.WARNING)
@@ -285,19 +291,21 @@ requirements-out = requirements-out.txt
 
     test_args = ["-c", str(config_file), "--offline"]
 
+    import sys
+
+    main_module = sys.modules["mxdev.main"]
+
     with (
         patch("sys.argv", ["mxdev"] + test_args),
-        patch("mxdev.main.load_hooks", return_value=[]),
-        patch("mxdev.main.read"),
-        patch("mxdev.main.read_hooks"),
-        patch("mxdev.main.fetch") as mock_fetch,
-        patch("mxdev.main.write"),
-        patch("mxdev.main.write_hooks"),
-        patch("mxdev.main.setup_logger"),
+        patch.object(main_module, "load_hooks", return_value=[]),
+        patch.object(main_module, "read"),
+        patch.object(main_module, "read_hooks"),
+        patch.object(main_module, "fetch") as mock_fetch,
+        patch.object(main_module, "write"),
+        patch.object(main_module, "write_hooks"),
+        patch.object(main_module, "setup_logger"),
     ):
-        from mxdev.main import main
-
-        main()
+        main_module.main()
 
         # Verify fetch was NOT called when offline flag is used
         assert not mock_fetch.called
@@ -317,20 +325,22 @@ requirements-out = requirements-out.txt
 
     test_args = ["-c", str(config_file), "--threads", "8"]
 
+    import sys
+
+    main_module = sys.modules["mxdev.main"]
+
     with (
         patch("sys.argv", ["mxdev"] + test_args),
-        patch("mxdev.main.load_hooks", return_value=[]),
-        patch("mxdev.main.Configuration") as mock_config,
-        patch("mxdev.main.read"),
-        patch("mxdev.main.read_hooks"),
-        patch("mxdev.main.fetch"),
-        patch("mxdev.main.write"),
-        patch("mxdev.main.write_hooks"),
-        patch("mxdev.main.setup_logger"),
+        patch.object(main_module, "load_hooks", return_value=[]),
+        patch.object(main_module, "Configuration") as mock_config,
+        patch.object(main_module, "read"),
+        patch.object(main_module, "read_hooks"),
+        patch.object(main_module, "fetch"),
+        patch.object(main_module, "write"),
+        patch.object(main_module, "write_hooks"),
+        patch.object(main_module, "setup_logger"),
     ):
-        from mxdev.main import main
-
-        main()
+        main_module.main()
 
         # Verify Configuration was called with threads override
         mock_config.assert_called_once()
@@ -353,19 +363,21 @@ requirements-out = requirements-out.txt
 
     test_args = ["-c", str(config_file), "--no-fetch"]
 
+    import sys
+
+    main_module = sys.modules["mxdev.main"]
+
     with (
         patch("sys.argv", ["mxdev"] + test_args),
-        patch("mxdev.main.load_hooks", return_value=[]),
-        patch("mxdev.main.read"),
-        patch("mxdev.main.read_hooks"),
-        patch("mxdev.main.fetch") as mock_fetch,
-        patch("mxdev.main.write"),
-        patch("mxdev.main.write_hooks"),
-        patch("mxdev.main.setup_logger"),
+        patch.object(main_module, "load_hooks", return_value=[]),
+        patch.object(main_module, "read"),
+        patch.object(main_module, "read_hooks"),
+        patch.object(main_module, "fetch") as mock_fetch,
+        patch.object(main_module, "write"),
+        patch.object(main_module, "write_hooks"),
+        patch.object(main_module, "setup_logger"),
     ):
-        from mxdev.main import main
-
-        main()
+        main_module.main()
 
         # Verify fetch was NOT called when no-fetch flag is used
         assert not mock_fetch.called
@@ -385,19 +397,21 @@ requirements-out = requirements-out.txt
 
     test_args = ["-c", str(config_file), "--fetch-only"]
 
+    import sys
+
+    main_module = sys.modules["mxdev.main"]
+
     with (
         patch("sys.argv", ["mxdev"] + test_args),
-        patch("mxdev.main.load_hooks", return_value=[]),
-        patch("mxdev.main.read"),
-        patch("mxdev.main.read_hooks") as mock_read_hooks,
-        patch("mxdev.main.fetch"),
-        patch("mxdev.main.write") as mock_write,
-        patch("mxdev.main.write_hooks") as mock_write_hooks,
-        patch("mxdev.main.setup_logger"),
+        patch.object(main_module, "load_hooks", return_value=[]),
+        patch.object(main_module, "read"),
+        patch.object(main_module, "read_hooks") as mock_read_hooks,
+        patch.object(main_module, "fetch"),
+        patch.object(main_module, "write") as mock_write,
+        patch.object(main_module, "write_hooks") as mock_write_hooks,
+        patch.object(main_module, "setup_logger"),
     ):
-        from mxdev.main import main
-
-        main()
+        main_module.main()
 
         # Verify read_hooks was NOT called
         assert not mock_read_hooks.called
