@@ -8,6 +8,8 @@
   [jensens]
 - Fix: Three tests that were accidentally marked as skipped during PR #66 merge are now fixed and passing: `test_resolve_dependencies_simple_file` (fixed assertion to check line contents), `test_write_output_with_ignores` (fixed to use read() for proper ignore processing), and `test_write_relative_constraints_path_different_dirs` (fixed to include constraints content).
   [jensens]
+- Chore: Improved test coverage for main.py from 42% to 100%. Added comprehensive tests for the main() function covering all CLI argument combinations (--verbose, --silent, --offline, --threads, --no-fetch, --fetch-only), ensuring robust testing of the entry point and all code paths.
+  [jensens]
 - Fix: Add 'synchronize' event to pull_request workflow triggers. This ensures CI runs when PRs are updated with new commits (e.g., after rebasing or pushing new changes), not just when opened or reopened.
   [jensens]
 - Chore: Optimize GitHub Actions to prevent duplicate workflow runs on pull requests. Restrict `push` trigger to only run on `main` branch, so PRs only trigger via `pull_request` event. This reduces CI resource usage by 50% for PR workflows.

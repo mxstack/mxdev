@@ -151,3 +151,256 @@ def test_supports_unicode_with_latin1():
 
     with patch("sys.stdout", mock_stdout):
         assert supports_unicode() is False
+
+
+def test_main_default_behavior(tmp_path, monkeypatch):
+    """Test main() function with default arguments."""
+    import logging
+
+    # Create a minimal mx.ini file
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+constraints-out = constraints-out.txt
+"""
+    )
+
+    # Create empty requirements file
+    req_file = tmp_path / "requirements.txt"
+    req_file.write_text("")
+
+    # Change to temp directory
+    monkeypatch.chdir(tmp_path)
+
+    # Mock command line arguments
+    test_args = ["-c", str(config_file)]
+
+    with (
+        patch("sys.argv", ["mxdev"] + test_args),
+        patch("mxdev.main.load_hooks", return_value=[]),
+        patch("mxdev.main.read") as mock_read,
+        patch("mxdev.main.read_hooks") as mock_read_hooks,
+        patch("mxdev.main.fetch") as mock_fetch,
+        patch("mxdev.main.write") as mock_write,
+        patch("mxdev.main.write_hooks") as mock_write_hooks,
+        patch("mxdev.main.setup_logger") as mock_setup_logger,
+    ):
+        from mxdev.main import main
+
+        main()
+
+        # Verify logger was set up with INFO level (default)
+        mock_setup_logger.assert_called_once_with(logging.INFO)
+
+        # Verify all processing functions were called
+        assert mock_read.called
+        assert mock_read_hooks.called
+        assert mock_fetch.called
+        assert mock_write.called
+        assert mock_write_hooks.called
+
+
+def test_main_verbose_flag(tmp_path, monkeypatch):
+    """Test main() with --verbose flag sets INFO log level."""
+    import logging
+
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+"""
+    )
+    (tmp_path / "requirements.txt").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    test_args = ["-c", str(config_file), "--verbose"]
+
+    with (
+        patch("sys.argv", ["mxdev"] + test_args),
+        patch("mxdev.main.load_hooks", return_value=[]),
+        patch("mxdev.main.read"),
+        patch("mxdev.main.read_hooks"),
+        patch("mxdev.main.fetch"),
+        patch("mxdev.main.write"),
+        patch("mxdev.main.write_hooks"),
+        patch("mxdev.main.setup_logger") as mock_setup_logger,
+    ):
+        from mxdev.main import main
+
+        main()
+
+        # Verify logger was set up with INFO level when verbose flag is used
+        mock_setup_logger.assert_called_once_with(logging.INFO)
+
+
+def test_main_silent_flag(tmp_path, monkeypatch):
+    """Test main() with --silent flag sets WARNING log level."""
+    import logging
+
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+"""
+    )
+    (tmp_path / "requirements.txt").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    test_args = ["-c", str(config_file), "--silent"]
+
+    with (
+        patch("sys.argv", ["mxdev"] + test_args),
+        patch("mxdev.main.load_hooks", return_value=[]),
+        patch("mxdev.main.read"),
+        patch("mxdev.main.read_hooks"),
+        patch("mxdev.main.fetch"),
+        patch("mxdev.main.write"),
+        patch("mxdev.main.write_hooks"),
+        patch("mxdev.main.setup_logger") as mock_setup_logger,
+    ):
+        from mxdev.main import main
+
+        main()
+
+        # Verify logger was set up with WARNING level when silent flag is used
+        mock_setup_logger.assert_called_once_with(logging.WARNING)
+
+
+def test_main_offline_flag(tmp_path, monkeypatch):
+    """Test main() with --offline flag skips fetch."""
+
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+"""
+    )
+    (tmp_path / "requirements.txt").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    test_args = ["-c", str(config_file), "--offline"]
+
+    with (
+        patch("sys.argv", ["mxdev"] + test_args),
+        patch("mxdev.main.load_hooks", return_value=[]),
+        patch("mxdev.main.read"),
+        patch("mxdev.main.read_hooks"),
+        patch("mxdev.main.fetch") as mock_fetch,
+        patch("mxdev.main.write"),
+        patch("mxdev.main.write_hooks"),
+        patch("mxdev.main.setup_logger"),
+    ):
+        from mxdev.main import main
+
+        main()
+
+        # Verify fetch was NOT called when offline flag is used
+        assert not mock_fetch.called
+
+
+def test_main_threads_flag(tmp_path, monkeypatch):
+    """Test main() with --threads flag passes value to Configuration."""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+"""
+    )
+    (tmp_path / "requirements.txt").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    test_args = ["-c", str(config_file), "--threads", "8"]
+
+    with (
+        patch("sys.argv", ["mxdev"] + test_args),
+        patch("mxdev.main.load_hooks", return_value=[]),
+        patch("mxdev.main.Configuration") as mock_config,
+        patch("mxdev.main.read"),
+        patch("mxdev.main.read_hooks"),
+        patch("mxdev.main.fetch"),
+        patch("mxdev.main.write"),
+        patch("mxdev.main.write_hooks"),
+        patch("mxdev.main.setup_logger"),
+    ):
+        from mxdev.main import main
+
+        main()
+
+        # Verify Configuration was called with threads override
+        mock_config.assert_called_once()
+        call_kwargs = mock_config.call_args[1]
+        assert "override_args" in call_kwargs
+        assert call_kwargs["override_args"]["threads"] == 8
+
+
+def test_main_no_fetch_flag(tmp_path, monkeypatch):
+    """Test main() with --no-fetch flag skips fetch."""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+"""
+    )
+    (tmp_path / "requirements.txt").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    test_args = ["-c", str(config_file), "--no-fetch"]
+
+    with (
+        patch("sys.argv", ["mxdev"] + test_args),
+        patch("mxdev.main.load_hooks", return_value=[]),
+        patch("mxdev.main.read"),
+        patch("mxdev.main.read_hooks"),
+        patch("mxdev.main.fetch") as mock_fetch,
+        patch("mxdev.main.write"),
+        patch("mxdev.main.write_hooks"),
+        patch("mxdev.main.setup_logger"),
+    ):
+        from mxdev.main import main
+
+        main()
+
+        # Verify fetch was NOT called when no-fetch flag is used
+        assert not mock_fetch.called
+
+
+def test_main_fetch_only_flag(tmp_path, monkeypatch):
+    """Test main() with --fetch-only flag skips write and hooks."""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+"""
+    )
+    (tmp_path / "requirements.txt").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    test_args = ["-c", str(config_file), "--fetch-only"]
+
+    with (
+        patch("sys.argv", ["mxdev"] + test_args),
+        patch("mxdev.main.load_hooks", return_value=[]),
+        patch("mxdev.main.read"),
+        patch("mxdev.main.read_hooks") as mock_read_hooks,
+        patch("mxdev.main.fetch"),
+        patch("mxdev.main.write") as mock_write,
+        patch("mxdev.main.write_hooks") as mock_write_hooks,
+        patch("mxdev.main.setup_logger"),
+    ):
+        from mxdev.main import main
+
+        main()
+
+        # Verify read_hooks was NOT called
+        assert not mock_read_hooks.called
+        # Verify write and write_hooks were NOT called
+        assert not mock_write.called
+        assert not mock_write_hooks.called
