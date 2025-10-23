@@ -2,6 +2,8 @@
 
 ## 5.0.1 (unreleased)
 
+- Fix #65: Check source directories exist before writing to requirements-mxdev.txt. In **offline mode**: missing sources log WARNING and are written as comments (expected behavior). In **non-offline mode**: missing sources log ERROR and mxdev exits with RuntimeError (fatal error indicating checkout failure). This fixes mxmake two-stage installation workflow and prevents silent failures when sources fail to check out.
+  [jensens]
 - Fix: Add 'synchronize' event to pull_request workflow triggers. This ensures CI runs when PRs are updated with new commits (e.g., after rebasing or pushing new changes), not just when opened or reopened.
   [jensens]
 - Chore: Optimize GitHub Actions to prevent duplicate workflow runs on pull requests. Restrict `push` trigger to only run on `main` branch, so PRs only trigger via `pull_request` event. This reduces CI resource usage by 50% for PR workflows.
@@ -19,8 +21,6 @@
 - Chore: Replace black with ruff for faster linting and formatting. Configure ruff with line-length=120 and appropriate rule selections. Keep isort for import sorting with plone profile and force-alphabetical-sort. This modernizes the tooling stack for better Python 3.10+ support and faster CI runs.
   [jensens]
 - Feature: #54: Add `fixed` install mode for non-editable installations to support production and Docker deployments. The new `editable` mode replaces `direct` as the default (same behavior, clearer naming). The `direct` mode is now deprecated but still works with a warning. Install modes: `editable` (with `-e`, for development), `fixed` (without `-e`, for production/Docker), `skip` (clone only).
-  [jensens]
-- Fix #65: Check source directories exist before writing to requirements-mxdev.txt. In **offline mode**: missing sources log WARNING and are written as comments (expected behavior). In **non-offline mode**: missing sources log ERROR and mxdev exits with RuntimeError (fatal error indicating checkout failure). This fixes mxmake two-stage installation workflow and prevents silent failures when sources fail to check out.
   [jensens]
 - Fix #35: Add `smart-threading` configuration option to prevent overlapping credential prompts when using HTTPS URLs. When enabled (default), HTTPS packages are processed serially first to ensure clean credential prompts, then other packages are processed in parallel for speed. Can be disabled with `smart-threading = false` if you have credential helpers configured.
   [jensens]
