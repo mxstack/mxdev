@@ -4,6 +4,10 @@
 
 - Fix #65: Check source directories exist before writing to requirements-mxdev.txt. In **offline mode**: missing sources log WARNING and are written as comments (expected behavior). In **non-offline mode**: missing sources log ERROR and mxdev exits with RuntimeError (fatal error indicating checkout failure). This fixes mxmake two-stage installation workflow and prevents silent failures when sources fail to check out.
   [jensens]
+- Fix: Configuration parsing no longer logs "Can not parse override:" errors when `version-overrides` is empty. Empty lines in `version-overrides` and `ignores` are now properly skipped during parsing. Also fixed bug where `ignores` lines were not properly stripped of whitespace.
+  [jensens]
+- Fix: Three tests that were accidentally marked as skipped during PR #66 merge are now fixed and passing: `test_resolve_dependencies_simple_file` (fixed assertion to check line contents), `test_write_output_with_ignores` (fixed to use read() for proper ignore processing), and `test_write_relative_constraints_path_different_dirs` (fixed to include constraints content).
+  [jensens]
 - Fix: Add 'synchronize' event to pull_request workflow triggers. This ensures CI runs when PRs are updated with new commits (e.g., after rebasing or pushing new changes), not just when opened or reopened.
   [jensens]
 - Chore: Optimize GitHub Actions to prevent duplicate workflow runs on pull requests. Restrict `push` trigger to only run on `main` branch, so PRs only trigger via `pull_request` event. This reduces CI resource usage by 50% for PR workflows.

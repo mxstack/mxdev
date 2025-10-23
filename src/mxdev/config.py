@@ -71,6 +71,9 @@ class Configuration:
         raw_overrides = settings.get("version-overrides", "").strip()
         self.overrides = {}
         for line in raw_overrides.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
             try:
                 parsed = Requirement(line)
             except Exception:
@@ -81,7 +84,7 @@ class Configuration:
         raw_ignores = settings.get("ignores", "").strip()
         self.ignore_keys = []
         for line in raw_ignores.split("\n"):
-            line.strip()
+            line = line.strip()
             if line:
                 self.ignore_keys.append(line)
 

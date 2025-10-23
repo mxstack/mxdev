@@ -125,7 +125,6 @@ def test_resolve_dependencies_missing_file(tmp_path):
     assert constraints == []
 
 
-@pytest.mark.skip(reason="Unrelated test from other branch - needs separate fix")
 def test_resolve_dependencies_simple_file(tmp_path):
     """Test resolve_dependencies with a simple requirements file."""
     from mxdev.processing import resolve_dependencies
@@ -143,8 +142,8 @@ def test_resolve_dependencies_simple_file(tmp_path):
             ignore_keys=[],
             variety="r",
         )
-        assert "requests>=2.28.0" in requirements
-        assert "urllib3==1.26.9" in requirements
+        assert any("requests>=2.28.0" in line for line in requirements)
+        assert any("urllib3==1.26.9" in line for line in requirements)
     finally:
         os.chdir(old_cwd)
 
@@ -512,12 +511,20 @@ version-overrides =
         os.chdir(old_cwd)
 
 
-@pytest.mark.skip(reason="Unrelated test from other branch - needs separate fix")
 def test_write_output_with_ignores(tmp_path):
     """Test write() with ignores."""
     from mxdev.config import Configuration
+    from mxdev.processing import read
     from mxdev.processing import write
     from mxdev.state import State
+
+    # Create requirements.txt with packages
+    req_in = tmp_path / "requirements.txt"
+    req_in.write_text("requests\nmy.mainpackage==1.0.0\n-c constraints.txt\n")
+
+    # Create constraints.txt with packages
+    const_in = tmp_path / "constraints.txt"
+    const_in.write_text("urllib3==1.26.9\nmy.mainpackage==1.0.0\n")
 
     config_file = tmp_path / "mx.ini"
     config_file.write_text(
@@ -532,13 +539,12 @@ ignores =
 
     config = Configuration(str(config_file))
     state = State(configuration=config)
-    state.requirements = ["requests\n", "my.mainpackage==1.0.0\n"]
-    state.constraints = ["urllib3==1.26.9\n", "my.mainpackage==1.0.0\n"]
 
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
 
     try:
+        read(state)
         write(state)
 
         req_file = tmp_path / "requirements-out.txt"
@@ -591,7 +597,6 @@ main-package = -e .[test]
         os.chdir(old_cwd)
 
 
-@pytest.mark.skip(reason="Unrelated test from other branch - needs separate fix")
 def test_write_relative_constraints_path_different_dirs(tmp_path):
     """Test write() generates correct relative path for constraints file.
 
@@ -619,9 +624,13 @@ constraints-out = constraints/constraints.txt
 """
     )
 
-    # Create empty requirements.txt
+    # Create requirements.txt with a constraint reference
     req_in = tmp_path / "requirements.txt"
-    req_in.write_text("")
+    req_in.write_text("requests\n-c base-constraints.txt\n")
+
+    # Create base constraints file with some content
+    const_in = tmp_path / "base-constraints.txt"
+    const_in.write_text("urllib3==1.26.9\n")
 
     config = Configuration(str(config_file))
     state = State(configuration=config)
@@ -725,8 +734,6 @@ def test_write_dev_sources_missing_directories_raises_error(tmp_path, caplog):
     from mxdev.config import Configuration
     from mxdev.processing import write_dev_sources
     from mxdev.state import State
-
-    import pytest
 
     # Create config WITHOUT offline mode (non-offline mode)
     config_file = tmp_path / "mx.ini"
