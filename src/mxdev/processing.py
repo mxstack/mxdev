@@ -210,24 +210,53 @@ def fetch(state: State) -> None:
     )
 
 
-def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]]):
+def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]], state: State):
     """Create requirements configuration for fetched source packages."""
     if not packages:
         return
+
+    # Check if we're in offline mode or no-fetch mode
+    from .config import to_bool
+
+    offline_mode = to_bool(state.configuration.settings.get("offline", False))
+
     fio.write("#" * 79 + "\n")
     fio.write("# mxdev development sources\n")
+
     for name, package in packages.items():
         if package["install-mode"] == "skip":
             continue
+
+        # Check if source directory exists
+        source_path = Path(package["path"])
+
         extras = f"[{package['extras']}]" if package["extras"] else ""
         subdir = f"/{package['subdirectory']}" if package["subdirectory"] else ""
 
         # Add -e prefix only for 'editable' mode (not for 'fixed')
         prefix = "-e " if package["install-mode"] == "editable" else ""
-        install_line = f"""{prefix}./{package['target']}/{name}{subdir}{extras}\n"""
+        install_line = f"""{prefix}./{package['target']}/{name}{subdir}{extras}"""
 
-        logger.debug(f"-> {install_line.strip()}")
-        fio.write(install_line)
+        if not source_path.exists():
+            # Source not checked out yet - write as comment with warning
+            if offline_mode:
+                reason = (
+                    f"Source directory does not exist: {source_path} (package: {name}). "
+                    f"This is expected in offline mode. Run mxdev without -n and --offline flags to fetch sources."
+                )
+            else:
+                reason = (
+                    f"Source directory does not exist: {source_path} (package: {name}). "
+                    f"This could be because -n (no-fetch) flag was used or sources haven't been checked out yet. "
+                    f"Run mxdev without -n flag to fetch sources."
+                )
+            logger.warning(reason)
+            fio.write(f"# {install_line}  # mxdev: source not checked out\n")
+        else:
+            # Source exists - write normally
+            logger.debug(f"-> {install_line}")
+            fio.write(f"{install_line}\n")
+
     fio.write("\n\n")
 
 
@@ -292,6 +321,6 @@ def write(state: State) -> None:
             fio.write("#" * 79 + "\n")
             fio.write("# mxdev combined constraints\n")
             fio.write(f"-c {constraints_ref}\n\n")
-        write_dev_sources(fio, cfg.packages)
+        write_dev_sources(fio, cfg.packages, state)
         fio.writelines(requirements)
         write_main_package(fio, cfg.settings)

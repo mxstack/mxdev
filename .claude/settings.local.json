@@ -9,7 +9,13 @@
       "Bash(git push:*)",
       "Bash(uvx:*)",
       "Bash(gh run view:*)",
-      "Bash(gh pr ready:*)"
+      "Bash(gh pr ready:*)",
+      "Bash(pip index:*)",
+      "Bash(python -m venv:*)",
+      "Bash(/tmp/test-mxdev-pypi/bin/pip install:*)",
+      "Read(//tmp/test-mxdev-50/sources/**)",
+      "Read(//tmp/test-mxdev-failing/sources/**)",
+      "Read(//tmp/test-mxdev-failing/**)"
     ],
     "deny": [],
     "ask": []

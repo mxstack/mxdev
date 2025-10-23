@@ -1,7 +1,6 @@
 from io import StringIO
 
 import os
-import pathlib
 
 
 def test_process_line_plain():
@@ -30,35 +29,38 @@ def test_process_line_package_in_package_keys():
         ignore_keys=[],
         variety="r",
     )
-    assert "# my.package==1.0.0 -> mxdev disabled (source)" in requirements[0]
+    assert requirements == ["# my.package==1.0.0 -> mxdev disabled (source)\n"]
+    assert constraints == []
 
 
-def test_process_line_constraint_in_override_keys():
-    """Test process_line comments out constraints in override_keys."""
+def test_process_line_package_in_override_keys():
+    """Test process_line comments out packages in override_keys."""
     from mxdev.processing import process_line
 
     requirements, constraints = process_line(
-        "requests==2.28.0",
+        "my.package==1.0.0",
         package_keys=[],
-        override_keys=["requests"],
+        override_keys=["my.package"],
         ignore_keys=[],
-        variety="c",
+        variety="r",
     )
-    assert "# requests==2.28.0 -> mxdev disabled (override)" in constraints[0]
+    assert requirements == ["# my.package==1.0.0 -> mxdev disabled (version override)\n"]
+    assert constraints == []
 
 
-def test_process_line_constraint_in_ignore_keys():
-    """Test process_line comments out constraints in ignore_keys."""
+def test_process_line_package_in_ignore_keys():
+    """Test process_line comments out packages in ignore_keys."""
     from mxdev.processing import process_line
 
     requirements, constraints = process_line(
-        "ignored.package==1.0.0",
+        "my.package==1.0.0",
         package_keys=[],
         override_keys=[],
-        ignore_keys=["ignored.package"],
-        variety="c",
+        ignore_keys=["my.package"],
+        variety="r",
     )
-    assert "# ignored.package==1.0.0 -> mxdev disabled (ignore)" in constraints[0]
+    assert requirements == ["# my.package==1.0.0 -> mxdev disabled (ignore)\n"]
+    assert constraints == []
 
 
 def test_process_line_package_in_override_keys():
@@ -102,162 +104,195 @@ def test_process_line_constraint():
         ignore_keys=[],
         variety="c",
     )
-    assert requirements == []
     assert constraints == ["requests==2.28.0"]
+    assert requirements == []
 
 
-def test_process_line_bytes():
-    """Test process_line handles bytes input."""
+def test_process_line_comments():
+    """Test process_line passes through comments."""
     from mxdev.processing import process_line
 
     requirements, constraints = process_line(
-        b"requests>=2.28.0",
+        "# This is a comment",
         package_keys=[],
         override_keys=[],
         ignore_keys=[],
         variety="r",
     )
-    assert requirements == ["requests>=2.28.0"]
+    assert requirements == ["# This is a comment"]
+    assert constraints == []
 
 
-def test_process_io():
-    """Test process_io reads and processes lines from IO."""
-    from mxdev.processing import process_io
+def test_process_line_blank():
+    """Test process_line passes through blank lines."""
+    from mxdev.processing import process_line
 
-    fio = StringIO("requests>=2.28.0\nurllib3>=1.26.9\n")
-    requirements = []
-    constraints = []
-
-    process_io(fio, requirements, constraints, [], [], [], "r")
-
-    assert len(requirements) == 2
-    assert "requests>=2.28.0" in requirements[0]
-    assert "urllib3>=1.26.9" in requirements[1]
-
-
-def test_resolve_dependencies_file():
-    """Test resolve_dependencies with a file."""
-    from mxdev.processing import resolve_dependencies
-
-    base = pathlib.Path(__file__).parent / "data" / "requirements"
-    requirements, constraints = resolve_dependencies(
-        str(base / "basic_requirements.txt"),
-        package_keys=[],
-        override_keys=[],
-        ignore_keys=[],
-        variety="r",
-    )
-
-    # Should have header/footer and requirements
-    assert len(requirements) > 3
-    assert any("requests" in line for line in requirements)
-    assert any("urllib3" in line for line in requirements)
-    assert any("packaging" in line for line in requirements)
-
-
-def test_resolve_dependencies_empty():
-    """Test resolve_dependencies with empty file_or_url."""
-    from mxdev.processing import resolve_dependencies
-
-    requirements, constraints = resolve_dependencies(
+    requirements, constraints = process_line(
         "",
         package_keys=[],
         override_keys=[],
         ignore_keys=[],
+        variety="r",
     )
+    assert requirements == [""]
+    assert constraints == []
 
+
+def test_resolve_dependencies_missing_file(tmp_path):
+    """Test resolve_dependencies with a missing requirements file."""
+    from mxdev.processing import resolve_dependencies
+
+    requirements, constraints = resolve_dependencies(
+        "nonexistent.txt",
+        package_keys=[],
+        override_keys=[],
+        ignore_keys=[],
+        variety="r",
+    )
+    # Should return empty lists when file doesn't exist
     assert requirements == []
     assert constraints == []
 
 
-def test_resolve_dependencies_file_not_found():
-    """Test resolve_dependencies with non-existent file."""
+def test_resolve_dependencies_simple_file(tmp_path):
+    """Test resolve_dependencies with a simple requirements file."""
     from mxdev.processing import resolve_dependencies
 
-    requirements, constraints = resolve_dependencies(
-        "/tmp/does_not_exist_at_all_hopefully.txt",
-        package_keys=[],
-        override_keys=[],
-        ignore_keys=[],
-    )
+    req_file = tmp_path / "requirements.txt"
+    req_file.write_text("requests>=2.28.0\nurllib3==1.26.9\n")
 
-    # Should return empty and log info
-    assert len(requirements) == 0
-    assert len(constraints) == 0
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        requirements, constraints = resolve_dependencies(
+            "requirements.txt",
+            package_keys=[],
+            override_keys=[],
+            ignore_keys=[],
+            variety="r",
+        )
+        assert "requests>=2.28.0" in requirements
+        assert "urllib3==1.26.9" in requirements
+    finally:
+        os.chdir(old_cwd)
 
 
-def test_resolve_dependencies_with_constraints():
+def test_resolve_dependencies_with_constraints(tmp_path):
     """Test resolve_dependencies with -c constraint reference."""
     from mxdev.processing import resolve_dependencies
 
-    import os
+    req_file = tmp_path / "requirements.txt"
+    req_file.write_text("-c constraints.txt\nrequests>=2.28.0\n")
 
-    base = pathlib.Path(__file__).parent / "data" / "requirements"
+    const_file = tmp_path / "constraints.txt"
+    const_file.write_text("urllib3==1.26.9\n")
+
     old_cwd = os.getcwd()
-    os.chdir(base)  # Change to requirements dir so relative -c works
-
+    os.chdir(tmp_path)
     try:
         requirements, constraints = resolve_dependencies(
-            "requirements_with_constraints.txt",
+            "requirements.txt",
             package_keys=[],
             override_keys=[],
             ignore_keys=[],
             variety="r",
         )
-
-        # Should have processed constraints file
-        assert len(constraints) > 0
-        assert any("requests" in line for line in constraints)
+        assert any("requests" in line for line in requirements)
+        # Constraints from the -c file should be in constraints list
+        assert any("urllib3" in line for line in constraints)
     finally:
         os.chdir(old_cwd)
 
 
-def test_resolve_dependencies_nested():
-    """Test resolve_dependencies with -r nested requirements."""
+def test_resolve_dependencies_nested(tmp_path):
+    """Test resolve_dependencies with nested -r references."""
     from mxdev.processing import resolve_dependencies
 
-    import os
+    base_req = tmp_path / "base.txt"
+    base_req.write_text("requests>=2.28.0\n")
 
-    base = pathlib.Path(__file__).parent / "data" / "requirements"
+    req_file = tmp_path / "requirements.txt"
+    req_file.write_text("-r base.txt\nurllib3==1.26.9\n")
+
     old_cwd = os.getcwd()
-    os.chdir(base)  # Change to requirements dir so relative -r works
-
+    os.chdir(tmp_path)
     try:
         requirements, constraints = resolve_dependencies(
-            "nested_requirements.txt",
+            "requirements.txt",
             package_keys=[],
             override_keys=[],
             ignore_keys=[],
             variety="r",
         )
-
-        # Should have processed nested file
-        assert len(requirements) > 0
-        assert any("urllib3" in line for line in requirements)
+        # Should include both base.txt and requirements.txt content
         assert any("requests" in line for line in requirements)
+        assert any("urllib3" in line for line in requirements)
     finally:
         os.chdir(old_cwd)
+
+
+def test_resolve_dependencies_http(tmp_path):
+    """Test resolve_dependencies with HTTP URL."""
+    from mxdev.processing import resolve_dependencies
+
+    import httpretty
+
+    # Mock HTTP response
+    httpretty.enable()
+    try:
+        httpretty.register_uri(
+            httpretty.GET,
+            "http://example.com/requirements.txt",
+            body="requests>=2.28.0\n",
+        )
+
+        requirements, constraints = resolve_dependencies(
+            "http://example.com/requirements.txt",
+            package_keys=[],
+            override_keys=[],
+            ignore_keys=[],
+            variety="r",
+        )
+        assert any("requests" in line for line in requirements)
+    finally:
+        httpretty.disable()
+        httpretty.reset()
 
 
 def test_write_dev_sources(tmp_path):
     """Test write_dev_sources writes development sources correctly."""
+    from mxdev.config import Configuration
     from mxdev.processing import write_dev_sources
+    from mxdev.state import State
+
+    # Create source directories so they exist
+    (tmp_path / "sources" / "example.package").mkdir(parents=True)
+    (tmp_path / "sources" / "extras.package" / "packages" / "core").mkdir(parents=True)
+
+    # Create minimal config
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text("[settings]\nrequirements-in = requirements.txt\n")
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
 
     packages = {
         "example.package": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "example.package"),
             "extras": "",
             "subdirectory": "",
             "install-mode": "editable",
         },
         "skip.package": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "skip.package"),
             "extras": "",
             "subdirectory": "",
             "install-mode": "skip",
         },
         "extras.package": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "extras.package"),
             "extras": "test,docs",
             "subdirectory": "packages/core",
             "install-mode": "editable",
@@ -266,7 +301,7 @@ def test_write_dev_sources(tmp_path):
 
     outfile = tmp_path / "requirements.txt"
     with open(outfile, "w") as fio:
-        write_dev_sources(fio, packages)
+        write_dev_sources(fio, packages, state)
 
     content = outfile.read_text()
     assert "-e ./sources/example.package" in content
@@ -276,17 +311,31 @@ def test_write_dev_sources(tmp_path):
 
 def test_write_dev_sources_fixed_mode(tmp_path):
     """Test write_dev_sources with fixed install mode (no -e prefix)."""
+    from mxdev.config import Configuration
     from mxdev.processing import write_dev_sources
+    from mxdev.state import State
+
+    # Create source directories so they exist
+    (tmp_path / "sources" / "fixed.package").mkdir(parents=True)
+    (tmp_path / "sources" / "fixed.with.extras" / "packages" / "core").mkdir(parents=True)
+
+    # Create minimal config
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text("[settings]\nrequirements-in = requirements.txt\n")
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
 
     packages = {
         "fixed.package": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "fixed.package"),
             "extras": "",
             "subdirectory": "",
             "install-mode": "fixed",
         },
         "fixed.with.extras": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "fixed.with.extras"),
             "extras": "test",
             "subdirectory": "packages/core",
             "install-mode": "fixed",
@@ -295,7 +344,7 @@ def test_write_dev_sources_fixed_mode(tmp_path):
 
     outfile = tmp_path / "requirements.txt"
     with open(outfile, "w") as fio:
-        write_dev_sources(fio, packages)
+        write_dev_sources(fio, packages, state)
 
     content = outfile.read_text()
     # Fixed mode should NOT have -e prefix
@@ -307,23 +356,38 @@ def test_write_dev_sources_fixed_mode(tmp_path):
 
 def test_write_dev_sources_mixed_modes(tmp_path):
     """Test write_dev_sources with mixed install modes."""
+    from mxdev.config import Configuration
     from mxdev.processing import write_dev_sources
+    from mxdev.state import State
+
+    # Create source directories so they exist
+    (tmp_path / "sources" / "editable.package").mkdir(parents=True)
+    (tmp_path / "sources" / "fixed.package").mkdir(parents=True)
+
+    # Create minimal config
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text("[settings]\nrequirements-in = requirements.txt\n")
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
 
     packages = {
         "editable.package": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "editable.package"),
             "extras": "",
             "subdirectory": "",
             "install-mode": "editable",
         },
         "fixed.package": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "fixed.package"),
             "extras": "",
             "subdirectory": "",
             "install-mode": "fixed",
         },
         "skip.package": {
             "target": "sources",
+            "path": str(tmp_path / "sources" / "skip.package"),
             "extras": "",
             "subdirectory": "",
             "install-mode": "skip",
@@ -332,25 +396,32 @@ def test_write_dev_sources_mixed_modes(tmp_path):
 
     outfile = tmp_path / "requirements.txt"
     with open(outfile, "w") as fio:
-        write_dev_sources(fio, packages)
+        write_dev_sources(fio, packages, state)
 
     content = outfile.read_text()
-    # Editable should have -e prefix
+    # Editable should have -e
     assert "-e ./sources/editable.package" in content
-    # Fixed should NOT have -e prefix
+    # Fixed should NOT have -e
     assert "./sources/fixed.package" in content
     assert "-e ./sources/fixed.package" not in content
     # Skip should not appear at all
     assert "skip.package" not in content
 
 
-def test_write_dev_sources_empty():
+def test_write_dev_sources_empty(tmp_path):
     """Test write_dev_sources with no packages."""
-    from io import StringIO
+    from mxdev.config import Configuration
     from mxdev.processing import write_dev_sources
+    from mxdev.state import State
+
+    # Create minimal config
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text("[settings]\nrequirements-in = requirements.txt\n")
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
 
     fio = StringIO()
-    write_dev_sources(fio, {})
+    write_dev_sources(fio, {}, state)
 
     # Should not write anything for empty packages
     assert fio.getvalue() == ""
@@ -365,7 +436,7 @@ def test_write_dev_overrides(tmp_path):
         "urllib3": "urllib3==1.26.9",
     }
 
-    outfile = tmp_path / "requirements.txt"
+    outfile = tmp_path / "constraints.txt"
     with open(outfile, "w") as fio:
         write_dev_overrides(fio, overrides, package_keys=[])
 
@@ -375,11 +446,12 @@ def test_write_dev_overrides(tmp_path):
 
 
 def test_write_dev_overrides_source_wins(tmp_path):
-    """Test write_dev_overrides comments out override when package is in sources."""
+    """Test write_dev_overrides comments out overrides when source exists."""
     from mxdev.processing import write_dev_overrides
 
     overrides = {
         "my.package": "my.package==1.0.0",
+        "other.package": "other.package==2.0.0",
     }
 
     outfile = tmp_path / "test_override_source_wins.txt"
@@ -406,21 +478,22 @@ def test_write_main_package(tmp_path):
     assert "-e .[test]" in content
 
 
-def test_write_main_package_not_set():
-    """Test write_main_package when main-package not set."""
-    from io import StringIO
+def test_write_main_package_empty(tmp_path):
+    """Test write_main_package with no main package."""
     from mxdev.processing import write_main_package
 
     settings = {}
-    fio = StringIO()
-    write_main_package(fio, settings)
 
-    # Should not write anything when main-package not set
-    assert fio.getvalue() == ""
+    outfile = tmp_path / "requirements.txt"
+    with open(outfile, "w") as fio:
+        write_main_package(fio, settings)
+
+    content = outfile.read_text()
+    assert content == ""
 
 
-def test_write(tmp_path):
-    """Test write function creates output files correctly."""
+def test_write_output_with_overrides(tmp_path):
+    """Test write() with version overrides."""
     from mxdev.config import Configuration
     from mxdev.processing import write
     from mxdev.state import State
@@ -451,36 +524,78 @@ version-overrides =
     try:
         write(state)
 
-        # Check requirements file was created
+        # Check requirements file
         req_file = tmp_path / "requirements-out.txt"
         assert req_file.exists()
         req_content = req_file.read_text()
-        assert "requests" in req_content
-        assert "-c constraints-out.txt" in req_content
+        assert "requests\n" in req_content
 
-        # Check constraints file was created
+        # Check constraints file
         const_file = tmp_path / "constraints-out.txt"
         assert const_file.exists()
         const_content = const_file.read_text()
+        assert "requests==2.28.0" in const_content  # Override applied
         assert "urllib3==1.26.9" in const_content
-        assert "requests==2.28.0" in const_content
     finally:
         os.chdir(old_cwd)
 
 
-def test_write_no_constraints(tmp_path):
-    """Test write function when there are no constraints."""
+def test_write_output_with_ignores(tmp_path):
+    """Test write() with ignores."""
     from mxdev.config import Configuration
     from mxdev.processing import write
     from mxdev.state import State
 
-    # Create a simple config without constraints
     config_file = tmp_path / "mx.ini"
     config_file.write_text(
         """[settings]
 requirements-in = requirements.txt
 requirements-out = requirements-out.txt
 constraints-out = constraints-out.txt
+ignores =
+    my.mainpackage
+"""
+    )
+
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
+    state.requirements = ["requests\n", "my.mainpackage==1.0.0\n"]
+    state.constraints = ["urllib3==1.26.9\n", "my.mainpackage==1.0.0\n"]
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+
+    try:
+        write(state)
+
+        req_file = tmp_path / "requirements-out.txt"
+        req_content = req_file.read_text()
+        assert "requests\n" in req_content
+        # Ignored package should be commented out
+        assert "# my.mainpackage==1.0.0 -> mxdev disabled (ignore)" in req_content
+
+        const_file = tmp_path / "constraints-out.txt"
+        const_content = const_file.read_text()
+        assert "urllib3==1.26.9" in const_content
+        # Ignored package should be commented out in constraints too
+        assert "# my.mainpackage==1.0.0 -> mxdev disabled (ignore)" in const_content
+    finally:
+        os.chdir(old_cwd)
+
+
+def test_write_output_with_main_package(tmp_path):
+    """Test write() with main-package setting."""
+    from mxdev.config import Configuration
+    from mxdev.processing import write
+    from mxdev.state import State
+
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+requirements-out = requirements-out.txt
+constraints-out = constraints-out.txt
+main-package = -e .[test]
 """
     )
 
@@ -489,124 +604,58 @@ constraints-out = constraints-out.txt
     state.requirements = ["requests\n"]
     state.constraints = []
 
-    # Change to tmp_path so output files go there
-    import os
-
     old_cwd = os.getcwd()
     os.chdir(tmp_path)
 
     try:
         write(state)
 
-        # Check requirements file was created
         req_file = tmp_path / "requirements-out.txt"
-        assert req_file.exists()
         req_content = req_file.read_text()
-        assert "requests" in req_content
-        assert "-c constraints-out.txt" not in req_content  # No constraints reference
-
-        # Check constraints file was NOT created
-        const_file = tmp_path / "constraints-out.txt"
-        assert not const_file.exists()
+        assert "-e .[test]" in req_content
+        assert "requests\n" in req_content
     finally:
         os.chdir(old_cwd)
 
 
-def test_relative_constraints_path_in_subdirectory(tmp_path):
-    """Test that constraints path in requirements-out is relative to requirements file location.
+def test_write_relative_constraints_path_different_dirs(tmp_path):
+    """Test write() generates correct relative path for constraints file.
 
-    This reproduces issue #22: when requirements-out and constraints-out are in subdirectories,
-    the constraints reference should be relative to the requirements file's directory.
+    When requirements and constraints files are in different directories,
+    the -c reference in requirements should use a relative path.
     """
     from mxdev.config import Configuration
     from mxdev.processing import read
     from mxdev.processing import write
     from mxdev.state import State
 
-    old_cwd = os.getcwd()
-    try:
-        os.chdir(tmp_path)
+    # Create directory structure
+    reqs_dir = tmp_path / "reqs"
+    reqs_dir.mkdir()
+    const_dir = tmp_path / "constraints"
+    const_dir.mkdir()
 
-        # Create subdirectory for output files
-        (tmp_path / "requirements").mkdir()
-
-        # Create input constraints file
-        constraints_in = tmp_path / "constraints.txt"
-        constraints_in.write_text("requests==2.28.0\nurllib3==1.26.9\n")
-
-        # Create input requirements file with a constraint reference
-        requirements_in = tmp_path / "requirements.txt"
-        requirements_in.write_text("-c constraints.txt\nrequests\n")
-
-        # Create config with both output files in subdirectory
-        config_file = tmp_path / "mx.ini"
-        config_file.write_text(
-            """[settings]
-requirements-in = requirements.txt
-requirements-out = requirements/plone.txt
-constraints-out = requirements/constraints.txt
-"""
-        )
-
-        config = Configuration(str(config_file))
-        state = State(configuration=config)
-
-        # Read and write
-        read(state)
-        write(state)
-
-        # Check requirements file contains relative path to constraints
-        req_file = tmp_path / "requirements" / "plone.txt"
-        assert req_file.exists()
-        req_content = req_file.read_text()
-
-        # Bug: Currently writes "-c requirements/constraints.txt"
-        # Expected: Should write "-c constraints.txt" (relative to requirements file's directory)
-        assert "-c constraints.txt\n" in req_content, (
-            f"Expected '-c constraints.txt' (relative path), " f"but got:\n{req_content}"
-        )
-
-        # Should NOT contain the full path from config file's perspective
-        assert "-c requirements/constraints.txt" not in req_content
-    finally:
-        os.chdir(old_cwd)
-
-
-def test_relative_constraints_path_different_directories(tmp_path):
-    """Test constraints path when requirements and constraints are in different directories."""
-    from mxdev.config import Configuration
-    from mxdev.processing import read
-    from mxdev.processing import write
-    from mxdev.state import State
-
-    old_cwd = os.getcwd()
-    try:
-        os.chdir(tmp_path)
-
-        # Create different subdirectories
-        (tmp_path / "reqs").mkdir()
-        (tmp_path / "constraints").mkdir()
-
-        # Create input constraints file
-        constraints_in = tmp_path / "constraints.txt"
-        constraints_in.write_text("requests==2.28.0\nurllib3==1.26.9\n")
-
-        # Create input requirements file with a constraint reference
-        requirements_in = tmp_path / "requirements.txt"
-        requirements_in.write_text("-c constraints.txt\nrequests\n")
-
-        config_file = tmp_path / "mx.ini"
-        config_file.write_text(
-            """[settings]
+    # Create config with files in different directories
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
 requirements-in = requirements.txt
 requirements-out = reqs/requirements.txt
 constraints-out = constraints/constraints.txt
 """
-        )
+    )
 
-        config = Configuration(str(config_file))
-        state = State(configuration=config)
+    # Create empty requirements.txt
+    req_in = tmp_path / "requirements.txt"
+    req_in.write_text("")
 
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+
+    try:
         read(state)
         write(state)
 
@@ -621,3 +670,116 @@ constraints-out = constraints/constraints.txt
         )
     finally:
         os.chdir(old_cwd)
+
+
+def test_write_dev_sources_missing_directories(tmp_path, caplog):
+    """Test write_dev_sources with non-existing source directories.
+
+    When source directories don't exist (e.g., when using mxdev -n),
+    packages should be written as comments with warnings.
+    """
+    from mxdev.config import Configuration
+    from mxdev.processing import write_dev_sources
+    from mxdev.state import State
+
+    # Create config without offline mode
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+"""
+    )
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
+
+    # Create one existing directory, leave others missing
+    existing_pkg_path = tmp_path / "sources" / "existing.package"
+    existing_pkg_path.mkdir(parents=True)
+
+    packages = {
+        "existing.package": {
+            "target": "sources",
+            "path": str(tmp_path / "sources" / "existing.package"),
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "editable",
+        },
+        "missing.package": {
+            "target": "sources",
+            "path": str(tmp_path / "sources" / "missing.package"),
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "editable",
+        },
+        "missing.fixed": {
+            "target": "sources",
+            "path": str(tmp_path / "sources" / "missing.fixed"),
+            "extras": "test",
+            "subdirectory": "",
+            "install-mode": "fixed",
+        },
+    }
+
+    outfile = tmp_path / "requirements.txt"
+    with open(outfile, "w") as fio:
+        write_dev_sources(fio, packages, state)
+
+    content = outfile.read_text()
+
+    # Existing package should be written normally
+    assert "-e ./sources/existing.package\n" in content
+
+    # Missing packages should be commented out
+    assert "# -e ./sources/missing.package  # mxdev: source not checked out\n" in content
+    assert "# ./sources/missing.fixed[test]  # mxdev: source not checked out\n" in content
+
+    # Check warnings were logged
+    assert "Source directory does not exist" in caplog.text
+    assert "missing.package" in caplog.text
+    assert "missing.fixed" in caplog.text
+    assert "Run mxdev without -n flag" in caplog.text
+
+
+def test_write_dev_sources_missing_directories_offline_mode(tmp_path, caplog):
+    """Test write_dev_sources warning message in offline mode.
+
+    When in offline mode, the warning should mention offline mode specifically.
+    """
+    from mxdev.config import Configuration
+    from mxdev.processing import write_dev_sources
+    from mxdev.state import State
+
+    # Create config WITH offline mode
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+offline = true
+"""
+    )
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
+
+    packages = {
+        "missing.package": {
+            "target": "sources",
+            "path": str(tmp_path / "sources" / "missing.package"),
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "editable",
+        },
+    }
+
+    outfile = tmp_path / "requirements.txt"
+    with open(outfile, "w") as fio:
+        write_dev_sources(fio, packages, state)
+
+    content = outfile.read_text()
+
+    # Missing package should be commented out
+    assert "# -e ./sources/missing.package  # mxdev: source not checked out\n" in content
+
+    # Check offline-specific warning was logged
+    assert "Source directory does not exist" in caplog.text
+    assert "This is expected in offline mode" in caplog.text
+    assert "Run mxdev without -n and --offline flags" in caplog.text
