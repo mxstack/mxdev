@@ -1,6 +1,6 @@
 ## Changes
 
-## 5.0.2 (unreleased)
+## 5.0.2 (2025-10-23)
 
 - Fix #70: HTTP-referenced requirements/constraints files are now properly cached and respected in offline mode. Previously, offline mode only skipped VCS operations but still fetched HTTP URLs. Now mxdev caches all HTTP content in `.mxdev_cache/` during online mode and reuses it during offline mode, enabling true offline operation. This fixes the inconsistent behavior where `-o/--offline` didn't prevent all network activity.
   [jensens]
