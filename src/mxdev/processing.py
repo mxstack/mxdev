@@ -219,6 +219,7 @@ def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]], state: St
     from .config import to_bool
 
     offline_mode = to_bool(state.configuration.settings.get("offline", False))
+    missing_sources = []  # Track missing sources for error handling
 
     fio.write("#" * 79 + "\n")
     fio.write("# mxdev development sources\n")
@@ -238,19 +239,25 @@ def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]], state: St
         install_line = f"""{prefix}./{package['target']}/{name}{subdir}{extras}"""
 
         if not source_path.exists():
-            # Source not checked out yet - write as comment with warning
+            # Source not checked out yet - write as comment
+            missing_sources.append(name)
+
             if offline_mode:
+                # In offline mode, missing sources are expected - log as WARNING
                 reason = (
                     f"Source directory does not exist: {source_path} (package: {name}). "
                     f"This is expected in offline mode. Run mxdev without -n and --offline flags to fetch sources."
                 )
+                logger.warning(reason)
             else:
+                # In non-offline mode, missing sources are a fatal error - log as ERROR
                 reason = (
                     f"Source directory does not exist: {source_path} (package: {name}). "
-                    f"This could be because -n (no-fetch) flag was used or sources haven't been checked out yet. "
+                    f"This indicates a failure in the checkout process. "
                     f"Run mxdev without -n flag to fetch sources."
                 )
-            logger.warning(reason)
+                logger.error(reason)
+
             fio.write(f"# {install_line}  # mxdev: source not checked out\n")
         else:
             # Source exists - write normally
@@ -258,6 +265,14 @@ def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]], state: St
             fio.write(f"{install_line}\n")
 
     fio.write("\n\n")
+
+    # In non-offline mode, missing sources are a fatal error
+    if not offline_mode and missing_sources:
+        raise RuntimeError(
+            f"Source directories missing for packages: {', '.join(missing_sources)}. "
+            f"This indicates a failure in the checkout process. "
+            f"Run mxdev without -n flag to fetch sources."
+        )
 
 
 def write_dev_overrides(fio, overrides: dict[str, str], package_keys: list[str]):

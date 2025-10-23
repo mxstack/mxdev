@@ -20,7 +20,7 @@
   [jensens]
 - Feature: #54: Add `fixed` install mode for non-editable installations to support production and Docker deployments. The new `editable` mode replaces `direct` as the default (same behavior, clearer naming). The `direct` mode is now deprecated but still works with a warning. Install modes: `editable` (with `-e`, for development), `fixed` (without `-e`, for production/Docker), `skip` (clone only).
   [jensens]
-- Fix #65: When generating requirements-mxdev.txt, check if source directories actually exist before writing package references. If a source directory doesn't exist (e.g., when using `mxdev -n` without prior fetch, or in offline mode), write it as a comment with a contextual warning instead of causing pip install to fail later. This fixes the mxmake two-stage installation workflow where `mxdev -n` runs before sources are checked out. Warning messages include context about offline mode when applicable.
+- Fix #65: Check source directories exist before writing to requirements-mxdev.txt. In **offline mode**: missing sources log WARNING and are written as comments (expected behavior). In **non-offline mode**: missing sources log ERROR and mxdev exits with RuntimeError (fatal error indicating checkout failure). This fixes mxmake two-stage installation workflow and prevents silent failures when sources fail to check out.
   [jensens]
 - Fix #35: Add `smart-threading` configuration option to prevent overlapping credential prompts when using HTTPS URLs. When enabled (default), HTTPS packages are processed serially first to ensure clean credential prompts, then other packages are processed in parallel for speed. Can be disabled with `smart-threading = false` if you have credential helpers configured.
   [jensens]

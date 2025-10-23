@@ -673,20 +673,21 @@ constraints-out = constraints/constraints.txt
 
 
 def test_write_dev_sources_missing_directories(tmp_path, caplog):
-    """Test write_dev_sources with non-existing source directories.
+    """Test write_dev_sources with non-existing source directories in offline mode.
 
-    When source directories don't exist (e.g., when using mxdev -n),
+    When source directories don't exist in offline mode (expected behavior),
     packages should be written as comments with warnings.
     """
     from mxdev.config import Configuration
     from mxdev.processing import write_dev_sources
     from mxdev.state import State
 
-    # Create config without offline mode
+    # Create config WITH offline mode
     config_file = tmp_path / "mx.ini"
     config_file.write_text(
         """[settings]
 requirements-in = requirements.txt
+offline = true
 """
     )
     config = Configuration(str(config_file))
@@ -733,11 +734,70 @@ requirements-in = requirements.txt
     assert "# -e ./sources/missing.package  # mxdev: source not checked out\n" in content
     assert "# ./sources/missing.fixed[test]  # mxdev: source not checked out\n" in content
 
-    # Check warnings were logged
+    # Check warnings were logged (offline mode specific)
     assert "Source directory does not exist" in caplog.text
     assert "missing.package" in caplog.text
     assert "missing.fixed" in caplog.text
-    assert "Run mxdev without -n flag" in caplog.text
+    assert "This is expected in offline mode" in caplog.text
+    assert "Run mxdev without -n and --offline flags" in caplog.text
+
+
+def test_write_dev_sources_missing_directories_raises_error(tmp_path, caplog):
+    """Test write_dev_sources raises RuntimeError when sources missing in non-offline mode.
+
+    When source directories don't exist and we're NOT in offline mode,
+    this is a fatal error - something went wrong earlier in the workflow.
+    """
+    from mxdev.config import Configuration
+    from mxdev.processing import write_dev_sources
+    from mxdev.state import State
+
+    import pytest
+
+    # Create config WITHOUT offline mode (non-offline mode)
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(
+        """[settings]
+requirements-in = requirements.txt
+"""
+    )
+    config = Configuration(str(config_file))
+    state = State(configuration=config)
+
+    # Define packages but DON'T create source directories
+    packages = {
+        "missing.package": {
+            "target": "sources",
+            "path": str(tmp_path / "sources" / "missing.package"),
+            "extras": "",
+            "subdirectory": "",
+            "install-mode": "editable",
+        },
+        "missing.fixed": {
+            "target": "sources",
+            "path": str(tmp_path / "sources" / "missing.fixed"),
+            "extras": "test",
+            "subdirectory": "",
+            "install-mode": "fixed",
+        },
+    }
+
+    outfile = tmp_path / "requirements.txt"
+
+    # Should raise RuntimeError for missing sources in non-offline mode
+    with pytest.raises(RuntimeError) as exc_info:
+        with open(outfile, "w") as fio:
+            write_dev_sources(fio, packages, state)
+
+    # Error message should contain package names
+    error_msg = str(exc_info.value)
+    assert "missing.package" in error_msg
+    assert "missing.fixed" in error_msg
+    assert "Source directories missing" in error_msg
+
+    # Should log ERROR (not just WARNING)
+    assert any(record.levelname == "ERROR" for record in caplog.records)
+    assert "Source directory does not exist" in caplog.text
 
 
 def test_write_dev_sources_missing_directories_offline_mode(tmp_path, caplog):
