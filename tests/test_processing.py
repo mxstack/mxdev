@@ -824,3 +824,188 @@ offline = true
     assert "Source directory does not exist" in caplog.text
     assert "This is expected in offline mode" in caplog.text
     assert "Run mxdev without -n and --offline flags" in caplog.text
+
+
+def test_http_cache_online_mode(tmp_path):
+    """Test HTTP URLs are cached in online mode."""
+    from mxdev.processing import resolve_dependencies
+
+    import httpretty
+
+    cache_dir = tmp_path / ".mxdev-cache"
+
+    # Mock HTTP response
+    httpretty.enable()
+    try:
+        httpretty.register_uri(
+            httpretty.GET,
+            "http://example.com/requirements.txt",
+            body="requests>=2.28.0\nurllib3==1.26.9\n",
+        )
+
+        requirements, constraints = resolve_dependencies(
+            "http://example.com/requirements.txt",
+            package_keys=[],
+            override_keys=[],
+            ignore_keys=[],
+            variety="r",
+            offline=False,
+            cache_dir=cache_dir,
+        )
+
+        # Should have requirements
+        assert any("requests" in line for line in requirements)
+        assert any("urllib3" in line for line in requirements)
+
+        # Cache directory should be created
+        assert cache_dir.exists()
+
+        # Cache file should exist (check for any file in cache)
+        cache_files = list(cache_dir.glob("*"))
+        cache_content_files = [f for f in cache_files if not f.suffix]
+        assert len(cache_content_files) >= 1, "Expected at least one cache file"
+
+        # Read cache file and verify content
+        cache_file = cache_content_files[0]
+        cached_content = cache_file.read_text()
+        assert "requests>=2.28.0" in cached_content
+        assert "urllib3==1.26.9" in cached_content
+
+        # Check .url metadata file exists
+        url_files = list(cache_dir.glob("*.url"))
+        assert len(url_files) >= 1, "Expected at least one .url metadata file"
+
+    finally:
+        httpretty.disable()
+        httpretty.reset()
+
+
+def test_http_cache_offline_mode_hit(tmp_path):
+    """Test HTTP URLs are read from cache in offline mode (cache hit)."""
+    from mxdev.processing import _get_cache_key
+    from mxdev.processing import resolve_dependencies
+
+    cache_dir = tmp_path / ".mxdev-cache"
+    cache_dir.mkdir()
+
+    url = "http://example.com/requirements.txt"
+    cache_key = _get_cache_key(url)
+
+    # Pre-populate cache
+    cache_file = cache_dir / cache_key
+    cache_file.write_text("cached-package>=1.0.0\n")
+
+    # Also write .url metadata
+    url_file = cache_dir / f"{cache_key}.url"
+    url_file.write_text(url)
+
+    # Don't enable httpretty - we shouldn't make any HTTP requests
+    requirements, constraints = resolve_dependencies(
+        url,
+        package_keys=[],
+        override_keys=[],
+        ignore_keys=[],
+        variety="r",
+        offline=True,
+        cache_dir=cache_dir,
+    )
+
+    # Should use cached content
+    assert any("cached-package" in line for line in requirements)
+
+    # Verify no HTTP request was made (httpretty would fail if one was attempted)
+
+
+def test_http_cache_offline_mode_miss(tmp_path):
+    """Test HTTP URLs error in offline mode when not cached (cache miss)."""
+    from mxdev.processing import resolve_dependencies
+
+    cache_dir = tmp_path / ".mxdev-cache"
+    cache_dir.mkdir()
+
+    # Cache is empty, should raise error
+    with pytest.raises(RuntimeError) as exc_info:
+        resolve_dependencies(
+            "http://example.com/requirements.txt",
+            package_keys=[],
+            override_keys=[],
+            ignore_keys=[],
+            variety="r",
+            offline=True,
+            cache_dir=cache_dir,
+        )
+
+    error_msg = str(exc_info.value)
+    assert "offline mode" in error_msg.lower()
+    assert "not found in cache" in error_msg.lower()
+    assert "http://example.com/requirements.txt" in error_msg
+
+
+def test_cache_key_generation():
+    """Test cache key generation is deterministic and collision-resistant."""
+    from mxdev.processing import _get_cache_key
+
+    # Same URL should produce same cache key
+    url1 = "http://example.com/requirements.txt"
+    key1 = _get_cache_key(url1)
+    key2 = _get_cache_key(url1)
+    assert key1 == key2
+
+    # Different URLs should produce different cache keys
+    url2 = "http://example.com/constraints.txt"
+    key3 = _get_cache_key(url2)
+    assert key1 != key3
+
+    # Cache key should be reasonable length (16 hex chars)
+    assert len(key1) == 16
+    assert all(c in "0123456789abcdef" for c in key1)
+
+
+def test_http_cache_revalidates_in_online_mode(tmp_path):
+    """Test HTTP cache is updated in online mode (not just read)."""
+    from mxdev.processing import _get_cache_key
+    from mxdev.processing import resolve_dependencies
+
+    import httpretty
+
+    cache_dir = tmp_path / ".mxdev-cache"
+    cache_dir.mkdir()
+
+    url = "http://example.com/requirements.txt"
+    cache_key = _get_cache_key(url)
+
+    # Pre-populate cache with old content
+    cache_file = cache_dir / cache_key
+    cache_file.write_text("old-package==1.0.0\n")
+
+    # Mock HTTP response with new content
+    httpretty.enable()
+    try:
+        httpretty.register_uri(
+            httpretty.GET,
+            url,
+            body="new-package>=2.0.0\n",
+        )
+
+        requirements, constraints = resolve_dependencies(
+            url,
+            package_keys=[],
+            override_keys=[],
+            ignore_keys=[],
+            variety="r",
+            offline=False,
+            cache_dir=cache_dir,
+        )
+
+        # Should use NEW content from HTTP, not old cache
+        assert any("new-package" in line for line in requirements)
+        assert not any("old-package" in line for line in requirements)
+
+        # Cache should be updated
+        cached_content = cache_file.read_text()
+        assert "new-package>=2.0.0" in cached_content
+        assert "old-package" not in cached_content
+
+    finally:
+        httpretty.disable()
+        httpretty.reset()

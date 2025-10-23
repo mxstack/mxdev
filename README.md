@@ -85,7 +85,7 @@ The **main section** must be called `[settings]`, even if kept empty.
 | `default-target` | Target directory for VCS checkouts | `./sources` |
 | `threads` | Number of parallel threads for fetching sources | `4` |
 | `smart-threading` | Process HTTPS packages serially to avoid overlapping credential prompts (see below) | `True` |
-| `offline` | Skip all VCS fetch operations (handy for offline work) | `False` |
+| `offline` | Skip all VCS and HTTP fetches; use cached HTTP content from `.mxdev_cache/` (see below) | `False` |
 | `default-install-mode` | Default `install-mode` for packages: `editable`, `fixed`, or `skip` (see below) | `editable` |
 | `default-update` | Default update behavior: `yes` or `no` | `yes` |
 | `default-use` | Default use behavior (when false, sources not checked out) | `True` |
@@ -102,6 +102,34 @@ When `smart-threading` is enabled (default), mxdev uses a two-phase approach to 
 This solves the problem where parallel git operations would cause multiple credential prompts to overlap, making it confusing which package needs credentials.
 
 **When to disable**: Set `smart-threading = false` if you have git credential helpers configured (e.g., credential cache, credential store) and never see prompts.
+
+##### Offline Mode and HTTP Caching
+
+When `offline` mode is enabled (or via `-o/--offline` flag), mxdev operates without any network access:
+
+1. **HTTP Caching**: HTTP-referenced requirements/constraints files are automatically cached in `.mxdev_cache/` during online mode
+2. **Offline Usage**: In offline mode, mxdev reads from the cache instead of fetching from the network
+3. **Cache Miss**: If a referenced HTTP file is not in the cache, mxdev will error and prompt you to run in online mode first
+
+**Example workflow:**
+```bash
+# First run in online mode to populate cache
+mxdev
+
+# Subsequent runs can be offline (e.g., on airplane, restricted network)
+mxdev -o
+
+# Cache persists across runs, enabling true offline development
+```
+
+**Cache location**: `.mxdev_cache/` (automatically added to `.gitignore`)
+
+**When to use offline mode**:
+- Working without internet access (airplanes, restricted networks)
+- Testing configuration changes without re-fetching
+- Faster iterations when VCS sources are already checked out
+
+**Note**: Offline mode tolerates missing source directories (logs warnings), while non-offline mode treats missing sources as fatal errors.
 
 #### Package Overrides
 
