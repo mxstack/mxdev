@@ -27,9 +27,19 @@ parser.add_argument(
     type=str,
     default="mx.ini",
 )
-parser.add_argument("-n", "--no-fetch", help="Do not fetch sources", action="store_true")
-parser.add_argument("-f", "--fetch-only", help="Only fetch sources", action="store_true")
-parser.add_argument("-o", "--offline", help="Do not fetch sources, work offline", action="store_true")
+parser.add_argument(
+    "-n",
+    "--no-fetch",
+    help="Skip VCS checkout/update; regenerate files from existing sources (error if missing)",
+    action="store_true",
+)
+parser.add_argument("-f", "--fetch-only", help="Only perform VCS operations; skip file generation", action="store_true")
+parser.add_argument(
+    "-o",
+    "--offline",
+    help="Work offline; skip VCS and HTTP fetches; use cached files (tolerate missing)",
+    action="store_true",
+)
 parser.add_argument(
     "-t",
     "--threads",
