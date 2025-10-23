@@ -8,6 +8,7 @@ on:
     types:
       - "reopened"
       - "opened"
+      - "synchronize"
   workflow_call:
   workflow_dispatch:
 

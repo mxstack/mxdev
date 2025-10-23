@@ -2,9 +2,11 @@
 
 ## 5.0.1 (unreleased)
 
+- Fix: Add 'synchronize' event to pull_request workflow triggers. This ensures CI runs when PRs are updated with new commits (e.g., after rebasing or pushing new changes), not just when opened or reopened.
+  [jensens]
 - Chore: Optimize GitHub Actions to prevent duplicate workflow runs on pull requests. Restrict `push` trigger to only run on `main` branch, so PRs only trigger via `pull_request` event. This reduces CI resource usage by 50% for PR workflows.
   [jensens]
-- Fix: `process_line()` now correctly comments out packages in `override_keys` and `ignore_keys` for both requirements and constraints files. Previously, these settings only applied to constraints files (variety="c"). Now they work for requi## 5.0.0 (2025-10-25)rements files (variety="r") as well, with the message "-> mxdev disabled (version override)" for override_keys in requirements.
+- Fix: `process_line()` now correctly comments out packages in `override_keys` and `ignore_keys` for both requirements and constraints files. Previously, these settings only applied to constraints files (variety="c"). Now they work for requirements files (variety="r") as well, with the message "-> mxdev disabled (version override)" for override_keys in requirements.
   [jensens]
 
 ## 5.0.0 (2025-10-25)
