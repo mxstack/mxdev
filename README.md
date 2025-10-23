@@ -94,8 +94,10 @@ The **main section** must be called `[settings]`, even if kept empty.
 
 When `smart-threading` is enabled (default), mxdev uses a two-phase approach to prevent credential prompts from overlapping:
 
-1. **Phase 1**: HTTPS packages are processed serially (one at a time) to ensure clean, visible credential prompts
-2. **Phase 2**: Remaining packages (SSH, local) are processed in parallel for speed
+1. **Phase 1**: HTTPS packages **without `pushurl`** are processed serially (one at a time) to ensure clean, visible credential prompts
+2. **Phase 2**: Remaining packages (SSH, local, HTTPS with `pushurl`) are processed in parallel for speed
+
+**Optimization**: HTTPS URLs with `pushurl` defined are assumed to be read-only/public and processed in parallel, since the `pushurl` indicates authenticated write access is separate.
 
 This solves the problem where parallel git operations would cause multiple credential prompts to overlap, making it confusing which package needs credentials.
 

@@ -963,3 +963,47 @@ def test_git_switch_branch_checkout_failure():
             with patch.object(wc, "git_version", return_value=(2, 30, 0)):
                 with pytest.raises(GitError, match="git checkout"):
                     wc.git_switch_branch("", "")
+
+
+def test_smart_threading_separates_https_with_pushurl():
+    """Test smart threading correctly separates HTTPS packages based on pushurl.
+
+    HTTPS URLs with pushurl should go to parallel queue (other_packages).
+    HTTPS URLs without pushurl should go to serial queue (https_packages).
+    """
+    from mxdev.vcs.common import WorkingCopies
+
+    sources = {
+        "https-no-pushurl": {
+            "name": "https-no-pushurl",
+            "url": "https://github.com/org/repo1.git",
+            "path": "/tmp/repo1",
+        },
+        "https-with-pushurl": {
+            "name": "https-with-pushurl",
+            "url": "https://github.com/org/repo2.git",
+            "path": "/tmp/repo2",
+            "pushurl": "git@github.com:org/repo2.git",
+        },
+        "ssh-url": {
+            "name": "ssh-url",
+            "url": "git@github.com:org/repo3.git",
+            "path": "/tmp/repo3",
+        },
+        "fs-url": {
+            "name": "fs-url",
+            "url": "/local/path/repo4",
+            "path": "/tmp/repo4",
+        },
+    }
+
+    wc = WorkingCopies(sources=sources, threads=4, smart_threading=True)
+    packages = ["https-no-pushurl", "https-with-pushurl", "ssh-url", "fs-url"]
+
+    https_pkgs, other_pkgs = wc._separate_https_packages(packages)
+
+    # Only HTTPS without pushurl should be in serial queue
+    assert https_pkgs == ["https-no-pushurl"]
+
+    # HTTPS with pushurl, SSH, and fs should be in parallel queue
+    assert set(other_pkgs) == {"https-with-pushurl", "ssh-url", "fs-url"}
