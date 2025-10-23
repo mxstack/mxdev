@@ -1,6 +1,6 @@
 ## Changes
 
-## 5.0.1 (unreleased)
+## 5.0.1 (2025-10-25)
 
 - Fix #65: Check source directories exist before writing to requirements-mxdev.txt. In **offline mode**: missing sources log WARNING and are written as comments (expected behavior). In **non-offline mode**: missing sources log ERROR and mxdev exits with RuntimeError (fatal error indicating checkout failure). This fixes mxmake two-stage installation workflow and prevents silent failures when sources fail to check out.
   [jensens]
