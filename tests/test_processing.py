@@ -63,36 +63,6 @@ def test_process_line_package_in_ignore_keys():
     assert constraints == []
 
 
-def test_process_line_package_in_override_keys():
-    """Test process_line comments out packages in override_keys."""
-    from mxdev.processing import process_line
-
-    requirements, constraints = process_line(
-        "my.package==1.0.0",
-        package_keys=[],
-        override_keys=["my.package"],
-        ignore_keys=[],
-        variety="r",
-    )
-    assert requirements == ["# my.package==1.0.0 -> mxdev disabled (version override)\n"]
-    assert constraints == []
-
-
-def test_process_line_package_in_ignore_keys():
-    """Test process_line comments out packages in ignore_keys."""
-    from mxdev.processing import process_line
-
-    requirements, constraints = process_line(
-        "my.package==1.0.0",
-        package_keys=[],
-        override_keys=[],
-        ignore_keys=["my.package"],
-        variety="r",
-    )
-    assert requirements == ["# my.package==1.0.0 -> mxdev disabled (ignore)\n"]
-    assert constraints == []
-
-
 def test_process_line_constraint():
     """Test process_line with constraint variety."""
     from mxdev.processing import process_line
