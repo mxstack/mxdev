@@ -2,6 +2,8 @@
 
 ## 5.0.0 (unreleased)
 
+- Fix: `process_line()` now correctly comments out packages in `override_keys` and `ignore_keys` for both requirements and constraints files. Previously, these settings only applied to constraints files (variety="c"). Now they work for requirements files (variety="r") as well, with the message "-> mxdev disabled (version override)" for override_keys in requirements.
+  [jensens]
 - **Breaking**:  support for Python 3.8 and 3.9. Minimum required version is now Python 3.10.
   [jensens]
 - **Breaking**: Modernize type hints to use Python 3.10+ syntax (PEP 604: `X | Y` instead of `Union[X, Y]`)
