@@ -30,7 +30,7 @@
 
 ## 5.0.0 (2025-10-22)
 
-- **Breaking**:  support for Python 3.8 and 3.9. Minimum required version is now Python 3.10.
+- **Breaking**: Drop support for Python 3.8 and 3.9. Minimum required version is now Python 3.10.
   [jensens]
 - **Breaking**: Modernize type hints to use Python 3.10+ syntax (PEP 604: `X | Y` instead of `Union[X, Y]`)
 - Use built-in generic types (`list`, `dict`, `tuple`) instead of `typing.List`, `typing.Dict`, `typing.Tuple`

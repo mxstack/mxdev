@@ -685,6 +685,121 @@ gh pr checks <PR_NUMBER>
 - Always lint before pushing (see Pre-Push Checklist above)
 - Always update CHANGES.md for user-facing changes
 
+### Commit Message Format
+
+**IMPORTANT**: Do NOT include Claude Code attribution in commit messages. Commit messages should be written as if by a human developer.
+
+**Bad** (don't do this):
+```
+Fix #70: Implement HTTP caching
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Good** (correct format):
+```
+Fix #70: Implement HTTP caching for offline mode
+
+Previously, offline mode only skipped VCS operations but still
+fetched HTTP-referenced requirements/constraints files.
+
+Changes:
+- Add HTTP content caching to .mxdev_cache/ directory
+- Online mode: fetch from HTTP and cache for future use
+- Offline mode: read from cache, error if not cached
+
+All 190 tests pass, including 5 new HTTP caching tests.
+```
+
+## GitHub Dependabot Management
+
+### Test Fixtures and False Positive Alerts
+
+Test fixture files in `tests/data/requirements/` contain pinned package versions that can trigger Dependabot security alerts, even though they're not real dependencies.
+
+**Current Setup (Auto-Triage Rule):**
+
+A Dependabot auto-triage rule is configured via GitHub UI to automatically dismiss alerts from test fixtures:
+
+- **Rule name**: "Dismiss test fixture alerts"
+- **Manifest filter**: Comma-separated list of test fixture files:
+  ```
+  tests/data/requirements/constraints.txt,
+  tests/data/requirements/basic_requirements.txt,
+  tests/data/requirements/nested_requirements.txt,
+  tests/data/requirements/other_requirements.txt,
+  tests/data/requirements/requirements_with_constraints.txt
+  ```
+- **Action**: Dismiss indefinitely
+- **Location**: GitHub Settings → Code security → Dependabot rules
+
+**How It Works:**
+
+Three separate GitHub systems handle dependency management:
+
+1. **GitHub Linguist** (`linguist-vendored` in `.gitattributes`)
+   - Only affects language statistics
+   - Does NOT affect dependency graph or Dependabot
+
+2. **Dependency Graph** (vendored directory detection)
+   - Uses hardcoded regex patterns to identify vendored directories:
+     - `(3rd|[Tt]hird)[-_]?[Pp]arty/`
+     - `(^|/)vendors?/`
+     - `(^|/)[Ee]xtern(als?)?/`
+   - `tests/data/` does NOT match these patterns
+   - Files in vendored directories are excluded from dependency graph
+
+3. **Dependabot Auto-Triage Rules**
+   - **This is the ONLY way** to suppress security alerts for specific directories
+   - Can target by: manifest path, severity, package name, scope, ecosystem, CVE, CWE, GHSA, EPSS
+   - Rules are configured via GitHub UI (not version-controlled)
+   - Supports comma-separated manifest paths (no wildcards)
+
+**Key Limitations:**
+
+- ❌ Wildcards NOT supported in manifest paths (e.g., `tests/data/**` doesn't work)
+- ❌ Must specify exact file paths
+- ❌ Configuration is in GitHub UI, not in repository files
+- ✅ Can combine multiple paths with commas
+
+**Adding New Test Fixtures:**
+
+If you add a new test fixture file with pinned dependencies (e.g., `tests/data/requirements/new_fixture.txt`):
+
+1. Go to GitHub Settings → Code security → Dependabot rules
+2. Edit the "Dismiss test fixture alerts" rule
+3. Add the new path to the comma-separated manifest list
+4. Save the rule
+
+**Alternative Approaches (Don't Use):**
+
+- ❌ `.gitattributes` with `linguist-vendored` → Only affects language stats, not Dependabot
+- ❌ Renaming `tests/data/` to `tests/vendor/` → Breaking change, misleading name
+- ❌ `exclude-paths` in `.github/dependabot.yml` → Only affects version update PRs, NOT security alerts
+- ✅ Auto-triage rules → **This is the correct solution for security alerts**
+
+### HTTP Caching for Offline Mode
+
+The `.mxdev_cache/` directory stores HTTP-referenced requirements/constraints files for offline use:
+
+- **Online mode**: Content fetched from HTTP is automatically cached
+- **Offline mode** (`-o/--offline`): Content read from cache, errors if not cached
+- **Cache key**: SHA256 hash (first 16 hex chars) of the URL
+- **Location**: `.mxdev_cache/` (in `.gitignore`)
+
+**Cache Files:**
+```
+.mxdev_cache/
+  a1b2c3d4e5f6g7h8          # Cached content (first 16 chars of SHA256)
+  a1b2c3d4e5f6g7h8.url      # Original URL (for debugging)
+```
+
+**Implementation Details:**
+- Cache functions: `_get_cache_key()`, `_cache_http_content()`, `_read_from_cache()`
+- See `src/mxdev/processing.py` for implementation
+- Tests in `tests/test_processing.py` (5 comprehensive caching tests)
+
 ## Requirements
 
 - **Python**: 3.10+
