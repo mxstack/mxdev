@@ -57,7 +57,7 @@ jobs:
 
       # Upload coverage data from this matrix job
       - name: Upload coverage data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-data-${{ matrix.os }}-${{ matrix.python-config.tox-env }}
           path: .coverage.*
@@ -114,7 +114,7 @@ jobs:
 
       # Upload HTML coverage report as artifact for debugging
       - name: Upload HTML coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: html-coverage-report
           path: htmlcov/
