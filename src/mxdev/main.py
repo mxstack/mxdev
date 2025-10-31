@@ -10,6 +10,12 @@ from .processing import read
 from .processing import write
 from .state import State
 
+
+try:
+    from ._version import __version__
+except ImportError:
+    __version__ = "unknown (not installed)"
+
 import argparse
 import logging
 import sys
@@ -48,6 +54,11 @@ parser.add_argument(
 )
 parser.add_argument("-s", "--silent", help="Reduce verbosity", action="store_true")
 parser.add_argument("-v", "--verbose", help="Increase verbosity", action="store_true")
+parser.add_argument(
+    "--version",
+    action="version",
+    version=f"%(prog)s {__version__}",
+)
 
 
 def supports_unicode() -> bool:

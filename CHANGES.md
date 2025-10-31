@@ -2,6 +2,8 @@
 
 ## 5.0.2 (2025-10-23)
 
+- Feature: Added `--version` command-line option to display the current mxdev version. The version is automatically derived from git tags via hatch-vcs during build. Example: `mxdev --version` outputs "mxdev 5.0.1" for releases or "mxdev 5.0.1.dev27+g62877d7" for development versions.
+  [jensens]
 - Fix #70: HTTP-referenced requirements/constraints files are now properly cached and respected in offline mode. Previously, offline mode only skipped VCS operations but still fetched HTTP URLs. Now mxdev caches all HTTP content in `.mxdev_cache/` during online mode and reuses it during offline mode, enabling true offline operation. This fixes the inconsistent behavior where `-o/--offline` didn't prevent all network activity.
   [jensens]
 - Improvement: Enhanced help text for `-n/--no-fetch`, `-f/--fetch-only`, and `-o/--offline` command-line options to better explain their differences and when to use each one.

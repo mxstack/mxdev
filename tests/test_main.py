@@ -93,6 +93,39 @@ def test_parser_verbose():
     assert args.verbose is True
 
 
+def test_parser_version(capsys):
+    """Test --version prints version and exits."""
+    from mxdev.main import __version__
+    from mxdev.main import parser
+
+    import pytest
+
+    with pytest.raises(SystemExit) as exc_info:
+        parser.parse_args(["--version"])
+
+    # Verify clean exit
+    assert exc_info.value.code == 0
+
+    # Verify output contains version string
+    captured = capsys.readouterr()
+    assert __version__ in captured.out
+    assert "." in captured.out  # Version has dots (X.Y.Z)
+
+
+def test_version_format():
+    """Test version format is valid."""
+    from mxdev.main import __version__
+
+    # Version should not be the fallback
+    assert __version__ != "unknown (not installed)"
+
+    # Version should contain dots (semantic versioning)
+    assert "." in __version__
+
+    # Version should be a string
+    assert isinstance(__version__, str)
+
+
 def test_supports_unicode_with_utf8():
     """Test supports_unicode returns True for UTF-8 encoding."""
     from mxdev.main import supports_unicode
