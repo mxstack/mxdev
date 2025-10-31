@@ -239,7 +239,7 @@ For package sources, the section name is the package name: `[PACKAGENAME]`
 | `extras` | optional | Comma-separated package extras (e.g., `test,dev`) | empty |
 | `subdirectory` | optional | Path to Python package when not in repository root | empty |
 | `target` | optional | Custom target directory (overrides `default-target`) | `default-target` |
-| `pushurl` | optional | Writable URL for pushes (not applied after initial checkout) | — |
+| `pushurl` | optional | Writable URL(s) for pushes. Supports single URL or multiline list for pushing to multiple remotes. Not applied after initial checkout. | — |
 
 **VCS Support Status:**
 - `git` (stable, tested)
@@ -265,6 +265,23 @@ For package sources, the section name is the package name: `[PACKAGENAME]`
 - **`always`** (default): Git submodules will always be checked out, updated if already present
 - **`checkout`**: Submodules only fetched during checkout, existing submodules stay untouched
 - **`recursive`**: Fetches submodules recursively, results in `git clone --recurse-submodules` on checkout and `submodule update --init --recursive` on update
+
+##### Multiple Push URLs
+
+You can configure a package to push to multiple remotes (e.g., mirroring to GitHub and GitLab):
+
+```ini
+[my-package]
+url = https://github.com/org/repo.git
+pushurl =
+    git@github.com:org/repo.git
+    git@gitlab.com:org/repo.git
+    git@bitbucket.org:org/repo.git
+```
+
+When you run `git push` in the checked-out repository, Git will push to all configured pushurls sequentially.
+
+**Note:** Multiple pushurls only work with the `git` VCS type. This mirrors Git's native behavior where a remote can have multiple push URLs.
 
 ### Usage
 
