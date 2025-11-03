@@ -16,6 +16,26 @@ def to_bool(value):
     return value.lower() in ("true", "on", "yes", "1")
 
 
+def parse_multiline_list(value: str) -> list[str]:
+    """Parse a multiline configuration value into a list of non-empty strings.
+
+    Handles multiline format where items are separated by newlines:
+        value = "
+            item1
+            item2
+            item3"
+
+    Returns a list of non-empty, stripped strings.
+    """
+    if not value:
+        return []
+
+    # Split by newlines and strip whitespace
+    items = [line.strip() for line in value.strip().splitlines()]
+    # Filter out empty lines
+    return [item for item in items if item]
+
+
 class Configuration:
     settings: dict[str, str]
     overrides: dict[str, str]
@@ -124,6 +144,16 @@ class Configuration:
             package.setdefault("path", os.path.join(package["target"], name))
             if not package.get("url"):
                 raise ValueError(f"Section {name} has no URL set!")
+
+            # Special handling for pushurl to support multiple values
+            if "pushurl" in package:
+                pushurls = parse_multiline_list(package["pushurl"])
+                if len(pushurls) > 1:
+                    # Store as list for multiple pushurls
+                    package["pushurls"] = pushurls
+                    # Keep first one in "pushurl" for backward compatibility
+                    package["pushurl"] = pushurls[0]
+                # If single pushurl, leave as-is (no change to existing behavior)
 
             # Handle deprecated "direct" mode for per-package install-mode
             pkg_mode = package.get("install-mode")

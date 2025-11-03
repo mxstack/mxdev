@@ -2,6 +2,8 @@
 
 ## 5.0.2 (2025-10-23)
 
+- Feature: Git repositories can now specify multiple push URLs using multiline syntax in the `pushurl` configuration option. This enables pushing to multiple remotes (e.g., GitHub + GitLab mirrors) automatically. Syntax follows the same multiline pattern as `version-overrides` and `ignores`. Example: `pushurl =` followed by indented URLs on separate lines. When `git push` is run in the checked-out repository, it will push to all configured pushurls sequentially, mirroring Git's native multi-pushurl behavior. Backward compatible with single pushurl strings.
+  [jensens]
 - Feature: Added `--version` command-line option to display the current mxdev version. The version is automatically derived from git tags via hatch-vcs during build. Example: `mxdev --version` outputs "mxdev 5.0.1" for releases or "mxdev 5.0.1.dev27+g62877d7" for development versions.
   [jensens]
 - Fix #70: HTTP-referenced requirements/constraints files are now properly cached and respected in offline mode. Previously, offline mode only skipped VCS operations but still fetched HTTP URLs. Now mxdev caches all HTTP content in `.mxdev_cache/` during online mode and reuses it during offline mode, enabling true offline operation. This fixes the inconsistent behavior where `-o/--offline` didn't prevent all network activity.

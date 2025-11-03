@@ -272,3 +272,42 @@ def test_per_package_target_override():
         pathlib.Path(pkg_interpolated["path"]).as_posix()
         == pathlib.Path(pkg_interpolated["target"]).joinpath("package.with.interpolated.target").as_posix()
     )
+
+
+def test_config_parse_multiple_pushurls(tmp_path):
+    """Test configuration parsing of multiple pushurls."""
+    from mxdev.config import Configuration
+
+    config_content = """
+[settings]
+requirements-in = requirements.txt
+
+[package1]
+url = https://github.com/test/repo.git
+pushurl =
+    git@github.com:test/repo.git
+    git@gitlab.com:test/repo.git
+    git@bitbucket.org:test/repo.git
+
+[package2]
+url = https://github.com/test/repo2.git
+pushurl = git@github.com:test/repo2.git
+"""
+
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(config_content)
+
+    config = Configuration(str(config_file))
+
+    # package1 should have multiple pushurls
+    assert "pushurls" in config.packages["package1"]
+    assert len(config.packages["package1"]["pushurls"]) == 3
+    assert config.packages["package1"]["pushurls"][0] == "git@github.com:test/repo.git"
+    assert config.packages["package1"]["pushurls"][1] == "git@gitlab.com:test/repo.git"
+    assert config.packages["package1"]["pushurls"][2] == "git@bitbucket.org:test/repo.git"
+    # First pushurl should be kept for backward compatibility
+    assert config.packages["package1"]["pushurl"] == "git@github.com:test/repo.git"
+
+    # package2 should have single pushurl (no pushurls list)
+    assert "pushurls" not in config.packages["package2"]
+    assert config.packages["package2"]["pushurl"] == "git@github.com:test/repo2.git"

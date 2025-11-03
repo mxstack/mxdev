@@ -1007,3 +1007,99 @@ def test_smart_threading_separates_https_with_pushurl():
 
     # HTTPS with pushurl, SSH, and fs should be in parallel queue
     assert set(other_pkgs) == {"https-with-pushurl", "ssh-url", "fs-url"}
+
+
+def test_git_set_pushurl_multiple():
+    """Test git_set_pushurl with multiple URLs."""
+    from mxdev.vcs.git import GitWorkingCopy
+    from unittest.mock import Mock
+    from unittest.mock import patch
+
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
+        source = {
+            "name": "test-package",
+            "url": "https://github.com/test/repo.git",
+            "path": "/tmp/test",
+            "pushurls": [
+                "git@github.com:test/repo.git",
+                "git@gitlab.com:test/repo.git",
+            ],
+            "pushurl": "git@github.com:test/repo.git",
+        }
+
+        wc = GitWorkingCopy(source)
+
+        mock_process = Mock()
+        mock_process.returncode = 0
+        mock_process.communicate.return_value = (b"output", b"")
+
+        with patch.object(wc, "run_git", return_value=mock_process) as mock_git:
+            stdout, stderr = wc.git_set_pushurl(b"", b"")
+
+            # Should be called twice
+            assert mock_git.call_count == 2
+
+            # First call: without --add
+            first_call_args = mock_git.call_args_list[0][0][0]
+            assert first_call_args == [
+                "config",
+                "remote.origin.pushurl",
+                "git@github.com:test/repo.git",
+            ]
+
+            # Second call: with --add
+            second_call_args = mock_git.call_args_list[1][0][0]
+            assert second_call_args == [
+                "config",
+                "--add",
+                "remote.origin.pushurl",
+                "git@gitlab.com:test/repo.git",
+            ]
+
+
+def test_git_checkout_with_multiple_pushurls(tempdir):
+    """Test git_checkout with multiple pushurls."""
+    from mxdev.vcs.git import GitWorkingCopy
+    from unittest.mock import Mock
+    from unittest.mock import patch
+
+    with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
+        source = {
+            "name": "test-package",
+            "url": "https://github.com/test/repo.git",
+            "path": str(tempdir / "test-multi-pushurl"),
+            "pushurls": [
+                "git@github.com:test/repo.git",
+                "git@gitlab.com:test/repo.git",
+                "git@bitbucket.org:test/repo.git",
+            ],
+            "pushurl": "git@github.com:test/repo.git",  # First one for compat
+        }
+
+        wc = GitWorkingCopy(source)
+
+        mock_process = Mock()
+        mock_process.returncode = 0
+        mock_process.communicate.return_value = (b"", b"")
+
+        with patch.object(wc, "run_git", return_value=mock_process) as mock_git:
+            with patch("os.path.exists", return_value=False):
+                wc.git_checkout(submodules="never")
+
+                # Verify git config was called 3 times for pushurls
+                config_calls = [call for call in mock_git.call_args_list if "config" in call[0][0]]
+
+                # Should have 3 config calls for the 3 pushurls
+                pushurl_config_calls = [call for call in config_calls if "pushurl" in " ".join(call[0][0])]
+                assert len(pushurl_config_calls) == 3
+
+                # First call should be without --add
+                assert "--add" not in pushurl_config_calls[0][0][0]
+                assert "git@github.com:test/repo.git" in pushurl_config_calls[0][0][0]
+
+                # Second and third calls should have --add
+                assert "--add" in pushurl_config_calls[1][0][0]
+                assert "git@gitlab.com:test/repo.git" in pushurl_config_calls[1][0][0]
+
+                assert "--add" in pushurl_config_calls[2][0][0]
+                assert "git@bitbucket.org:test/repo.git" in pushurl_config_calls[2][0][0]

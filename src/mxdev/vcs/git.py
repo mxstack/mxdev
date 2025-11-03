@@ -349,21 +349,57 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         return self.git_update(**kwargs)
 
     def git_set_pushurl(self, stdout_in, stderr_in) -> tuple[str, str]:
+        """Set one or more push URLs for the remote.
+
+        Supports both single pushurl (backward compat) and multiple pushurls.
+        """
+        # Check for multiple pushurls (new format)
+        pushurls = self.source.get("pushurls", [])
+
+        # Fallback to single pushurl (backward compat)
+        if not pushurls and "pushurl" in self.source:
+            pushurls = [self.source["pushurl"]]
+
+        if not pushurls:
+            return (stdout_in, stderr_in)
+
+        # Set first pushurl (without --add)
         cmd = self.run_git(
             [
                 "config",
                 f"remote.{self._upstream_name}.pushurl",
-                self.source["pushurl"],
+                pushurls[0],
             ],
             cwd=self.source["path"],
         )
         stdout, stderr = cmd.communicate()
 
         if cmd.returncode != 0:
-            raise GitError(
-                "git config remote.{}.pushurl {} \nfailed.\n".format(self._upstream_name, self.source["pushurl"])
+            raise GitError(f"git config remote.{self._upstream_name}.pushurl {pushurls[0]} \nfailed.\n")
+
+        stdout_in += stdout
+        stderr_in += stderr
+
+        # Add additional pushurls with --add flag
+        for pushurl in pushurls[1:]:
+            cmd = self.run_git(
+                [
+                    "config",
+                    "--add",
+                    f"remote.{self._upstream_name}.pushurl",
+                    pushurl,
+                ],
+                cwd=self.source["path"],
             )
-        return (stdout_in + stdout, stderr_in + stderr)
+            stdout, stderr = cmd.communicate()
+
+            if cmd.returncode != 0:
+                raise GitError(f"git config --add remote.{self._upstream_name}.pushurl {pushurl} \nfailed.\n")
+
+            stdout_in += stdout
+            stderr_in += stderr
+
+        return (stdout_in, stderr_in)
 
     def git_init_submodules(self, stdout_in, stderr_in) -> tuple[str, str, list]:
         cmd = self.run_git(["submodule", "init"], cwd=self.source["path"])
