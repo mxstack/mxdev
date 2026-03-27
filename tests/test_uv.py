@@ -1,136 +1,159 @@
-from pathlib import Path
-
-import pytest
-import tomlkit
-
+from mxdev.config import Configuration
 from mxdev.state import State
 from mxdev.uv import UvPyprojectUpdater
 
-
-class MockConfig:
-    def __init__(self, packages=None, settings=None):
-        self.packages = packages or {}
-        self.settings = settings or {}
+import tomlkit
 
 
-def test_hook_skips_when_pyproject_toml_missing(mocker):
+def test_hook_skips_when_pyproject_toml_missing(mocker, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     hook = UvPyprojectUpdater()
-    state = State(MockConfig())
-    mocker.patch("mxdev.uv.Path.exists", return_value=False)
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
     mock_logger = mocker.patch("mxdev.uv.logger")
     hook.write(state)
     mock_logger.debug.assert_called_with("[%s] pyproject.toml not found, skipping.", "uv")
 
 
-def test_hook_skips_when_uv_managed_is_false_or_missing(mocker, tmp_path):
+def test_hook_skips_when_uv_managed_is_false_or_missing(mocker, tmp_path, monkeypatch):
     # Test skipping logic when [tool.uv] is missing or managed != true
+    monkeypatch.chdir(tmp_path)
     hook = UvPyprojectUpdater()
-    state = State(MockConfig())
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
 
     # Mock pyproject.toml without tool.uv.managed
     doc = tomlkit.document()
     doc.add("project", tomlkit.table())
+    (tmp_path / "pyproject.toml").write_text(tomlkit.dumps(doc))
 
-    mocker.patch("mxdev.uv.Path.exists", return_value=True)
-    mocker.patch("mxdev.uv.Path.open", mocker.mock_open(read_data=tomlkit.dumps(doc)))
     mock_logger = mocker.patch("mxdev.uv.logger")
+
+    # Store initial content
+    initial_content = (tmp_path / "pyproject.toml").read_text()
 
     hook.write(state)
     mock_logger.debug.assert_called_with(
         "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.", "uv"
     )
 
+    # Verify the file was not modified
+    assert (tmp_path / "pyproject.toml").read_text() == initial_content
 
-def test_hook_skips_when_uv_managed_is_false(mocker, tmp_path):
+
+def test_hook_skips_when_uv_managed_is_false(mocker, tmp_path, monkeypatch):
     # Test skipping logic when [tool.uv] managed is explicitly false
+    monkeypatch.chdir(tmp_path)
     hook = UvPyprojectUpdater()
-    state = State(MockConfig())
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
 
     # Mock pyproject.toml with tool.uv.managed = false
     initial_toml = """
 [tool.uv]
 managed = false
 """
-    doc = tomlkit.parse(initial_toml)
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
 
-    mocker.patch("mxdev.uv.Path.exists", return_value=True)
-    mocker.patch("mxdev.uv.Path.open", mocker.mock_open(read_data=initial_toml))
     mock_logger = mocker.patch("mxdev.uv.logger")
+
+    # Store initial content
+    initial_content = (tmp_path / "pyproject.toml").read_text()
 
     hook.write(state)
     mock_logger.debug.assert_called_with(
         "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.", "uv"
     )
 
+    # Verify the file was not modified
+    assert (tmp_path / "pyproject.toml").read_text() == initial_content
 
-def test_hook_executes_when_uv_managed_is_true(mocker, tmp_path):
+
+def test_hook_executes_when_uv_managed_is_true(mocker, tmp_path, monkeypatch):
     # Test that updates proceed when managed = true is present
+    monkeypatch.chdir(tmp_path)
     hook = UvPyprojectUpdater()
 
-    packages = {"pkg1": {"target": "sources", "install-mode": "editable"}}
-    state = State(MockConfig(packages=packages))
+    mx_ini = """
+[settings]
+[pkg1]
+url = https://example.com/pkg1.git
+target = sources
+install-mode = editable
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    config = Configuration("mx.ini")
+    state = State(config)
 
     # Mock pyproject.toml with tool.uv.managed = true
     initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
 [tool.uv]
 managed = true
 """
-    doc = tomlkit.parse(initial_toml)
-
-    mocker.patch("mxdev.uv.Path.exists", return_value=True)
-
-    # We need a proper mock for pathlib.Path.open that returns our doc and captures the write
-    mock_file = mocker.mock_open(read_data=initial_toml)
-    mocker.patch("mxdev.uv.Path.open", mock_file)
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
 
     mock_logger = mocker.patch("mxdev.uv.logger")
-
     hook.write(state)
     mock_logger.info.assert_any_call("[%s] Updating pyproject.toml...", "uv")
     mock_logger.info.assert_any_call("[%s] Successfully updated pyproject.toml", "uv")
 
-
-# Additional test cases to migrate from the old tests
-def test_update_pyproject_creates_tool_uv_sources():
-    hook = UvPyprojectUpdater()
-    doc = tomlkit.document()
-    packages = {"pkg1": {"target": "sources", "install-mode": "editable"}}
-    state = State(MockConfig(packages=packages))
-
-    hook._update_pyproject(doc, state)
-
+    # Verify the file was actually written correctly
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
     assert "tool" in doc
     assert "uv" in doc["tool"]
     assert "sources" in doc["tool"]["uv"]
-    sources = doc["tool"]["uv"]["sources"]
-    assert "pkg1" in sources
-    assert sources["pkg1"]["path"] == "sources/pkg1"
-    assert sources["pkg1"]["editable"] is True
+    assert "pkg1" in doc["tool"]["uv"]["sources"]
+    assert doc["tool"]["uv"]["sources"]["pkg1"]["path"] == "sources/pkg1"
+    assert doc["tool"]["uv"]["sources"]["pkg1"]["editable"] is True
+    assert "pkg1" in doc["project"]["dependencies"]
 
 
-def test_update_pyproject_respects_install_modes():
+def test_update_pyproject_respects_install_modes(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     hook = UvPyprojectUpdater()
-    doc = tomlkit.document()
-    packages = {
-        "editable-pkg": {"target": "sources", "install-mode": "editable"},
-        "fixed-pkg": {"target": "sources", "install-mode": "fixed"},
-        "skip-pkg": {"target": "sources", "install-mode": "skip"},
-    }
-    state = State(MockConfig(packages=packages))
 
-    hook._update_pyproject(doc, state)
+    mx_ini = """
+[settings]
+[editable-pkg]
+url = https://example.com/e.git
+target = sources
+install-mode = editable
+
+[fixed-pkg]
+url = https://example.com/f.git
+target = sources
+install-mode = fixed
+
+[skip-pkg]
+url = https://example.com/s.git
+target = sources
+install-mode = skip
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
     sources = doc["tool"]["uv"]["sources"]
     assert sources["editable-pkg"]["editable"] is True
     assert sources["fixed-pkg"]["editable"] is False
     assert "skip-pkg" not in sources
-
-
-def test_update_pyproject_adds_dependencies():
-    hook = UvPyprojectUpdater()
-    doc = tomlkit.document()
-    packages = {"pkg1": {"target": "sources", "install-mode": "editable"}}
-    state = State(MockConfig(packages=packages))
-
-    hook._update_pyproject(doc, state)
-    deps = doc["project"]["dependencies"]
-    assert "pkg1" in deps

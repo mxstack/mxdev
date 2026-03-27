@@ -1,11 +1,12 @@
-import logging
-import re
+from mxdev.hooks import Hook
+from mxdev.state import State
 from pathlib import Path
 from typing import Any
 
+import logging
+import re
 import tomlkit
-from mxdev.hooks import Hook
-from mxdev.state import State
+
 
 logger = logging.getLogger("mxdev")
 
@@ -16,9 +17,7 @@ def normalize_name(name: str) -> str:
 
 
 class UvPyprojectUpdater(Hook):
-    """
-    An mxdev hook that updates pyproject.toml during the write phase for uv-managed projects.
-    """
+    """An mxdev hook that updates pyproject.toml during the write phase for uv-managed projects."""
 
     namespace = "uv"
 
