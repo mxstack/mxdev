@@ -311,6 +311,28 @@ Mxdev will
 
 Now, use the generated requirements and constraints files with i.e. `pip install -r requirements-mxdev.txt`.
 
+## UV Pyproject Integration
+
+mxdev includes a built-in hook to automatically update your `pyproject.toml` file when working with [uv](https://docs.astral.sh/uv/)-managed projects. 
+
+If your `pyproject.toml` contains the `[tool.uv]` table with `managed = true`:
+```toml
+[tool.uv]
+managed = true
+```
+
+mxdev will automatically:
+1. Inject the local VCS paths of your developed packages into `[tool.uv.sources]`.
+2. Add the packages to `[project.dependencies]` if they are not already present.
+
+This allows you to seamlessly use `uv sync` or `uv run` with the packages mxdev has checked out for you, without needing to use `requirements-mxdev.txt`.
+
+To disable this feature, you can either remove the `managed = true` flag from your `pyproject.toml`, or explicitly set it to `false`:
+```toml
+[tool.uv]
+managed = false
+```
+
 ## Example Configuration
 
 ### Example `mx.ini`
