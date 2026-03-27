@@ -41,6 +41,28 @@ def test_hook_skips_when_uv_managed_is_false_or_missing(mocker, tmp_path):
     )
 
 
+def test_hook_skips_when_uv_managed_is_false(mocker, tmp_path):
+    # Test skipping logic when [tool.uv] managed is explicitly false
+    hook = UvPyprojectUpdater()
+    state = State(MockConfig())
+
+    # Mock pyproject.toml with tool.uv.managed = false
+    initial_toml = """
+[tool.uv]
+managed = false
+"""
+    doc = tomlkit.parse(initial_toml)
+
+    mocker.patch("mxdev.uv.Path.exists", return_value=True)
+    mocker.patch("mxdev.uv.Path.open", mocker.mock_open(read_data=initial_toml))
+    mock_logger = mocker.patch("mxdev.uv.logger")
+
+    hook.write(state)
+    mock_logger.debug.assert_called_with(
+        "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.", "uv"
+    )
+
+
 def test_hook_executes_when_uv_managed_is_true(mocker, tmp_path):
     # Test that updates proceed when managed = true is present
     hook = UvPyprojectUpdater()
