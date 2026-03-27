@@ -155,6 +155,22 @@ If there is a source section defined for the same package, the source will be us
 Note: When using [uv](https://pypi.org/project/uv/) pip install the version overrides here are not needed, since it [supports overrides natively](https://github.com/astral-sh/uv?tab=readme-ov-file#dependency-overrides).
 With uv it is recommended to create an `overrides.txt` file with the version overrides and use `uv pip install --override overrides.txt [..]` to install the packages.
 
+#### UV Pyproject Integration
+
+mxdev includes a built-in hook to automatically update your `pyproject.toml` file when working with [uv](https://docs.astral.sh/uv/)-managed projects. 
+
+If your `pyproject.toml` contains the `[tool.uv]` table with `managed = true`:
+```toml
+[tool.uv]
+managed = true
+```
+
+mxdev will automatically:
+1. Inject the local VCS paths of your developed packages into `[tool.uv.sources]`.
+2. Add the packages to `[project.dependencies]` if they are not already present.
+
+This allows you to seamlessly use `uv sync` or `uv run` with the packages mxdev has checked out for you, without needing to use `requirements-mxdev.txt`.
+
 
 ##### `ignores`
 
