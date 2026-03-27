@@ -42,7 +42,7 @@ Source = "https://github.com/mxstack/mxdev/"
 mxdev = "mxdev.main:main"
 
 [project.entry-points.mxdev]
-uv = "mxdev.uv:UvPyprojectUpdater"
+hook = "mxdev.uv:UvPyprojectUpdater"
 
 [project.entry-points."mxdev.workingcopytypes"]
 svn = "mxdev.vcs.svn:SVNWorkingCopy"

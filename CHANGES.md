@@ -2,7 +2,8 @@
  
 ## 5.2.0 (unreleased)
 
-- Feature: Built-in integration with `uv` through `pyproject.toml`. When `mxdev` is run, it checks if the project has a `pyproject.toml` containing `[tool.uv]` with `managed = true`. If so, mxdev automatically adds checked-out packages to `[tool.uv.sources]` and `[project.dependencies]`, making the external `mxdev-uv-pyproject-updater` plugin obsolete. This allows for seamless use of `uv sync` or `uv run` with local checkouts. `tomlkit` is now a core dependency to preserve `pyproject.toml` formatting during updates.
+- Feature: Built-in integration with `uv` through `pyproject.toml`. When `mxdev` is run, it checks if the project has a `pyproject.toml` containing `[tool.uv]` with `managed = true`. If so, mxdev automatically adds checked-out packages to `[tool.uv.sources]` and `[project.dependencies]`. This allows for seamless use of `uv sync` or `uv run` with local checkouts. `tomlkit` is now a core dependency to preserve `pyproject.toml` formatting during updates.
+  [erral, 2026-03-27]
 
 ## 5.1.0
 
