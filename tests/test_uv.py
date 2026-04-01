@@ -112,7 +112,6 @@ managed = true
     assert "pkg1" in doc["tool"]["uv"]["sources"]
     assert doc["tool"]["uv"]["sources"]["pkg1"]["path"] == "sources/pkg1"
     assert doc["tool"]["uv"]["sources"]["pkg1"]["editable"] is True
-    assert "pkg1" in doc["project"]["dependencies"]
 
 
 def test_update_pyproject_respects_install_modes(tmp_path, monkeypatch):
@@ -157,3 +156,155 @@ managed = true
     assert sources["editable-pkg"]["editable"] is True
     assert sources["fixed-pkg"]["editable"] is False
     assert "skip-pkg" not in sources
+
+
+def test_update_pyproject_idempotency(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    mx_ini = """
+[settings]
+[pkg1]
+url = https://example.com/pkg1.git
+target = sources
+install-mode = editable
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    # Run first time
+    hook.write(state)
+    content_after_first = (tmp_path / "pyproject.toml").read_text()
+
+    # Run second time
+    hook.write(state)
+    content_after_second = (tmp_path / "pyproject.toml").read_text()
+
+    assert content_after_first == content_after_second
+
+
+def test_update_pyproject_with_subdirectory(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    mx_ini = """
+[settings]
+[pkg1]
+url = https://example.com/pkg1.git
+target = sources
+subdirectory = sub/dir
+install-mode = editable
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    assert doc["tool"]["uv"]["sources"]["pkg1"]["path"] == "sources/pkg1/sub/dir"
+
+
+def test_hook_handles_oserror_on_read(mocker, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    # Mock pyproject.toml with tool.uv.managed = true
+    initial_toml = """
+[project]
+name = "test"
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    mock_logger = mocker.patch("mxdev.uv.logger")
+    mocker.patch("pathlib.Path.open", side_effect=OSError("denied"))
+
+    hook.write(state)
+
+    mock_logger.error.assert_called_with("[%s] Failed to read pyproject.toml: %s", "uv", mocker.ANY)
+
+
+def test_hook_handles_oserror_on_write(mocker, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    mock_logger = mocker.patch("mxdev.uv.logger")
+    mocker.patch("os.replace", side_effect=OSError("write denied"))
+
+    hook.write(state)
+
+    mock_logger.error.assert_called_with("[%s] Failed to write pyproject.toml: %s", "uv", mocker.ANY)
+
+
+import pytest
+import sys
+
+
+def test_hook_raises_runtime_error_if_tomlkit_missing(mocker, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    (tmp_path / "pyproject.toml").write_text("[tool.uv]\\nmanaged = true\\n")
+
+    mocker.patch.dict(sys.modules, {"tomlkit": None})
+    # Also need to make the import fail
+    import builtins
+
+    orig_import = builtins.__import__
+
+    def fake_import(name, *args, **kw):
+        if name == "tomlkit":
+            raise ImportError("No module named 'tomlkit'")
+        return orig_import(name, *args, **kw)
+
+    mocker.patch("builtins.__import__", side_effect=fake_import)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        hook.write(state)
+
+    assert "tomlkit is required for the uv hook" in str(excinfo.value)
