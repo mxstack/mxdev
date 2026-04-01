@@ -296,7 +296,7 @@ Now, use the generated requirements and constraints files with i.e. `pip install
 
 ## uv pyproject.toml integration
 
-mxdev includes a built-in hook to automatically update your `pyproject.toml` file when working with [uv](https://docs.astral.sh/uv/)-managed projects. 
+mxdev includes a built-in hook to automatically update your `pyproject.toml` file when working with [uv](https://docs.astral.sh/uv/)-managed projects.
 
 To use this feature, you must install mxdev with the `uv` extra:
 

@@ -2,9 +2,9 @@ from mxdev.config import Configuration
 from mxdev.state import State
 from mxdev.uv import UvPyprojectUpdater
 
-import tomlkit
 import pytest
 import sys
+import tomlkit
 
 
 def test_hook_skips_when_pyproject_toml_missing(mocker, tmp_path, monkeypatch):

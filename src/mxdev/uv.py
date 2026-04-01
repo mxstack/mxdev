@@ -1,10 +1,15 @@
 from mxdev.hooks import Hook
 from mxdev.state import State
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import logging
 import os
 import tempfile
+
+
+if TYPE_CHECKING:
+    import tomlkit
 
 
 logger = logging.getLogger("mxdev")
