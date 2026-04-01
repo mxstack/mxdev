@@ -24,22 +24,29 @@ class UvPyprojectUpdater(Hook):
         pass
 
     def write(self, state: State) -> None:
-        try:
-            import tomlkit
-        except ImportError:
-            raise RuntimeError("tomlkit is required for the uv hook. Install it with: pip install mxdev[uv]")
-
         pyproject_path = Path(state.configuration.settings.get("directory", ".")) / "pyproject.toml"
         if not pyproject_path.exists():
             logger.debug("[%s] pyproject.toml not found, skipping.", self.namespace)
             return
 
         try:
-            with pyproject_path.open("r", encoding="utf-8") as f:
-                doc = tomlkit.load(f)
+            content = pyproject_path.read_text(encoding="utf-8")
         except OSError as e:
             logger.error("[%s] Failed to read pyproject.toml: %s", self.namespace, e)
             return
+
+        if "[tool.uv]" not in content:
+            logger.debug(
+                "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.", self.namespace
+            )
+            return
+
+        try:
+            import tomlkit
+        except ImportError:
+            raise RuntimeError("tomlkit is required for the uv hook. Install it with: pip install mxdev[uv]")
+
+        doc = tomlkit.loads(content)
 
         # Check for the UV managed signal
         tool_uv = doc.get("tool", {}).get("uv", {})

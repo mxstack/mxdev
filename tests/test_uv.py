@@ -310,6 +310,32 @@ def test_hook_raises_runtime_error_if_tomlkit_missing(mocker, tmp_path, monkeypa
     assert "tomlkit is required for the uv hook" in str(excinfo.value)
 
 
+def test_hook_does_not_require_tomlkit_if_not_uv_managed(mocker, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    (tmp_path / "pyproject.toml").write_text("[project]\\nname = 'test'\\n")
+
+    mocker.patch.dict(sys.modules, {"tomlkit": None})
+    import builtins
+
+    orig_import = builtins.__import__
+
+    def fake_import(name, *args, **kw):
+        if name == "tomlkit":
+            raise ImportError("No module named 'tomlkit'")
+        return orig_import(name, *args, **kw)
+
+    mocker.patch("builtins.__import__", side_effect=fake_import)
+
+    # Should not raise any error, even though tomlkit import is mocked to fail
+    hook.write(state)
+
+
 def test_hook_resolves_path_relative_to_config(mocker, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
