@@ -10,11 +10,6 @@ import re
 logger = logging.getLogger("mxdev")
 
 
-def normalize_name(name: str) -> str:
-    """PEP 503 normalization: lowercased, runs of -, _, . become single -"""
-    return re.sub(r"[-_.]+", "-", name).lower()
-
-
 class UvPyprojectUpdater(Hook):
     """An mxdev hook that updates pyproject.toml during the write phase for uv-managed projects."""
 
@@ -66,7 +61,7 @@ class UvPyprojectUpdater(Hook):
         except OSError as e:
             logger.error("[%s] Failed to write pyproject.toml: %s", self.namespace, e)
 
-    def _update_pyproject(self, doc: Any, state: State) -> None:
+    def _update_pyproject(self, doc: "tomlkit.TOMLDocument", state: State) -> None:
         """Modify the pyproject.toml document based on mxdev state."""
         import tomlkit
 
@@ -106,34 +101,9 @@ class UvPyprojectUpdater(Hook):
             source_table = tomlkit.inline_table()
             source_table.append("path", rel_path)
 
-            if install_mode in ("editable", "direct"):
+            if install_mode == "editable":
                 source_table.append("editable", True)
             elif install_mode == "fixed":
                 source_table.append("editable", False)
 
             uv_sources[pkg_name] = source_table
-
-        # 2. Add packages to project.dependencies if not present
-        if "project" not in doc:
-            doc.add("project", tomlkit.table())
-
-        if "dependencies" not in doc["project"]:
-            doc["project"]["dependencies"] = tomlkit.array()
-
-        dependencies = doc["project"]["dependencies"]
-        pkg_name_pattern = re.compile(r"^([a-zA-Z0-9_\-\.]+)")
-        existing_pkg_names = set()
-
-        for dep in dependencies:
-            match = pkg_name_pattern.match(str(dep).strip())
-            if match:
-                existing_pkg_names.add(normalize_name(match.group(1)))
-
-        for pkg_name, pkg_data in state.configuration.packages.items():
-            install_mode = pkg_data.get("install-mode", "editable")
-            if install_mode == "skip":
-                continue
-
-            normalized_name = normalize_name(pkg_name)
-            if normalized_name not in existing_pkg_names:
-                dependencies.append(pkg_name)
