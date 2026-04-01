@@ -59,6 +59,7 @@ class UvPyprojectUpdater(Hook):
         logger.info("[%s] Updating pyproject.toml...", self.namespace)
         self._update_pyproject(doc, state)
 
+        tmp = None
         try:
             with tempfile.NamedTemporaryFile(
                 mode="w", dir=pyproject_path.parent, suffix=".tmp", delete=False, encoding="utf-8"
@@ -66,9 +67,13 @@ class UvPyprojectUpdater(Hook):
                 tomlkit.dump(doc, f)
                 tmp = f.name
             os.replace(tmp, str(pyproject_path))
+            tmp = None  # success, don't clean up
             logger.info("[%s] Successfully updated pyproject.toml", self.namespace)
         except OSError as e:
             logger.error("[%s] Failed to write pyproject.toml: %s", self.namespace, e)
+        finally:
+            if tmp and os.path.exists(tmp):
+                os.unlink(tmp)
 
     def _update_pyproject(self, doc: "tomlkit.TOMLDocument", state: State) -> None:
         """Modify the pyproject.toml document based on mxdev state."""

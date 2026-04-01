@@ -280,6 +280,9 @@ managed = true
 
     mock_logger.error.assert_called_with("[%s] Failed to write pyproject.toml: %s", "uv", mocker.ANY)
 
+    # Ensure no .tmp files are left behind
+    assert len(list(tmp_path.glob("*.tmp"))) == 0
+
 
 def test_hook_raises_runtime_error_if_tomlkit_missing(mocker, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
