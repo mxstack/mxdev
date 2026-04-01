@@ -155,7 +155,6 @@ If there is a source section defined for the same package, the source will be us
 Note: When using [uv](https://pypi.org/project/uv/) pip install the version overrides here are not needed, since it [supports overrides natively](https://github.com/astral-sh/uv?tab=readme-ov-file#dependency-overrides).
 With uv it is recommended to create an `overrides.txt` file with the version overrides and use `uv pip install --override overrides.txt [..]` to install the packages.
 
-
 ##### `ignores`
 
 Ignore packages that are already defined in a dependent constraints file.
@@ -294,6 +293,32 @@ Mxdev will
 3. **write** a requirements and constraints file.
 
 Now, use the generated requirements and constraints files with i.e. `pip install -r requirements-mxdev.txt`.
+
+## uv pyproject.toml integration
+
+mxdev includes a built-in hook to automatically update your `pyproject.toml` file when working with [uv](https://docs.astral.sh/uv/)-managed projects.
+
+To use this feature, you must install mxdev with the `uv` extra:
+
+```bash
+pip install mxdev[uv]
+```
+
+If your `pyproject.toml` contains the `[tool.uv]` table with `managed = true`:
+```toml
+[tool.uv]
+managed = true
+```
+
+mxdev will automatically inject the local VCS paths of your developed packages into `[tool.uv.sources]`.
+
+This allows you to seamlessly use `uv sync` or `uv run` with the packages mxdev has checked out for you, without needing to use `requirements-mxdev.txt`.
+
+To disable this feature, you can either remove the `managed = true` flag from your `pyproject.toml`, or explicitly set it to `false`:
+```toml
+[tool.uv]
+managed = false
+```
 
 ## Example Configuration
 
