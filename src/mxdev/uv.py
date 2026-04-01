@@ -1,10 +1,10 @@
 from mxdev.hooks import Hook
 from mxdev.state import State
 from pathlib import Path
-from typing import Any
 
 import logging
-import re
+import os
+import tempfile
 
 
 logger = logging.getLogger("mxdev")
@@ -48,9 +48,6 @@ class UvPyprojectUpdater(Hook):
         self._update_pyproject(doc, state)
 
         try:
-            import os
-            import tempfile
-
             with tempfile.NamedTemporaryFile(
                 mode="w", dir=pyproject_path.parent, suffix=".tmp", delete=False, encoding="utf-8"
             ) as f:
