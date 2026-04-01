@@ -5,7 +5,6 @@ from typing import Any
 
 import logging
 import re
-import tomlkit
 
 
 logger = logging.getLogger("mxdev")
@@ -25,7 +24,12 @@ class UvPyprojectUpdater(Hook):
         pass
 
     def write(self, state: State) -> None:
-        pyproject_path = Path("pyproject.toml")
+        try:
+            import tomlkit
+        except ImportError:
+            raise RuntimeError("tomlkit is required for the uv hook. Install it with: pip install mxdev[uv]")
+
+        pyproject_path = Path(state.configuration.settings.get("directory", ".")) / "pyproject.toml"
         if not pyproject_path.exists():
             logger.debug("[%s] pyproject.toml not found, skipping.", self.namespace)
             return
@@ -33,7 +37,7 @@ class UvPyprojectUpdater(Hook):
         try:
             with pyproject_path.open("r", encoding="utf-8") as f:
                 doc = tomlkit.load(f)
-        except Exception as e:
+        except OSError as e:
             logger.error("[%s] Failed to read pyproject.toml: %s", self.namespace, e)
             return
 
@@ -49,14 +53,23 @@ class UvPyprojectUpdater(Hook):
         self._update_pyproject(doc, state)
 
         try:
-            with pyproject_path.open("w", encoding="utf-8") as f:
+            import os
+            import tempfile
+
+            with tempfile.NamedTemporaryFile(
+                mode="w", dir=pyproject_path.parent, suffix=".tmp", delete=False, encoding="utf-8"
+            ) as f:
                 tomlkit.dump(doc, f)
+                tmp = f.name
+            os.replace(tmp, str(pyproject_path))
             logger.info("[%s] Successfully updated pyproject.toml", self.namespace)
-        except Exception as e:
+        except OSError as e:
             logger.error("[%s] Failed to write pyproject.toml: %s", self.namespace, e)
 
     def _update_pyproject(self, doc: Any, state: State) -> None:
         """Modify the pyproject.toml document based on mxdev state."""
+        import tomlkit
+
         if not state.configuration.packages:
             return
 
