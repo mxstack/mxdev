@@ -292,7 +292,7 @@ def test_hook_raises_runtime_error_if_tomlkit_missing(mocker, tmp_path, monkeypa
     config = Configuration("mx.ini")
     state = State(config)
 
-    (tmp_path / "pyproject.toml").write_text("[tool.uv]\\nmanaged = true\\n")
+    (tmp_path / "pyproject.toml").write_text("[tool.uv]\nmanaged = true\n")
 
     mocker.patch.dict(sys.modules, {"tomlkit": None})
     # Also need to make the import fail
@@ -321,7 +321,7 @@ def test_hook_does_not_require_tomlkit_if_not_uv_managed(mocker, tmp_path, monke
     config = Configuration("mx.ini")
     state = State(config)
 
-    (tmp_path / "pyproject.toml").write_text("[project]\\nname = 'test'\\n")
+    (tmp_path / "pyproject.toml").write_text("[project]\nname = 'test'\n")
 
     mocker.patch.dict(sys.modules, {"tomlkit": None})
     import builtins

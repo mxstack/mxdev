@@ -35,14 +35,35 @@ class UvPyprojectUpdater(Hook):
             logger.error("[%s] Failed to read pyproject.toml: %s", self.namespace, e)
             return
 
-        if "[tool.uv]" not in content:
-            logger.debug(
-                "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.", self.namespace
-            )
+        # Attempt to parse using standard library (Python 3.11+)
+        try:
+            import tomllib
+
+            parsed = tomllib.loads(content)
+            if parsed.get("tool", {}).get("uv", {}).get("managed") is not True:
+                logger.debug(
+                    "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.",
+                    self.namespace,
+                )
+                return
+        except ImportError:
+            # Fallback for Python 3.10: fast string check to avoid tomlkit overhead
+            if "[tool.uv]" not in content:
+                logger.debug(
+                    "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.",
+                    self.namespace,
+                )
+                return
+        except Exception:
+            # If the parser fails (e.g., malformed TOML), just skip.
             return
 
+        # Now we are confident it's a uv project, require our heavy dependency
         try:
-            import tomlkit
+            from typing import TYPE_CHECKING
+
+            if not TYPE_CHECKING:
+                import tomlkit
         except ImportError:
             raise RuntimeError("tomlkit is required for the uv hook. Install it with: pip install mxdev[uv]")
 
