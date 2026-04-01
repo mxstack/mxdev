@@ -3,6 +3,8 @@ from mxdev.state import State
 from mxdev.uv import UvPyprojectUpdater
 
 import tomlkit
+import pytest
+import sys
 
 
 def test_hook_skips_when_pyproject_toml_missing(mocker, tmp_path, monkeypatch):
@@ -36,7 +38,8 @@ def test_hook_skips_when_uv_managed_is_false_or_missing(mocker, tmp_path, monkey
 
     hook.write(state)
     mock_logger.debug.assert_called_with(
-        "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.", "uv"
+        "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.",
+        "uv",
     )
 
     # Verify the file was not modified
@@ -65,7 +68,8 @@ managed = false
 
     hook.write(state)
     mock_logger.debug.assert_called_with(
-        "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.", "uv"
+        "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.",
+        "uv",
     )
 
     # Verify the file was not modified
@@ -277,10 +281,6 @@ managed = true
     mock_logger.error.assert_called_with("[%s] Failed to write pyproject.toml: %s", "uv", mocker.ANY)
 
 
-import pytest
-import sys
-
-
 def test_hook_raises_runtime_error_if_tomlkit_missing(mocker, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     hook = UvPyprojectUpdater()
@@ -308,3 +308,48 @@ def test_hook_raises_runtime_error_if_tomlkit_missing(mocker, tmp_path, monkeypa
         hook.write(state)
 
     assert "tomlkit is required for the uv hook" in str(excinfo.value)
+
+
+def test_hook_resolves_path_relative_to_config(mocker, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    config_dir = tmp_path / "other" / "path"
+    config_dir.mkdir(parents=True)
+
+    mx_ini = """
+[settings]
+[pkg1]
+url = https://example.com/pkg1.git
+target = sources
+install-mode = editable
+"""
+    (config_dir / "mx.ini").write_text(mx_ini.strip())
+
+    config = Configuration(str(config_dir / "mx.ini"))
+    # Manually mimic the 'directory' injection that happens in including.py
+    # during actual execution, because Configuration() constructor alone
+    # doesn't inject it if it isn't in the INI file itself, but including.py does.
+    config.settings["directory"] = str(config_dir)
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+
+[tool.uv]
+managed = true
+"""
+    (config_dir / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook = UvPyprojectUpdater()
+    mock_logger = mocker.patch("mxdev.uv.logger")
+    hook.write(state)
+
+    mock_logger.info.assert_any_call("[%s] Successfully updated pyproject.toml", "uv")
+
+    # Verify the file was written to the config directory, not CWD
+    assert not (tmp_path / "pyproject.toml").exists()
+    assert (config_dir / "pyproject.toml").exists()
+
+    doc = tomlkit.parse((config_dir / "pyproject.toml").read_text())
+    assert "pkg1" in doc["tool"]["uv"]["sources"]
