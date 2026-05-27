@@ -16,6 +16,10 @@
 - Feature: Built-in integration with `uv` through `pyproject.toml`. When `mxdev` is run, it checks if the project has a `pyproject.toml` containing `[tool.uv]` with `managed = true`. If so, mxdev automatically adds checked-out packages to `[tool.uv.sources]`. This allows for seamless use of `uv sync` or `uv run` with local checkouts. `tomlkit` is now an optional dependency (install with `mxdev[uv]`) to preserve `pyproject.toml` formatting during updates.
   [erral]
 
+## 5.2.0 (unreleased)
+
+- Feature: Added support for `pyproject.toml` as a configuration source. mxdev will now automatically look for `[tool.mxdev]` configuration in `pyproject.toml` if `mx.ini` is missing. Users can also explicitly specify it with `-c pyproject.toml`. [erral]
+
 ## 5.1.0
 
 - Feature: Git repositories can now specify multiple push URLs using multiline syntax in the `pushurl` configuration option. This enables pushing to multiple remotes (e.g., GitHub + GitLab mirrors) automatically. Syntax follows the same multiline pattern as `version-overrides` and `ignores`. Example: `pushurl =` followed by indented URLs on separate lines. When `git push` is run in the checked-out repository, it will push to all configured pushurls sequentially, mirroring Git's native multi-pushurl behavior. Backward compatible with single pushurl strings.

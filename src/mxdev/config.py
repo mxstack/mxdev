@@ -1,6 +1,7 @@
 from .including import read_with_included
 from .logging import logger
 from packaging.requirements import Requirement
+from pathlib import Path
 
 import os
 import typing
@@ -8,6 +9,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from .hooks import Hook
+
 
 
 def to_bool(value):
@@ -36,6 +38,71 @@ def parse_multiline_list(value: str) -> list[str]:
     return [item for item in items if item]
 
 
+class TomlSection:
+    def __init__(self, data: dict):
+        self._data = data
+
+    def items(self):
+        return self._data.items()
+
+    def get(self, key, default=None):
+        return self._data.get(key, default)
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def keys(self):
+        return self._data.keys()
+
+
+class TomlWrapper:
+    def __init__(self, data: dict):
+        self._data = {k: TomlSection(v) for k, v in data.items()}
+        self._sections = self._data
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def sections(self):
+        return [k for k in self._data if k != "settings"]
+
+    def __contains__(self, key):
+        return key in self._data
+
+
+def read_toml(path: str | Path) -> TomlWrapper:
+    try:
+        import tomllib
+    except ImportError:
+        try:
+            import tomli as tomllib
+        except ImportError:
+            raise ImportError(
+                "TOML support requires Python 3.11+ or the 'tomli' package. "
+                "Install it with 'pip install mxdev[toml]'."
+            )
+
+    with open(path, "rb") as f:
+        data = tomllib.load(f)
+
+    if "tool" not in data or "mxdev" not in data["tool"]:
+        return TomlWrapper({"settings": {}})
+
+    mxdev = data["tool"]["mxdev"]
+    normalized: dict[str, dict[str, str]] = {}
+    normalized["settings"] = {k: str(v) for k, v in mxdev.get("settings", {}).items()}
+
+    # Packages
+    for name, pkg_data in mxdev.get("packages", {}).items():
+        normalized[name] = {k: str(v) for k, v in pkg_data.items()}
+
+    # Hooks
+    for name, hook_data in mxdev.get("hooks", {}).items():
+        normalized[name] = {k: str(v) for k, v in hook_data.items()}
+
+    return TomlWrapper(normalized)
+
+
 class Configuration:
     settings: dict[str, str]
     overrides: dict[str, str]
@@ -50,7 +117,10 @@ class Configuration:
         hooks: list["Hook"] = [],
     ) -> None:
         logger.debug("Read configuration")
-        data = read_with_included(mxini)
+        if mxini.endswith(".toml"):
+            data = read_toml(mxini)
+        else:
+            data = read_with_included(mxini)
 
         settings = self.settings = dict(data["settings"].items())
 

@@ -66,6 +66,35 @@ For more examples see the [example/](https://github.com/mxstack/mxdev/tree/main/
 
 Configuration is done in an INI file (default: `mx.ini`) using [configparser.ExtendedInterpolation](https://docs.python.org/3/library/configparser.html#configparser.ExtendedInterpolation) syntax.
 
+### pyproject.toml support
+
+Starting with version 5.2.0, mxdev supports configuration directly in `pyproject.toml`. This is useful for simple projects that don't need complex features like recursive includes or variable interpolation.
+
+#### Auto-discovery
+
+If no configuration file is explicitly specified via `-c`, mxdev will look for files in this order:
+1. `mx.ini`
+2. `pyproject.toml` (if it contains a `[tool.mxdev]` section)
+
+#### Structure
+
+The TOML configuration mirrors the INI structure but uses nesting:
+
+```toml
+[tool.mxdev.settings]
+requirements-in = "requirements.txt"
+threads = 8
+
+[tool.mxdev.packages.package1]
+url = "https://github.com/org/package1.git"
+branch = "main"
+
+[tool.mxdev.hooks.myhook]
+some-setting = "value"
+```
+
+**Note**: TOML configuration does NOT support variable interpolation (no `${settings:var}`) or the `include` directive. If you need these features, please use `mx.ini`.
+
 ### Settings Section `[settings]`
 
 The **main section** must be called `[settings]`, even if kept empty.

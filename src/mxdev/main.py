@@ -18,6 +18,7 @@ except ImportError:
 
 import argparse
 import logging
+import os
 import sys
 
 
@@ -29,9 +30,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "-c",
     "--configuration",
-    help="configuration file in INI format",
+    help="configuration file (INI or pyproject.toml)",
     type=str,
-    default="mx.ini",
+    default=None,
 )
 parser.add_argument(
     "-n",
@@ -89,13 +90,24 @@ def main() -> None:
     logger.info("#" * 79)
     hooks = load_hooks()
     logger.info("# Load configuration")
+
+    # Configuration discovery
+    config_file = args.configuration
+    if config_file is None:
+        if os.path.exists("mx.ini"):
+            config_file = "mx.ini"
+        elif os.path.exists("pyproject.toml"):
+            config_file = "pyproject.toml"
+        else:
+            config_file = "mx.ini"
+
     override_args = {}
     if args.offline:
         override_args["offline"] = True
     if args.threads:
         override_args["threads"] = args.threads
     configuration = Configuration(
-        mxini=args.configuration,
+        mxini=config_file,
         override_args=override_args,
         hooks=hooks,
     )

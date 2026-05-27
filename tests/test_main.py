@@ -7,7 +7,7 @@ def test_parser_defaults():
     from mxdev.main import parser
 
     args = parser.parse_args([])
-    assert args.configuration == "mx.ini"
+    assert args.configuration is None
     assert args.no_fetch is False
     assert args.fetch_only is False
     assert args.offline is False
