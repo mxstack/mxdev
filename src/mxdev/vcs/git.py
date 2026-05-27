@@ -29,7 +29,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         self.git_executable = common.which("git")
         if "rev" in source and "revision" in source:
             raise ValueError(
-                "The source definition of '{}' contains " "duplicate revision options.".format(source["name"])
+                "The source definition of '{}' contains duplicate revision options.".format(source["name"])
             )
         # 'rev' is canonical
         if "revision" in source:
@@ -41,7 +41,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
                 del source["branch"]
             elif "branch" in source:
                 logger.error(
-                    "Cannot specify both branch (%s) and rev/revision " "(%s) in source for %s",
+                    "Cannot specify both branch (%s) and rev/revision (%s) in source for %s",
                     source["branch"],
                     source["rev"],
                     source["name"],

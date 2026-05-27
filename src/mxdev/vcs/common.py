@@ -150,8 +150,7 @@ def get_workingcopytypes() -> dict[str, type[BaseWorkingCopy]]:
         workingcopytype = entrypoint.load()
         if key in addons:
             logger.error(
-                f"Duplicate workingcopy types registration '{key}' at "
-                f"{entrypoint.value} can not override {addons[key]}"
+                f"Duplicate workingcopy types registration '{key}' at {entrypoint.value} can not override {addons[key]}"
             )
             sys.exit(1)
         addons[key] = workingcopytype

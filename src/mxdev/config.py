@@ -11,7 +11,6 @@ if typing.TYPE_CHECKING:
     from .hooks import Hook
 
 
-
 def to_bool(value):
     if not isinstance(value, str):
         return bool(value)
@@ -73,17 +72,20 @@ class TomlWrapper:
 def read_toml(path: str | Path) -> TomlWrapper:
     try:
         import tomllib
+
+        loader = tomllib
     except ImportError:
         try:
-            import tomli as tomllib
+            import tomli as toml_backport
+
+            loader = toml_backport  # type: ignore
         except ImportError:
             raise ImportError(
-                "TOML support requires Python 3.11+ or the 'tomli' package. "
-                "Install it with 'pip install mxdev[toml]'."
+                "TOML support requires Python 3.11+ or the 'tomli' package. Install it with 'pip install mxdev[toml]'."
             )
 
     with open(path, "rb") as f:
-        data = tomllib.load(f)
+        data = loader.load(f)
 
     if "tool" not in data or "mxdev" not in data["tool"]:
         return TomlWrapper({"settings": {}})
@@ -117,6 +119,7 @@ class Configuration:
         hooks: list["Hook"] = [],
     ) -> None:
         logger.debug("Read configuration")
+        data: typing.Any
         if mxini.endswith(".toml"):
             data = read_toml(mxini)
         else:

@@ -173,7 +173,7 @@ class MercurialWorkingCopy(common.BaseWorkingCopy):
                 self.output((logger.info, f"Skipped checkout of existing package {name!r}."))
             else:
                 raise MercurialError(
-                    "Source URL for existing package {!r} differs. " "Expected {!r}.".format(name, self.source["url"])
+                    "Source URL for existing package {!r} differs. Expected {!r}.".format(name, self.source["url"])
                 )
         else:
             return self.hg_clone(**kwargs)

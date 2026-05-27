@@ -221,9 +221,7 @@ def resolve_dependencies(
                     cache_dir,
                 )
         else:
-            logger.info(
-                f"Can not read {variety_verbose} file '{file_or_url}', " "it does not exist. Empty file assumed."
-            )
+            logger.info(f"Can not read {variety_verbose} file '{file_or_url}', it does not exist. Empty file assumed.")
     else:
         # HTTP(S) URL handling with caching
         content: str
@@ -358,7 +356,7 @@ def write_dev_sources(fio, packages: dict[str, dict[str, typing.Any]], state: St
 
         # Add -e prefix only for 'editable' mode (not for 'fixed')
         prefix = "-e " if package["install-mode"] == "editable" else ""
-        install_line = f"""{prefix}./{package['target']}/{name}{subdir}{extras}"""
+        install_line = f"""{prefix}./{package["target"]}/{name}{subdir}{extras}"""
 
         if not source_path.exists():
             # Source not checked out yet - write as comment
