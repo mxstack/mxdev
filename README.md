@@ -312,6 +312,22 @@ managed = true
 
 mxdev will automatically inject the local VCS paths of your developed packages into `[tool.uv.sources]`.
 
+Any `version-overrides` declared in `mx.ini` are also written to `[tool.uv] override-dependencies`. For example:
+```ini
+[settings]
+version-overrides =
+    baz.baaz==1.9.32
+    somepackage==3.0.0
+```
+results in:
+```toml
+[tool.uv]
+override-dependencies = [
+    "baz.baaz==1.9.32",
+    "somepackage==3.0.0",
+]
+```
+
 This allows you to seamlessly use `uv sync` or `uv run` with the packages mxdev has checked out for you, without needing to use `requirements-mxdev.txt`.
 
 To disable this feature, you can either remove the `managed = true` flag from your `pyproject.toml`, or explicitly set it to `false`:

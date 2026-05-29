@@ -162,6 +162,128 @@ managed = true
     assert "skip-pkg" not in sources
 
 
+def test_update_pyproject_writes_version_overrides(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    mx_ini = """
+[settings]
+version-overrides =
+    baz.baaz==1.9.32
+    somepackage==3.0.0
+
+[pkg1]
+url = https://example.com/pkg1.git
+target = sources
+install-mode = editable
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    overrides = doc["tool"]["uv"]["override-dependencies"]
+    assert list(overrides) == ["baz.baaz==1.9.32", "somepackage==3.0.0"]
+
+
+def test_update_pyproject_replaces_existing_version_overrides(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    mx_ini = """
+[settings]
+version-overrides =
+    newpkg==2.0.0
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+override-dependencies = ["stalepkg==0.1.0"]
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    overrides = doc["tool"]["uv"]["override-dependencies"]
+    assert list(overrides) == ["newpkg==2.0.0"]
+
+
+def test_update_pyproject_no_overrides_no_packages_skips(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    assert "override-dependencies" not in doc["tool"]["uv"]
+    assert "sources" not in doc["tool"]["uv"]
+
+
+def test_update_pyproject_overrides_only_no_packages(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    mx_ini = """
+[settings]
+version-overrides =
+    onlyoverride==1.0.0
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    config = Configuration("mx.ini")
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    assert list(doc["tool"]["uv"]["override-dependencies"]) == ["onlyoverride==1.0.0"]
+    assert "sources" not in doc["tool"]["uv"]
+
+
 def test_update_pyproject_idempotency(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     hook = UvPyprojectUpdater()

@@ -2,7 +2,8 @@
  
 ## 5.3.0 (unreleased)
 
-<!-- Add future changes here -->
+- Feature: The `uv` hook now also propagates `version-overrides` from `mx.ini` to `[tool.uv] override-dependencies` in `pyproject.toml`. This keeps version pins in sync between mxdev and uv-managed projects.
+  [frapell]
 
 
 ## 5.2.0 (2026-05-28)

@@ -100,45 +100,57 @@ class UvPyprojectUpdater(Hook):
         """Modify the pyproject.toml document based on mxdev state."""
         import tomlkit
 
-        if not state.configuration.packages:
+        packages = state.configuration.packages
+        overrides = state.configuration.overrides
+
+        if not packages and not overrides:
             return
 
-        # 1. Update [tool.uv.sources]
         if "tool" not in doc:
             doc.add("tool", tomlkit.table())
         if "uv" not in doc["tool"]:
             doc["tool"]["uv"] = tomlkit.table()
-        if "sources" not in doc["tool"]["uv"]:
-            doc["tool"]["uv"]["sources"] = tomlkit.table()
 
-        uv_sources = doc["tool"]["uv"]["sources"]
+        # 1. Update [tool.uv.sources]
+        if packages:
+            if "sources" not in doc["tool"]["uv"]:
+                doc["tool"]["uv"]["sources"] = tomlkit.table()
 
-        for pkg_name, pkg_data in state.configuration.packages.items():
-            install_mode = pkg_data.get("install-mode", "editable")
+            uv_sources = doc["tool"]["uv"]["sources"]
 
-            if install_mode == "skip":
-                continue
+            for pkg_name, pkg_data in packages.items():
+                install_mode = pkg_data.get("install-mode", "editable")
 
-            target_dir = Path(pkg_data.get("target", "sources"))
-            package_path = target_dir / pkg_name
-            subdirectory = pkg_data.get("subdirectory", "")
-            if subdirectory:
-                package_path = package_path / subdirectory
+                if install_mode == "skip":
+                    continue
 
-            try:
-                if package_path.is_absolute():
-                    rel_path = package_path.relative_to(Path.cwd()).as_posix()
-                else:
+                target_dir = Path(pkg_data.get("target", "sources"))
+                package_path = target_dir / pkg_name
+                subdirectory = pkg_data.get("subdirectory", "")
+                if subdirectory:
+                    package_path = package_path / subdirectory
+
+                try:
+                    if package_path.is_absolute():
+                        rel_path = package_path.relative_to(Path.cwd()).as_posix()
+                    else:
+                        rel_path = package_path.as_posix()
+                except ValueError:
                     rel_path = package_path.as_posix()
-            except ValueError:
-                rel_path = package_path.as_posix()
 
-            source_table = tomlkit.inline_table()
-            source_table.append("path", rel_path)
+                source_table = tomlkit.inline_table()
+                source_table.append("path", rel_path)
 
-            if install_mode == "editable":
-                source_table.append("editable", True)
-            elif install_mode == "fixed":
-                source_table.append("editable", False)
+                if install_mode == "editable":
+                    source_table.append("editable", True)
+                elif install_mode == "fixed":
+                    source_table.append("editable", False)
 
-            uv_sources[pkg_name] = source_table
+                uv_sources[pkg_name] = source_table
+
+        # 2. Update [tool.uv] override-dependencies from version-overrides
+        if overrides:
+            override_array = tomlkit.array()
+            override_array.extend(overrides.values())
+            override_array.multiline(True)
+            doc["tool"]["uv"]["override-dependencies"] = override_array
