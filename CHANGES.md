@@ -1,6 +1,11 @@
 ## Changes
  
-## 5.3.2 (unreleased)
+## 5.3.3 (unreleased)
+
+<!-- Add future changes here -->
+
+
+## 5.3.2 (2026-05-30)
 
 - Fix: Restore backward compatibility for hook config sections named
   `[namespace-subsection]`. After 5.3.1 anchored section matching strictly on
@@ -19,7 +24,8 @@
   Section ownership now requires an exact `[namespace]` match or a `[namespace:subsection]`
   prefix (the `:` separator cannot occur in a package name), so a hook like `uv` no longer
   silently drops packages such as `uvst.addon`. Hook config sections previously written as
-  `[namespace-section]` must be renamed to `[namespace:section]`.
+  `[namespace-section]` must be renamed to `[namespace:section]`. (Note: 5.3.2 restored
+  the `[namespace-section]` form as a deprecation rather than a hard break — see below.)
   [jensens]
 
 
