@@ -18,7 +18,7 @@ logger = logging.getLogger("mxdev")
 class UvPyprojectUpdater(Hook):
     """An mxdev hook that updates pyproject.toml during the write phase for uv-managed projects."""
 
-    namespace = "uv"
+    namespace = "__uv__"
 
     def read(self, state: State) -> None:
         pass
