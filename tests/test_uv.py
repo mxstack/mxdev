@@ -15,7 +15,7 @@ def test_hook_skips_when_pyproject_toml_missing(mocker, tmp_path, monkeypatch):
     state = State(config)
     mock_logger = mocker.patch("mxdev.uv.logger")
     hook.write(state)
-    mock_logger.debug.assert_called_with("[%s] pyproject.toml not found, skipping.", "uv")
+    mock_logger.debug.assert_called_with("[%s] pyproject.toml not found, skipping.", "__uv__")
 
 
 def test_hook_skips_when_uv_managed_is_false_or_missing(mocker, tmp_path, monkeypatch):
@@ -39,7 +39,7 @@ def test_hook_skips_when_uv_managed_is_false_or_missing(mocker, tmp_path, monkey
     hook.write(state)
     mock_logger.debug.assert_called_with(
         "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.",
-        "uv",
+        "__uv__",
     )
 
     # Verify the file was not modified
@@ -69,7 +69,7 @@ managed = false
     hook.write(state)
     mock_logger.debug.assert_called_with(
         "[%s] Project not explicitly managed by uv ([tool.uv] managed=true missing), skipping.",
-        "uv",
+        "__uv__",
     )
 
     # Verify the file was not modified
@@ -105,8 +105,8 @@ managed = true
 
     mock_logger = mocker.patch("mxdev.uv.logger")
     hook.write(state)
-    mock_logger.info.assert_any_call("[%s] Updating pyproject.toml...", "uv")
-    mock_logger.info.assert_any_call("[%s] Successfully updated pyproject.toml", "uv")
+    mock_logger.info.assert_any_call("[%s] Updating pyproject.toml...", "__uv__")
+    mock_logger.info.assert_any_call("[%s] Successfully updated pyproject.toml", "__uv__")
 
     # Verify the file was actually written correctly
     doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
@@ -375,7 +375,7 @@ managed = true
 
     hook.write(state)
 
-    mock_logger.error.assert_called_with("[%s] Failed to read pyproject.toml: %s", "uv", mocker.ANY)
+    mock_logger.error.assert_called_with("[%s] Failed to read pyproject.toml: %s", "__uv__", mocker.ANY)
 
 
 def test_hook_handles_oserror_on_write(mocker, tmp_path, monkeypatch):
@@ -400,7 +400,7 @@ managed = true
 
     hook.write(state)
 
-    mock_logger.error.assert_called_with("[%s] Failed to write pyproject.toml: %s", "uv", mocker.ANY)
+    mock_logger.error.assert_called_with("[%s] Failed to write pyproject.toml: %s", "__uv__", mocker.ANY)
 
     # Ensure no .tmp files are left behind
     assert len(list(tmp_path.glob("*.tmp"))) == 0
@@ -459,3 +459,42 @@ def test_hook_does_not_require_tomlkit_if_not_uv_managed(mocker, tmp_path, monke
 
     # Should not raise any error, even though tomlkit import is mocked to fail
     hook.write(state)
+
+
+def test_uv_namespace_sections_are_ignored_in_pyproject(tmp_path, monkeypatch):
+    # Test that sections starting with __uv__ are ignored in pyproject.toml
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+
+    mx_ini = """
+[settings]
+[pkg1]
+url = https://example.com/pkg1.git
+target = sources
+install-mode = editable
+
+[__uv__.whatever]
+some-hook-setting = value
+"""
+    (tmp_path / "mx.ini").write_text(mx_ini.strip())
+    # We need to pass the hook to Configuration so it knows about the namespace
+    config = Configuration("mx.ini", hooks=[hook])
+    state = State(config)
+
+    initial_toml = """
+[project]
+name = "test"
+dependencies = []
+
+[tool.uv]
+managed = true
+"""
+    (tmp_path / "pyproject.toml").write_text(initial_toml.strip())
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    sources = doc["tool"]["uv"]["sources"]
+    assert "pkg1" in sources
+    assert "__uv__.whatever" not in sources
+    assert "whatever" not in sources

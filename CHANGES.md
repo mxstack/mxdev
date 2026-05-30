@@ -2,7 +2,8 @@
  
 ## 5.4.0 (unreleased)
 
-<!-- Add future changes here -->
+- Test: Add test to ensure that sections starting with `__uv__` are ignored in `pyproject.toml`. [erral]
+- Fix: Updated `uv` hook tests to match the current `__uv__` namespace. [erral]
 
 
 ## 5.3.0 (2026-05-29)
