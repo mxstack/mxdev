@@ -2,7 +2,15 @@
  
 ## 5.3.2 (unreleased)
 
-<!-- Add future changes here -->
+- Fix: Restore backward compatibility for hook config sections named
+  `[namespace-subsection]`. After 5.3.1 anchored section matching strictly on
+  `:`, downstream hooks (notably `mxmake`) that emit `[mxmake-env]`-style
+  sections broke. The matcher now accepts the historical `-` delimiter too,
+  logging a one-time deprecation warning per offending section. Hook classes
+  that declared a trailing delimiter in their namespace (e.g. `namespace = "mxmake-"`)
+  are normalized: the trailing `-` is stripped and the hook author is warned.
+  Migration: rename `[ns-section]` to `[ns:section]` and set `namespace = "ns"`.
+  [jensens]
 
 
 ## 5.3.1 (2026-05-29)

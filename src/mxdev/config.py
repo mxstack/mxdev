@@ -108,15 +108,42 @@ class Configuration:
             if line:
                 self.ignore_keys.append(line)
 
+        # Canonical delimiter is ":" (cannot appear in a Python distribution
+        # name, so it never collides with a package section). "-" is the
+        # historical delimiter and is still accepted, but emits a deprecation
+        # warning. Legacy hooks declared their namespace with the trailing
+        # delimiter baked in (e.g. namespace = "mxmake-"); we normalize that
+        # too and warn the hook author.
+        _warned: set[str] = set()
+
+        def _warn_once(key: str, message: str) -> None:
+            if key in _warned:
+                return
+            _warned.add(key)
+            logger.warning(message)
+
         def is_ns_member(name) -> bool:
-            # A section belongs to a hook only when its name is exactly the
-            # hook namespace or is prefixed with "<namespace>:". The colon
-            # cannot occur in a package name, so it unambiguously separates
-            # hook sections from package sections and avoids swallowing
-            # packages that merely start with the namespace (e.g. a "uv" hook
-            # must not claim a package named "uvst.addon").
             for hook in hooks:
-                if name == hook.namespace or name.startswith(f"{hook.namespace}:"):
+                ns = hook.namespace
+                effective_ns = ns.rstrip("-")
+                if effective_ns != ns:
+                    _warn_once(
+                        f"ns:{ns}",
+                        f"Hook '{type(hook).__name__}' declares namespace='{ns}' with a "
+                        f"trailing '-'; this form is deprecated. Use namespace='{effective_ns}' "
+                        f"and the ':' section delimiter (e.g. [{effective_ns}:section]).",
+                    )
+                if name == effective_ns:
+                    return True
+                if name.startswith(f"{effective_ns}:"):
+                    return True
+                if name.startswith(f"{effective_ns}-"):
+                    subsection = name[len(effective_ns) + 1 :]
+                    _warn_once(
+                        f"section:{name}",
+                        f"Hook section '[{name}]' uses the deprecated '-' delimiter; "
+                        f"rename to '[{effective_ns}:{subsection}]'.",
+                    )
                     return True
             return False
 

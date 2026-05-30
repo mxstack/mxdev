@@ -17,6 +17,11 @@ The `:` separator is used on purpose: it cannot occur in a package name, so a ho
 can never accidentally claim a package section whose name merely starts with the same letters
 (e.g. a `uv` hook must not swallow a package named `uvst.addon`).
 
+The historical `[namespace-subsection]` form is still accepted for backward compatibility
+but logs a deprecation warning and should be migrated to `[namespace:subsection]`. Hooks
+that declared their namespace with a trailing delimiter (e.g. `namespace = "mxmake-"`) keep
+working — the trailing `-` is stripped — and the hook author is warned to drop it.
+
 This looks like so:
 
 ```INI
