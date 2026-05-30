@@ -311,3 +311,66 @@ pushurl = git@github.com:test/repo2.git
     # package2 should have single pushurl (no pushurls list)
     assert "pushurls" not in config.packages["package2"]
     assert config.packages["package2"]["pushurl"] == "git@github.com:test/repo2.git"
+
+
+def test_package_name_starting_with_hook_namespace_is_not_swallowed(tmp_path):
+    """A package whose name merely starts with a hook namespace stays a package.
+
+    Regression: with the ``uv`` hook (namespace ``"uv"``) registered, packages
+    like ``uvst.addon`` were silently classified as hook sections and dropped
+    from ``config.packages`` because section ownership used an unanchored
+    ``str.startswith`` match.
+    """
+    from mxdev.config import Configuration
+    from mxdev.hooks import Hook
+
+    class UvHook(Hook):
+        namespace = "uv"
+
+    config_content = """
+[settings]
+requirements-in = requirements.txt
+
+[uvst.addon]
+url = https://github.com/example/uvst.addon.git
+"""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(config_content)
+
+    config = Configuration(str(config_file), hooks=[UvHook()])
+
+    assert "uvst.addon" in config.packages
+    assert "uvst.addon" not in config.hooks
+
+
+def test_hook_section_with_namespace_delimiter_belongs_to_hook(tmp_path):
+    """Sections named exactly ``<namespace>`` or prefixed ``<namespace>:`` are hook sections.
+
+    A colon cannot occur in a package name, so it is the unambiguous delimiter
+    separating hook sections from package sections.
+    """
+    from mxdev.config import Configuration
+    from mxdev.hooks import Hook
+
+    class UvHook(Hook):
+        namespace = "uv"
+
+    config_content = """
+[settings]
+requirements-in = requirements.txt
+
+[uv]
+some-setting = value
+
+[uv:sources]
+another = thing
+"""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(config_content)
+
+    config = Configuration(str(config_file), hooks=[UvHook()])
+
+    assert "uv" in config.hooks
+    assert "uv:sources" in config.hooks
+    assert "uv" not in config.packages
+    assert "uv:sources" not in config.packages

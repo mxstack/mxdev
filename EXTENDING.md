@@ -11,13 +11,19 @@ To avoid naming conflicts, all hook-related settings and config sections must be
 
 It is recommended to use the package name containing the hook as a namespace.
 
+Settings keys in `[settings]` and package sections are namespaced with a `namespace-` prefix.
+Dedicated hook config sections are named either exactly `[namespace]` or `[namespace:subsection]`.
+The `:` separator is used on purpose: it cannot occur in a package name, so a hook namespace
+can never accidentally claim a package section whose name merely starts with the same letters
+(e.g. a `uv` hook must not swallow a package named `uvst.addon`).
+
 This looks like so:
 
 ```INI
 [settings]
 myextension-global_setting = 1
 
-[myextension-section]
+[myextension:section]
 setting = value
 
 [foo.bar]
@@ -49,7 +55,7 @@ class MyExtension(Hook):
 
         # Example: Access hook-specific sections
         for section_name, section_config in state.configuration.hooks.items():
-            if section_name.startswith('myextension-'):
+            if section_name == 'myextension' or section_name.startswith('myextension:'):
                 # Process your hook's configuration
                 pass
 
@@ -100,7 +106,7 @@ Replace:
 
 - Use your package name as namespace prefix
 - All settings: `namespace-setting_name`
-- All sections: `[namespace-section]`
+- All sections: `[namespace]` or `[namespace:section]` (the `:` separator cannot occur in a package name, so it prevents collisions with package sections)
 - This prevents conflicts with other hooks
 
 ## Example Use Cases
