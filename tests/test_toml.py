@@ -82,6 +82,27 @@ use = false
     assert wrapper["pkg1"]["use"] == "False"
 
 
+def test_read_toml_uv_prefixes(tmp_path):
+    """Test that package names starting with uv or uvx are handled correctly."""
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        """
+[tool.mxdev.packages."uv.package1"]
+url = "https://example.com/uv.pkg1.git"
+
+[tool.mxdev.packages."uvx.package2"]
+url = "https://example.com/uvx.pkg2.git"
+""",
+        encoding="utf-8",
+    )
+
+    wrapper = read_toml(pyproject)
+    assert "uv.package1" in wrapper.sections()
+    assert wrapper["uv.package1"]["url"] == "https://example.com/uv.pkg1.git"
+    assert "uvx.package2" in wrapper.sections()
+    assert wrapper["uvx.package2"]["url"] == "https://example.com/uvx.pkg2.git"
+
+
 def test_read_toml_no_parser(monkeypatch):
     import sys
 
