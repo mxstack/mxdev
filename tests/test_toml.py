@@ -103,6 +103,35 @@ url = "https://example.com/uvx.pkg2.git"
     assert wrapper["uvx.package2"]["url"] == "https://example.com/uvx.pkg2.git"
 
 
+def test_read_toml_tool_conflicts(tmp_path):
+    """Test that tool sections other than mxdev are ignored."""
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        """
+[tool.ruff]
+line-length = 120
+
+[tool.mxdev.settings]
+threads = 4
+
+[tool.mxdev.packages.ruff]
+url = "https://example.com/ruff.git"
+""",
+        encoding="utf-8",
+    )
+
+    wrapper = read_toml(pyproject)
+    # Check that settings were read
+    assert wrapper["settings"]["threads"] == "4"
+    # Check that the package named 'ruff' was read
+    assert "ruff" in wrapper.sections()
+    assert wrapper["ruff"]["url"] == "https://example.com/ruff.git"
+    # Check that tool.ruff was ignored (not in wrapper.sections)
+    assert "ruff" in wrapper.sections()  # This refers to the package
+    # The wrapper only contains sections from tool.mxdev
+    assert len(wrapper.sections()) == 1  # Only 'ruff' package
+
+
 def test_read_toml_no_parser(monkeypatch):
     import sys
 
