@@ -374,3 +374,103 @@ another = thing
     assert "uv:sources" in config.hooks
     assert "uv" not in config.packages
     assert "uv:sources" not in config.packages
+
+
+def test_hook_section_with_hyphen_delimiter_is_supported_but_deprecated(tmp_path, caplog):
+    """``[<namespace>-section]`` is still recognized as a hook section, with a deprecation warning.
+
+    Before the colon-as-delimiter fix, the convention was ``[<namespace>-section]``.
+    We keep that working for compatibility but log a deprecation pointing users to
+    the new ``<namespace>:section`` form.
+    """
+    from mxdev.config import Configuration
+    from mxdev.hooks import Hook
+
+    import logging
+
+    class MxmakeHook(Hook):
+        namespace = "mxmake"
+
+    config_content = """
+[settings]
+requirements-in = requirements.txt
+
+[mxmake-env]
+some-setting = value
+"""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(config_content)
+
+    with caplog.at_level(logging.WARNING, logger="mxdev"):
+        config = Configuration(str(config_file), hooks=[MxmakeHook()])
+
+    assert "mxmake-env" in config.hooks
+    assert "mxmake-env" not in config.packages
+    assert any(
+        "mxmake-env" in r.message and "deprecated" in r.message.lower() for r in caplog.records
+    ), f"Expected deprecation warning for hyphen-delimited section, got: {[r.message for r in caplog.records]}"
+
+
+def test_legacy_namespace_with_trailing_hyphen_is_normalized(tmp_path, caplog):
+    """A hook declaring ``namespace = 'mxmake-'`` (trailing hyphen baked in) still works.
+
+    Legacy hooks (e.g. mxmake) declared their namespace with the delimiter included.
+    The matcher strips a trailing hyphen so the effective namespace is ``mxmake``,
+    keeping ``[mxmake-env]`` and ``[mxmake:env]`` both recognized.
+    """
+    from mxdev.config import Configuration
+    from mxdev.hooks import Hook
+
+    import logging
+
+    class LegacyMxmakeHook(Hook):
+        namespace = "mxmake-"
+
+    config_content = """
+[settings]
+requirements-in = requirements.txt
+
+[mxmake-env]
+some-setting = value
+
+[mxmake:files]
+other-setting = value
+"""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(config_content)
+
+    with caplog.at_level(logging.WARNING, logger="mxdev"):
+        config = Configuration(str(config_file), hooks=[LegacyMxmakeHook()])
+
+    assert "mxmake-env" in config.hooks
+    assert "mxmake:files" in config.hooks
+    assert "mxmake-env" not in config.packages
+    assert "mxmake:files" not in config.packages
+
+
+def test_hyphen_prefix_without_delimiter_is_still_a_package(tmp_path):
+    """The original ``uvst.addon`` bug stays fixed even with hyphen support enabled.
+
+    A package whose name starts with the namespace but has no delimiter
+    (``uvst.addon`` for namespace ``uv``) must remain a package.
+    """
+    from mxdev.config import Configuration
+    from mxdev.hooks import Hook
+
+    class UvHook(Hook):
+        namespace = "uv"
+
+    config_content = """
+[settings]
+requirements-in = requirements.txt
+
+[uvst.addon]
+url = https://github.com/example/uvst.addon.git
+"""
+    config_file = tmp_path / "mx.ini"
+    config_file.write_text(config_content)
+
+    config = Configuration(str(config_file), hooks=[UvHook()])
+
+    assert "uvst.addon" in config.packages
+    assert "uvst.addon" not in config.hooks
