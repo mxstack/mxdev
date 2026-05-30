@@ -109,8 +109,14 @@ class Configuration:
                 self.ignore_keys.append(line)
 
         def is_ns_member(name) -> bool:
+            # A section belongs to a hook only when its name is exactly the
+            # hook namespace or is prefixed with "<namespace>:". The colon
+            # cannot occur in a package name, so it unambiguously separates
+            # hook sections from package sections and avoids swallowing
+            # packages that merely start with the namespace (e.g. a "uv" hook
+            # must not claim a package named "uvst.addon").
             for hook in hooks:
-                if name.startswith(hook.namespace):
+                if name == hook.namespace or name.startswith(f"{hook.namespace}:"):
                     return True
             return False
 

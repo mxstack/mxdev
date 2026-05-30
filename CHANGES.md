@@ -2,7 +2,12 @@
  
 ## 5.4.0 (unreleased)
 
-<!-- Add future changes here -->
+- Fix: A hook namespace no longer swallows packages whose name merely starts with it.
+  Section ownership now requires an exact `[namespace]` match or a `[namespace:subsection]`
+  prefix (the `:` separator cannot occur in a package name), so a hook like `uv` no longer
+  silently drops packages such as `uvst.addon`. Hook config sections previously written as
+  `[namespace-section]` must be renamed to `[namespace:section]`.
+  [jensens]
 
 
 ## 5.3.0 (2026-05-29)
