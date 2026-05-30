@@ -1,6 +1,11 @@
 ## Changes
  
-## 5.4.0 (unreleased)
+## 5.3.2 (unreleased)
+
+<!-- Add future changes here -->
+
+
+## 5.3.1 (2026-05-29)
 
 - Fix: A hook namespace no longer swallows packages whose name merely starts with it.
   Section ownership now requires an exact `[namespace]` match or a `[namespace:subsection]`
