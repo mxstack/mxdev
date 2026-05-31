@@ -1,5 +1,6 @@
 from mxdev.config import Configuration
 from mxdev.state import State
+from mxdev.uv import _constraints_to_uv
 from mxdev.uv import UvPyprojectUpdater
 
 import pytest
@@ -459,3 +460,30 @@ def test_hook_does_not_require_tomlkit_if_not_uv_managed(mocker, tmp_path, monke
 
     # Should not raise any error, even though tomlkit import is mocked to fail
     hook.write(state)
+
+
+def test_constraints_to_uv_filters_and_preserves_order():
+    constraints = [
+        "#" * 79 + "\n",
+        "# begin constraints from: https://example.com/a.txt\n",
+        "\n",
+        "Zope==6.0\n",
+        "# AccessControl==7.3 -> mxdev disabled (source)\n",
+        'backports.tarfile==1.2.0 ; python_version < "3.12"\n',
+        "--hash=sha256:deadbeef\n",
+        "# end constraints from: https://example.com/a.txt\n",
+        "#" * 79 + "\n",
+    ]
+    result = _constraints_to_uv(constraints)
+    assert result == [
+        ("comment", "begin constraints from: https://example.com/a.txt"),
+        ("entry", "Zope==6.0"),
+        ("comment", "AccessControl==7.3 -> mxdev disabled (source)"),
+        ("entry", 'backports.tarfile==1.2.0 ; python_version < "3.12"'),
+        ("comment", "end constraints from: https://example.com/a.txt"),
+    ]
+
+
+def test_constraints_to_uv_empty_input():
+    assert _constraints_to_uv([]) == []
+    assert _constraints_to_uv(["\n", "#" * 79 + "\n", "   \n"]) == []

@@ -15,6 +15,36 @@ if TYPE_CHECKING:
 logger = logging.getLogger("mxdev")
 
 
+def _constraints_to_uv(constraints: list[str]) -> list[tuple[str, str]]:
+    """Turn resolved constraint lines into ordered uv array items.
+
+    Mirrors ``constraints-mxdev.txt`` into TOML-array form: specifier lines
+    become ``("entry", specifier)`` and comment lines become
+    ``("comment", text)``, preserving source order. Decorative ``####`` rules,
+    blank lines, and non-PEP-508 lines (e.g. ``--hash``) are dropped.
+    """
+    from packaging.requirements import Requirement
+
+    items: list[tuple[str, str]] = []
+    for raw in constraints:
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        # Decorative full-width rule (line consisting only of '#').
+        if set(stripped) == {"#"}:
+            continue
+        if stripped.startswith("#"):
+            items.append(("comment", stripped.lstrip("#").strip()))
+            continue
+        try:
+            Requirement(stripped)
+        except Exception:
+            logger.debug("[uv] Skipping non-PEP-508 constraint line: %s", stripped)
+            continue
+        items.append(("entry", stripped))
+    return items
+
+
 class UvPyprojectUpdater(Hook):
     """An mxdev hook that updates pyproject.toml during the write phase for uv-managed projects."""
 
