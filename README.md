@@ -311,6 +311,9 @@ managed = true
 ```
 
 mxdev will automatically inject the local VCS paths of your developed packages into `[tool.uv.sources]`.
+Each entry mxdev writes is tagged with a `# managed by mxdev` marker comment. On every run mxdev
+reconciles these: entries whose package was removed from `mx.ini` (or switched to `install-mode = skip`)
+are pruned, while any user-defined sources you added yourself are left untouched.
 
 Any `version-overrides` declared in `mx.ini` are also written to `[tool.uv] override-dependencies`. For example:
 ```ini

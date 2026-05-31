@@ -635,3 +635,93 @@ def test_end_to_end_constraint_chain(tmp_path, monkeypatch):
     assert "AccessControl==7.3" not in cdeps
     # The override itself is carried by override-dependencies.
     assert list(doc["tool"]["uv"]["override-dependencies"]) == ["AccessControl==7.4"]
+
+
+def _write_mx_ini_packages(tmp_path, *names):
+    lines = ["[settings]"]
+    for name in names:
+        lines.append(f"[{name}]")
+        lines.append(f"url = https://example.com/{name}.git")
+        lines.append("target = sources")
+        lines.append("install-mode = editable")
+    (tmp_path / "mx.ini").write_text("\n".join(lines) + "\n")
+
+
+def _run_hook(tmp_path):
+    config = Configuration("mx.ini")
+    state = State(config)
+    UvPyprojectUpdater().write(state)
+    return tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+
+
+def test_drops_source_when_package_removed_from_mx_ini(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "backend"\ndependencies = []\n\n[tool.uv]\nmanaged = true\n'
+    )
+
+    # Phase 1: two packages -> both written to [tool.uv.sources]
+    _write_mx_ini_packages(tmp_path, "addon-a", "addon-b")
+    doc = _run_hook(tmp_path)
+    assert "addon-a" in doc["tool"]["uv"]["sources"]
+    assert "addon-b" in doc["tool"]["uv"]["sources"]
+
+    # Phase 2: addon-b removed from mx.ini -> must be removed from pyproject.toml
+    _write_mx_ini_packages(tmp_path, "addon-a")
+    doc = _run_hook(tmp_path)
+    assert "addon-a" in doc["tool"]["uv"]["sources"]
+    assert "addon-b" not in doc["tool"]["uv"]["sources"]
+
+
+def test_preserves_foreign_sources_when_reconciling(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    # A hand-written, non-mxdev source must never be touched.
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "backend"\ndependencies = []\n\n'
+        "[tool.uv]\nmanaged = true\n\n"
+        "[tool.uv.sources]\n"
+        'my-fork = { git = "https://github.com/me/my-fork.git", branch = "main" }\n'
+    )
+
+    _write_mx_ini_packages(tmp_path, "addon-a")
+    doc = _run_hook(tmp_path)
+    assert "addon-a" in doc["tool"]["uv"]["sources"]
+    assert "my-fork" in doc["tool"]["uv"]["sources"]
+
+    # Drop addon-a: it goes away, the foreign source stays.
+    (tmp_path / "mx.ini").write_text("[settings]\n")
+    doc = _run_hook(tmp_path)
+    assert "addon-a" not in doc["tool"]["uv"]["sources"]
+    assert "my-fork" in doc["tool"]["uv"]["sources"]
+
+
+def test_skip_install_mode_removes_existing_source(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "backend"\ndependencies = []\n\n[tool.uv]\nmanaged = true\n'
+    )
+
+    _write_mx_ini_packages(tmp_path, "addon-a")
+    doc = _run_hook(tmp_path)
+    assert "addon-a" in doc["tool"]["uv"]["sources"]
+
+    # Switch addon-a to skip -> its source must be removed.
+    (tmp_path / "mx.ini").write_text(
+        "[settings]\n[addon-a]\nurl = https://example.com/addon-a.git\n" "target = sources\ninstall-mode = skip\n"
+    )
+    doc = _run_hook(tmp_path)
+    assert "addon-a" not in doc["tool"]["uv"].get("sources", {})
+
+
+def test_source_reconcile_idempotency(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "backend"\ndependencies = []\n\n[tool.uv]\nmanaged = true\n'
+    )
+    _write_mx_ini_packages(tmp_path, "addon-a", "addon-b")
+
+    UvPyprojectUpdater().write(State(Configuration("mx.ini")))
+    first = (tmp_path / "pyproject.toml").read_text()
+    UvPyprojectUpdater().write(State(Configuration("mx.ini")))
+    second = (tmp_path / "pyproject.toml").read_text()
+    assert first == second
