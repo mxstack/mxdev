@@ -1,6 +1,11 @@
 ## Changes
  
-## 5.3.3 (unreleased)
+## 5.4.1 (unreleased)
+
+<!-- Add future changes here -->
+
+
+## 5.4.0 (2026-06-01)
 
 - The uv hook now writes the fully resolved constraints (including external `-c`/`-r`
   chains like Plone release constraints) into `[tool.uv] constraint-dependencies`, so
