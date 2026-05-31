@@ -67,8 +67,7 @@ Pro Zeile aus `state.constraints`, in Original-Reihenfolge:
    als `comment` erhalten — sie liefern die Nachvollziehbarkeit, die der txt-Pfad bietet.
 3. **`# <pkg> -> mxdev disabled (...)`-Zeilen** als `comment` erhalten (1:1 wie in
    `constraints-mxdev.txt`). Sie dokumentieren, *warum* ein Pin hier fehlt (das Paket kommt
-   über `[tool.uv.sources]` bzw. `override-dependencies`). → **Auf Review verifizieren**, ob
-   gewünscht; Alternative wäre, sie wegzulassen.
+   über `[tool.uv.sources]` bzw. `override-dependencies`). **Entschieden: behalten.**
 4. **Dekorative `####…`-Trennlinien und Leerzeilen** verwerfen (reines visuelles Rauschen;
    die begin/end-Header liefern die Gruppierung).
 5. **Kein Dedupe, keine Konfliktauflösung** — konsistent mit dem klassischen Pfad
