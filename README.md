@@ -330,6 +330,33 @@ override-dependencies = [
 
 This allows you to seamlessly use `uv sync` or `uv run` with the packages mxdev has checked out for you, without needing to use `requirements-mxdev.txt`.
 
+The fully resolved constraints — including external `-c`/`-r` chains such as Plone
+release constraints (`-c https://dist.plone.org/release/6.2.0rc1/constraints.txt`) — are
+written to `[tool.uv] constraint-dependencies`. uv itself cannot follow `-c URL` includes,
+so mxdev expands the whole chain and inlines the pins, preserving source order and the
+`# begin/end constraints from: ...` provenance comments. Packages developed from source or
+replaced via `version-overrides` are kept as `# ... -> mxdev disabled` comments (they are
+provided through `[tool.uv.sources]` / `override-dependencies` instead):
+
+```toml
+[tool.uv]
+constraint-dependencies = [
+    # managed by mxdev - do not edit
+    # begin constraints from: https://dist.plone.org/release/6.2.0rc1/constraints.txt
+    "Zope==6.0",
+    "AccessControl==7.3",
+    # end constraints from: https://dist.plone.org/release/6.2.0rc1/constraints.txt
+]
+```
+
+mxdev owns this array completely and rewrites it on every run. To turn it off, set in
+`mx.ini`:
+
+```ini
+[settings]
+uv-constraint-dependencies = false
+```
+
 To disable this feature, you can either remove the `managed = true` flag from your `pyproject.toml`, or explicitly set it to `false`:
 ```toml
 [tool.uv]
@@ -407,4 +434,8 @@ Mx (generally pronounced like mix [mɪks], or [məks] in the UK) is meant to be 
 
 The VCS-related code is taken from `mr.developer`.
 Thanks to Florian Schulze and Contributors.
+
+The approach of importing pip constraints into `[tool.uv] constraint-dependencies` was
+inspired by Maik Derstappen's [uv-import-constraint-dependencies](https://github.com/derico-de/uv-import-constraint-dependencies).
+Thanks to Maik for the idea and his blessing to adopt it natively.
 
