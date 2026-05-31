@@ -15,6 +15,14 @@ class GitError(common.WCError):
     pass
 
 
+def _branch_not_found_message(name: str, branch: str, url: str) -> str:
+    """Build a clear, actionable error for a configured branch that is missing."""
+    return (
+        f"Branch '{branch}' for package '{name}' does not exist at '{url}'. "
+        f"Check the 'branch' setting for [{name}] in your mx.ini."
+    )
+
+
 class GitWorkingCopy(common.BaseWorkingCopy):
     """The git working copy.
 
@@ -117,8 +125,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             if accept_missing:
                 logger.info("No such branch %r", branch)
                 return (stdout_in, stderr_in)
-            logger.error("No such branch %r", branch)
-            sys.exit(1)
+            raise GitError(_branch_not_found_message(self.source["name"], branch, self.source["url"]))
 
         rbp = self._remote_branch_prefix
         cmd = self.run_git(["merge", f"{rbp}/{branch}"], cwd=path)
@@ -151,6 +158,9 @@ class GitWorkingCopy(common.BaseWorkingCopy):
         cmd = self.run_git(args)
         stdout, stderr = cmd.communicate()
         if cmd.returncode != 0:
+            branch = self.source.get("branch")
+            if branch and "not found in upstream" in stderr:
+                raise GitError(_branch_not_found_message(name, branch, url))
             raise GitError(f"git cloning of '{name}' failed.\n{stderr}")
         if "rev" in self.source:
             stdout, stderr = self.git_switch_branch(stdout, stderr)
@@ -206,8 +216,7 @@ class GitWorkingCopy(common.BaseWorkingCopy):
             self.output((logger.info, f"No such branch {branch}"))
             return (stdout_in + stdout, stderr_in + stderr)
         else:
-            self.output((logger.error, f"No such branch {branch}"))
-            sys.exit(1)
+            raise GitError(_branch_not_found_message(self.source["name"], branch, self.source["url"]))
         # runs the checkout with predetermined arguments
         cmd = self.run_git(argv, cwd=path)
         stdout, stderr = cmd.communicate()

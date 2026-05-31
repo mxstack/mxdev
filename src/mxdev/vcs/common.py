@@ -426,11 +426,14 @@ def worker(working_copies: WorkingCopies, the_queue: queue.Queue) -> None:
             return
         try:
             output = action(**kwargs)
-        except WCError:
+        except WCError as e:
             with output_lock:
                 for lvl, msg in wc._output:
                     lvl(msg)
-                logger.exception("Can not execute action!")
+                # WCError is an expected operational failure: show a clean,
+                # actionable message and keep the full traceback for debug only.
+                logger.error("%s", e)
+                logger.debug("Traceback for the error above:", exc_info=True)
                 working_copies.errors = True
         else:
             with output_lock:

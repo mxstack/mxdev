@@ -275,6 +275,7 @@ def test_git_merge_rbranch_missing_branch_accept():
 
 def test_git_merge_rbranch_missing_branch_no_accept():
     """Test git_merge_rbranch with missing branch and accept_missing=False."""
+    from mxdev.vcs.git import GitError
     from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
@@ -293,8 +294,11 @@ def test_git_merge_rbranch_missing_branch_no_accept():
         mock_process.communicate.return_value = ("* main\n  develop\n", "")
 
         with patch.object(wc, "run_git", return_value=mock_process):
-            with pytest.raises(SystemExit):
+            with pytest.raises(GitError) as excinfo:
                 wc.git_merge_rbranch("", "", accept_missing=False)
+
+    assert "Branch 'nonexistent' for package 'test-package' does not exist" in str(excinfo.value)
+    assert "Check the 'branch' setting for [test-package] in your mx.ini" in str(excinfo.value)
 
 
 def test_git_merge_rbranch_merge_failure():
@@ -888,6 +892,7 @@ def test_git_switch_branch_failure():
 
 def test_git_switch_branch_missing_no_accept():
     """Test git_switch_branch with missing branch and accept_missing=False."""
+    from mxdev.vcs.git import GitError
     from mxdev.vcs.git import GitWorkingCopy
 
     with patch("mxdev.vcs.common.which", return_value="/usr/bin/git"):
@@ -905,8 +910,12 @@ def test_git_switch_branch_missing_no_accept():
         mock_process.communicate.return_value = ("* main\n", "")
 
         with patch.object(wc, "run_git", return_value=mock_process):
-            with pytest.raises(SystemExit):
-                wc.git_switch_branch("", "", accept_missing=False)
+            with patch.object(wc, "git_version", return_value=(2, 30, 0)):
+                with pytest.raises(GitError) as excinfo:
+                    wc.git_switch_branch("", "", accept_missing=False)
+
+    assert "Branch 'nonexistent' for package 'test-package' does not exist" in str(excinfo.value)
+    assert "Check the 'branch' setting for [test-package] in your mx.ini" in str(excinfo.value)
 
 
 def test_git_switch_branch_missing_accept():

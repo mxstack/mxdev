@@ -525,7 +525,9 @@ def test_worker_with_error(mocker, caplog):
     common.worker(working_copies, test_queue)
 
     assert working_copies.errors is True
-    assert "Can not execute action!" in caplog.text
+    # The actual error message is shown (no generic message / traceback noise).
+    assert "Test error" in caplog.text
+    assert "Can not execute action!" not in caplog.text
 
 
 def test_worker_with_bytes_output(mocker):

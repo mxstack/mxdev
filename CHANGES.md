@@ -13,6 +13,11 @@
   with a `# managed by mxdev` marker and prunes managed entries that are no longer
   configured, while leaving user-defined sources untouched. [jensens]
 
+- Fix #78: Give a clear, actionable error when a configured `branch` does not exist on the
+  remote (e.g. it was deleted), naming the package, branch and URL and pointing at the
+  `mx.ini` setting, on both checkout and update. Expected VCS errors are no longer reported
+  with a full Python traceback (the traceback is kept at debug level). [jensens]
+
 
 ## 5.3.2 (2026-05-30)
 
