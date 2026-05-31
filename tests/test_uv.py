@@ -487,3 +487,116 @@ def test_constraints_to_uv_filters_and_preserves_order():
 def test_constraints_to_uv_empty_input():
     assert _constraints_to_uv([]) == []
     assert _constraints_to_uv(["\n", "#" * 79 + "\n", "   \n"]) == []
+
+
+def test_writes_constraint_dependencies(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+    state.constraints = [
+        "# begin constraints from: https://example.com/a.txt\n",
+        "Zope==6.0\n",
+        "# AccessControl==7.3 -> mxdev disabled (source)\n",
+        "# end constraints from: https://example.com/a.txt\n",
+    ]
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "test"\ndependencies = []\n\n[tool.uv]\nmanaged = true\n'
+    )
+
+    hook.write(state)
+
+    content = (tmp_path / "pyproject.toml").read_text()
+    assert "# managed by mxdev - do not edit" in content
+    assert "# begin constraints from: https://example.com/a.txt" in content
+    assert "# AccessControl==7.3 -> mxdev disabled (source)" in content
+    doc = tomlkit.parse(content)
+    assert list(doc["tool"]["uv"]["constraint-dependencies"]) == ["Zope==6.0"]
+
+
+def test_opt_out_disables_constraint_dependencies(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+    (tmp_path / "mx.ini").write_text("[settings]\nuv-constraint-dependencies = false\n")
+    config = Configuration("mx.ini")
+    state = State(config)
+    state.constraints = ["Zope==6.0\n"]
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "test"\ndependencies = []\n\n[tool.uv]\nmanaged = true\n'
+    )
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    assert "constraint-dependencies" not in doc["tool"]["uv"]
+
+
+def test_replaces_existing_constraint_dependencies(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+    state.constraints = ["Zope==6.0\n"]
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "test"\ndependencies = []\n\n'
+        "[tool.uv]\nmanaged = true\n"
+        'constraint-dependencies = [\n    "OldPin==0.0.1",\n]\n'
+    )
+
+    hook.write(state)
+
+    content = (tmp_path / "pyproject.toml").read_text()
+    assert "OldPin" not in content
+    doc = tomlkit.parse(content)
+    assert list(doc["tool"]["uv"]["constraint-dependencies"]) == ["Zope==6.0"]
+
+
+def test_constraint_dependencies_idempotency(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+    (tmp_path / "mx.ini").write_text("[settings]")
+    config = Configuration("mx.ini")
+    state = State(config)
+    state.constraints = [
+        "# begin constraints from: https://example.com/a.txt\n",
+        "Zope==6.0\n",
+        "AccessControl==7.3\n",
+        "# end constraints from: https://example.com/a.txt\n",
+    ]
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "test"\ndependencies = []\n\n[tool.uv]\nmanaged = true\n'
+    )
+
+    hook.write(state)
+    first = (tmp_path / "pyproject.toml").read_text()
+    hook.write(state)
+    second = (tmp_path / "pyproject.toml").read_text()
+    assert first == second
+
+
+def test_empty_constraints_removes_stale_managed_array(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    hook = UvPyprojectUpdater()
+    # A package ensures _update_pyproject does not early-return.
+    mx_ini = "[settings]\n[pkg1]\nurl = https://example.com/pkg1.git\n" "target = sources\ninstall-mode = editable\n"
+    (tmp_path / "mx.ini").write_text(mx_ini)
+    config = Configuration("mx.ini")
+    state = State(config)
+    state.constraints = []  # nothing resolved
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "test"\ndependencies = []\n\n'
+        "[tool.uv]\nmanaged = true\n"
+        'constraint-dependencies = [\n    "StalePin==9.9.9",\n]\n'
+    )
+
+    hook.write(state)
+
+    doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
+    assert "constraint-dependencies" not in doc["tool"]["uv"]

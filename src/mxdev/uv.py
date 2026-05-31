@@ -1,3 +1,4 @@
+from mxdev.config import to_bool
 from mxdev.hooks import Hook
 from mxdev.state import State
 from pathlib import Path
@@ -132,9 +133,17 @@ class UvPyprojectUpdater(Hook):
 
         packages = state.configuration.packages
         overrides = state.configuration.overrides
+        settings = state.configuration.settings
 
-        if not packages and not overrides:
-            return
+        write_constraints = to_bool(settings.get("uv-constraint-dependencies", "true"))
+        constraint_items = _constraints_to_uv(state.constraints) if write_constraints else []
+
+        if not packages and not overrides and not constraint_items:
+            # Nothing to add. The only reason to continue is to drop a stale
+            # mxdev-managed constraint-dependencies array when the feature is on.
+            uv_table = doc.get("tool", {}).get("uv")
+            if not write_constraints or uv_table is None or "constraint-dependencies" not in uv_table:
+                return
 
         if "tool" not in doc:
             doc.add("tool", tomlkit.table())
@@ -184,3 +193,19 @@ class UvPyprojectUpdater(Hook):
             override_array.extend(overrides.values())
             override_array.multiline(True)
             doc["tool"]["uv"]["override-dependencies"] = override_array
+
+        # 3. Update [tool.uv] constraint-dependencies from resolved constraints
+        if write_constraints:
+            if constraint_items:
+                constraint_array = tomlkit.array()
+                constraint_array.multiline(True)
+                constraint_array.add_line(comment="managed by mxdev - do not edit")
+                for kind, text in constraint_items:
+                    if kind == "comment":
+                        constraint_array.add_line(comment=text)
+                    else:
+                        constraint_array.add_line(text)
+                doc["tool"]["uv"]["constraint-dependencies"] = constraint_array
+            elif "constraint-dependencies" in doc["tool"]["uv"]:
+                # Resolved set is empty: drop a stale mxdev-managed array.
+                del doc["tool"]["uv"]["constraint-dependencies"]
