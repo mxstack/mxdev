@@ -89,17 +89,26 @@ Erweiterung von `_update_pyproject` in [src/mxdev/uv.py](../../../src/mxdev/uv.p
 - Leeres Filterergebnis → Key nicht schreiben; ein bestehender, mxdev-verwalteter Key wird in
   dem Fall geleert/entfernt, damit kein veralteter Stand stehen bleibt.
 
-### ⚠️ Technisches Hauptrisiko: tomlkit & Array-interne Kommentare
+### Technisches Hauptrisiko: tomlkit & Array-interne Kommentare — ✅ durch Spike abgesichert
 
-Array-interne Kommentare über viele Zeilen sind die heikelste tomlkit-Stelle. **Früh im Plan
-verifizieren** (kleiner Spike), dass tomlkit interspersed comments in einem multiline-Array
-korrekt **und idempotent** serialisiert (zweiter Lauf = byte-identisch).
+Array-interne Kommentare über viele Zeilen waren die heikelste tomlkit-Stelle. Ein Spike
+(tomlkit 0.15.0) hat den Hauptweg bestätigt:
 
-Falls tomlkit das nicht sauber round-trippt, **Fallback** (Reihenfolge bleibt erhalten):
-Herkunft als **Inline-Kommentar pro Eintrag** statt als eigene Kommentarzeile, z.B.
-`"Zope==6.0",  # from <url>`. Das unterstützt tomlkit zuverlässig. Die begin/end-Blockheader
-werden dann zu einem Inline-`# from <url>`-Suffix pro Eintrag verdichtet; die disabled-Marker
-entfallen in diesem Fallback.
+- `arr.add_line(comment="…")` erzeugt eine eigenständige Kommentarzeile im multiline-Array;
+  `arr.add_line("Zope==6.0")` einen Eintrag.
+- Quell-Gruppen mit `# begin/end constraints from`-Headern bleiben in Reihenfolge erhalten.
+- Environment-Markers bleiben erhalten (valides TOML; `tomllib` liest sie korrekt zurück).
+- Ersetzen eines bestehenden managed-Arrays entfernt alte Einträge; andere pyproject-Sektionen
+  (`project`, `override-dependencies`, `[tool.uv.sources]`) bleiben unangetastet.
+- **Idempotenz bestätigt:** zweiter Lauf ist byte-identisch zum ersten.
+
+Implementierung: Array bei jedem Lauf komplett neu bauen und per
+`doc["tool"]["uv"]["constraint-dependencies"] = arr` ersetzen.
+
+**Fallback (nicht benötigt, nur als Notnagel dokumentiert):** Herkunft als Inline-Kommentar
+pro Eintrag (`"Zope==6.0",  # from <url>`). Wird nur relevant, falls eine künftige
+tomlkit-Version die standalone-Kommentarzeilen brechen sollte; ein Idempotenz-Test im
+Test-Suite fängt das ab.
 
 ### 3. Opt-out
 
