@@ -2,7 +2,11 @@
  
 ## 5.3.3 (unreleased)
 
-<!-- Add future changes here -->
+- The uv hook now writes the fully resolved constraints (including external `-c`/`-r`
+  chains like Plone release constraints) into `[tool.uv] constraint-dependencies`, so
+  `uv sync` honors them. Source order and provenance comments are preserved; the array is
+  fully managed by mxdev. Disable via `uv-constraint-dependencies = false` in `[settings]`.
+  Inspired by Maik Derstappen's `uv-import-constraint-dependencies`. [jensens]
 
 
 ## 5.3.2 (2026-05-30)
