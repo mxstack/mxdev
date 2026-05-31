@@ -282,6 +282,37 @@ When you run `git push` in the checked-out repository, Git will push to all conf
 
 **Note:** Multiple pushurls only work with the `git` VCS type. This mirrors Git's native behavior where a remote can have multiple push URLs.
 
+#### Filesystem (`fs`) Sources
+
+The `fs` VCS type does **not** fetch, copy, or symlink anything. It is a marker for a package
+that is **already present** inside your sources/target directory: mxdev only verifies that the
+directory exists at `<target>/<name>` and otherwise leaves it untouched.
+
+Accordingly, `url` is the **directory name** (which must equal the section name / package name),
+not a path:
+
+```ini
+[my.addon]
+vcs = fs
+url = my.addon
+```
+
+This expects `sources/my.addon/` to exist already (e.g. a checkout you manage yourself, or a
+symlink you created). If the directory is missing, mxdev raises a `FilesystemError`.
+
+**Common pitfall:** `fs` does not turn an external path into a checkout. Setting
+`url = /abs/path/to/my.addon` does **not** make mxdev link that directory into `sources/` — you
+must place or symlink it there yourself first:
+
+```bash
+mkdir -p sources
+ln -s /abs/path/to/my.addon sources/my.addon
+```
+
+To have mxdev manage a local package for you instead, point a normal `git` source at the local
+repository (`url = /abs/path/to/my.addon`, `vcs = git`), or — for uv-managed projects — add a
+path entry under `[tool.uv.sources]` directly (see *uv pyproject.toml integration* below).
+
 ### Usage
 
 Run `mxdev` (for more options run `mxdev --help`).

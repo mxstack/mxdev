@@ -18,6 +18,10 @@
   `mx.ini` setting, on both checkout and update. Expected VCS errors are no longer reported
   with a full Python traceback (the traceback is kept at debug level). [jensens]
 
+- Document the `fs` (filesystem) VCS type in the README: it only verifies that a package
+  directory already exists under the sources directory and does not fetch, copy, or symlink
+  anything (refs #76). [jensens]
+
 
 ## 5.3.2 (2026-05-30)
 
