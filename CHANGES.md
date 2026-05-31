@@ -8,6 +8,11 @@
   fully managed by mxdev. Disable via `uv-constraint-dependencies = false` in `[settings]`.
   Inspired by Maik Derstappen's `uv-import-constraint-dependencies`. [jensens]
 
+- Fix #83: Remove stale entries from `[tool.uv.sources]` when a package is removed from
+  `mx.ini` (or switched to `install-mode = skip`). mxdev tags the source entries it writes
+  with a `# managed by mxdev` marker and prunes managed entries that are no longer
+  configured, while leaving user-defined sources untouched. [jensens]
+
 
 ## 5.3.2 (2026-05-30)
 

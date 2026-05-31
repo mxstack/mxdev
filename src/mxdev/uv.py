@@ -2,6 +2,7 @@ from mxdev.config import to_bool
 from mxdev.hooks import Hook
 from mxdev.state import State
 from pathlib import Path
+from typing import Any
 from typing import TYPE_CHECKING
 
 import logging
@@ -14,6 +15,17 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger("mxdev")
+
+# Trailing comment used to tag the [tool.uv.sources] entries mxdev writes, so
+# stale ones can be pruned without touching user-defined sources.
+_UV_SOURCE_MARKER = "managed by mxdev"
+
+
+def _is_mxdev_managed_source(value: Any) -> bool:
+    """Return True if a [tool.uv.sources] value carries the mxdev marker comment."""
+    trivia = getattr(value, "trivia", None)
+    comment = getattr(trivia, "comment", "") or ""
+    return _UV_SOURCE_MARKER in comment
 
 
 def _constraints_to_uv(constraints: list[str]) -> list[tuple[str, str]]:
@@ -138,30 +150,34 @@ class UvPyprojectUpdater(Hook):
         write_constraints = to_bool(settings.get("uv-constraint-dependencies", "true"))
         constraint_items = _constraints_to_uv(state.constraints) if write_constraints else []
 
-        if not packages and not overrides and not constraint_items:
-            # Nothing to add. The only reason to continue is to drop a stale
-            # mxdev-managed constraint-dependencies array when the feature is on.
-            uv_table = doc.get("tool", {}).get("uv")
-            if not write_constraints or uv_table is None or "constraint-dependencies" not in uv_table:
-                return
+        # Packages mxdev manages as path sources. A package in "skip" install-mode
+        # gets no source entry (and an existing one is pruned below).
+        managed_sources = {name: data for name, data in packages.items() if data.get("install-mode") != "skip"}
 
         if "tool" not in doc:
             doc.add("tool", tomlkit.table())
         if "uv" not in doc["tool"]:
             doc["tool"]["uv"] = tomlkit.table()
+        uv = doc["tool"]["uv"]
 
-        # 1. Update [tool.uv.sources]
-        if packages:
-            if "sources" not in doc["tool"]["uv"]:
-                doc["tool"]["uv"]["sources"] = tomlkit.table()
+        # 1. Reconcile [tool.uv.sources]: write the current managed sources and
+        #    prune mxdev-managed entries whose package was removed from mx.ini.
+        #    Foreign (user-defined) sources without the mxdev marker are never
+        #    touched.
+        existing_sources = uv.get("sources")
+        if managed_sources or existing_sources is not None:
+            if existing_sources is None:
+                uv["sources"] = tomlkit.table()
+            uv_sources = uv["sources"]
 
-            uv_sources = doc["tool"]["uv"]["sources"]
+            # Prune stale mxdev-managed entries.
+            for key in list(uv_sources.keys()):
+                if _is_mxdev_managed_source(uv_sources[key]) and key not in managed_sources:
+                    del uv_sources[key]
 
-            for pkg_name, pkg_data in packages.items():
+            # Write / refresh current managed entries, each tagged with the marker.
+            for pkg_name, pkg_data in managed_sources.items():
                 install_mode = pkg_data.get("install-mode", "editable")
-
-                if install_mode == "skip":
-                    continue
 
                 target_dir = Path(pkg_data.get("target", "sources"))
                 package_path = target_dir / pkg_name
@@ -186,13 +202,19 @@ class UvPyprojectUpdater(Hook):
                     source_table.append("editable", False)
 
                 uv_sources[pkg_name] = source_table
+                uv_sources[pkg_name].trivia.comment_ws = "  "
+                uv_sources[pkg_name].trivia.comment = f"# {_UV_SOURCE_MARKER}"
+
+            # Drop the table entirely if reconciliation emptied it.
+            if len(uv_sources) == 0:
+                del uv["sources"]
 
         # 2. Update [tool.uv] override-dependencies from version-overrides
         if overrides:
             override_array = tomlkit.array()
             override_array.extend(overrides.values())
             override_array.multiline(True)
-            doc["tool"]["uv"]["override-dependencies"] = override_array
+            uv["override-dependencies"] = override_array
 
         # 3. Update [tool.uv] constraint-dependencies from resolved constraints
         if write_constraints:
@@ -205,7 +227,7 @@ class UvPyprojectUpdater(Hook):
                         constraint_array.add_line(comment=text)
                     else:
                         constraint_array.add_line(text)
-                doc["tool"]["uv"]["constraint-dependencies"] = constraint_array
-            elif "constraint-dependencies" in doc["tool"]["uv"]:
+                uv["constraint-dependencies"] = constraint_array
+            elif "constraint-dependencies" in uv:
                 # Resolved set is empty: drop a stale mxdev-managed array.
-                del doc["tool"]["uv"]["constraint-dependencies"]
+                del uv["constraint-dependencies"]
