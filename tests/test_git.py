@@ -304,3 +304,56 @@ def test_offline_prevents_vcs_operations(mkgitrepo, src):
 
     # After normal update, should have both files
     assert {x for x in path.iterdir()} == {path / ".git", path / "foo", path / "bar"}
+
+
+def test_checkout_missing_branch_gives_clear_error(mkgitrepo, src, caplog):
+    """Cloning a configured branch that does not exist must yield a clear,
+    actionable error (issue #78) instead of a generic failure + traceback.
+    """
+    import logging
+
+    repository = mkgitrepo("repository")
+    create_default_content(repository)
+    path = src / "egg"
+    sources = {
+        "egg": dict(
+            vcs="git",
+            name="egg",
+            branch="does-not-exist",
+            url=str(repository.base),
+            path=str(path),
+        )
+    }
+
+    with caplog.at_level(logging.ERROR):
+        vcs_checkout(sources, ["egg"], False)
+
+    assert "Branch 'does-not-exist' for package 'egg' does not exist" in caplog.text
+    assert "Check the 'branch' setting for [egg] in your mx.ini" in caplog.text
+    # No alarming generic message / traceback for an expected operational error.
+    assert "Can not execute action!" not in caplog.text
+
+
+def test_update_missing_branch_gives_clear_error(mkgitrepo, src, caplog):
+    """Updating to a configured branch that no longer exists must yield the same
+    clear error (issue #78) instead of a terse 'No such branch' + sys.exit.
+    """
+    import logging
+
+    repository = mkgitrepo("repository")
+    create_default_content(repository)
+    path = src / "egg"
+
+    sources_ok = {"egg": dict(vcs="git", name="egg", branch="master", url=str(repository.base), path=str(path))}
+    vcs_checkout(sources_ok, ["egg"], False)
+
+    sources_bad = {
+        "egg": dict(vcs="git", name="egg", branch="does-not-exist", url=str(repository.base), path=str(path))
+    }
+    caplog.clear()
+    with caplog.at_level(logging.ERROR):
+        vcs_update(sources_bad, ["egg"], False)
+
+    assert "Branch 'does-not-exist' for package 'egg' does not exist" in caplog.text
+    assert "Check the 'branch' setting for [egg] in your mx.ini" in caplog.text
+    assert "Can not execute action!" not in caplog.text
