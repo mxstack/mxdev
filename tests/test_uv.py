@@ -600,3 +600,38 @@ def test_empty_constraints_removes_stale_managed_array(tmp_path, monkeypatch):
 
     doc = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
     assert "constraint-dependencies" not in doc["tool"]["uv"]
+
+
+def test_end_to_end_constraint_chain(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    # constraints chain: requirements.txt -> -c constraints.txt
+    (tmp_path / "constraints.txt").write_text("Zope==6.0\nAccessControl==7.3\n")
+    (tmp_path / "requirements.txt").write_text("-c constraints.txt\n")
+
+    mx_ini = "[settings]\nrequirements-in = requirements.txt\n" "version-overrides =\n    AccessControl==7.4\n"
+    (tmp_path / "mx.ini").write_text(mx_ini)
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "test"\ndependencies = []\n\n[tool.uv]\nmanaged = true\n'
+    )
+
+    from mxdev.processing import read
+
+    config = Configuration("mx.ini")
+    state = State(config)
+    read(state)  # populates state.constraints from the chain
+
+    hook = UvPyprojectUpdater()
+    hook.write(state)
+
+    content = (tmp_path / "pyproject.toml").read_text()
+    assert "# begin constraints from: constraints.txt" in content
+    doc = tomlkit.parse(content)
+    cdeps = list(doc["tool"]["uv"]["constraint-dependencies"])
+    # Zope is constrained; AccessControl is overridden -> commented out by read(),
+    # so it must NOT appear as an active constraint entry.
+    assert "Zope==6.0" in cdeps
+    assert "AccessControl==7.3" not in cdeps
+    # The override itself is carried by override-dependencies.
+    assert list(doc["tool"]["uv"]["override-dependencies"]) == ["AccessControl==7.4"]
