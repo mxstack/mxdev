@@ -39,7 +39,7 @@ def resolve_dependencies(
                 tf.flush()
                 file = Path(tf.name)
             parts = list(parsed)
-            parts[2] = str(Path(parts[2]).parent)
+            parts[2] = str(Path(parts[2]).parent) + '/'
             http_parent = parse.urlunparse(parts)
         else:
             file = Path(file_or_url)
