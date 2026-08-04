@@ -1,8 +1,11 @@
 ## Changes
  
-## 5.4.1 (unreleased)
+## 5.4.2 (unreleased)
 
 <!-- Add future changes here -->
+
+
+## 5.4.1 (2026-08-04)
 
 - Fix #100: With packaging >= 26.3, packages configured as sources were no longer
   commented out in the generated requirements/constraints, because `Requirement()`
