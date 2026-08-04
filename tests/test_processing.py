@@ -109,6 +109,65 @@ def test_process_line_blank():
     assert constraints == []
 
 
+@pytest.mark.parametrize("eol", ["\n", "\r\n"])
+def test_process_line_source_package_with_trailing_newline(eol):
+    """Regression test for #100: lines read from files carry a trailing newline.
+
+    packaging >= 26.3 rejects requirement strings with trailing whitespace, so
+    process_line must strip before parsing.
+    """
+    from mxdev.processing import process_line
+
+    requirements, constraints = process_line(
+        f"my.package==1.0.0{eol}",
+        package_keys=["my.package"],
+        override_keys=[],
+        ignore_keys=[],
+        variety="r",
+    )
+    assert requirements == ["# my.package==1.0.0 -> mxdev disabled (source)\n"]
+    assert constraints == []
+
+
+@pytest.mark.parametrize("eol", ["\n", "\r\n"])
+def test_process_line_source_constraint_with_trailing_newline(eol):
+    """Regression test for #100: constraints variety must also strip before parsing."""
+    from mxdev.processing import process_line
+
+    requirements, constraints = process_line(
+        f"my.package==1.0.0{eol}",
+        package_keys=["my.package"],
+        override_keys=[],
+        ignore_keys=[],
+        variety="c",
+    )
+    assert requirements == []
+    assert constraints == ["# my.package==1.0.0 -> mxdev disabled (source)\n"]
+
+
+def test_resolve_dependencies_source_package_commented(tmp_path):
+    """Regression test for #100 through the real file-reading path."""
+    from mxdev.processing import resolve_dependencies
+
+    req_file = tmp_path / "requirements.txt"
+    req_file.write_text("my.package==1.0.0\nrequests>=2.28.0\n")
+
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        requirements, constraints = resolve_dependencies(
+            "requirements.txt",
+            package_keys=["my.package"],
+            override_keys=[],
+            ignore_keys=[],
+            variety="r",
+        )
+        assert "# my.package==1.0.0 -> mxdev disabled (source)\n" in requirements
+        assert any("requests>=2.28.0" in line for line in requirements)
+    finally:
+        os.chdir(old_cwd)
+
+
 def test_resolve_dependencies_missing_file(tmp_path):
     """Test resolve_dependencies with a missing requirements file."""
     from mxdev.processing import resolve_dependencies

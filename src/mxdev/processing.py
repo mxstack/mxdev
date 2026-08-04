@@ -122,9 +122,9 @@ def process_line(
             cache_dir=cache_dir,
         )
     try:
-        parsed = Requirement(line)
+        parsed = Requirement(line.strip())
     except Exception:
-        pass
+        logger.debug(f"Line is not a requirement specifier: {line.strip()!r}")
     else:
         parsed_name_lower = parsed.name.lower()
         if parsed_name_lower in [k.lower() for k in package_keys]:
