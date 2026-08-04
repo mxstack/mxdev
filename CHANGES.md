@@ -4,6 +4,11 @@
 
 <!-- Add future changes here -->
 
+- Fix #100: With packaging >= 26.3, packages configured as sources were no longer
+  commented out in the generated requirements/constraints, because `Requirement()`
+  now rejects the trailing newline and the error was silently swallowed. Lines are
+  now stripped before parsing and unparseable lines are logged at debug level. [jensens]
+
 
 ## 5.4.0 (2026-06-01)
 
