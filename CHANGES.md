@@ -4,6 +4,12 @@
 
 <!-- Add future changes here -->
 
+- Add `include-optional` for INI configuration files that may be absent, skipping
+  missing local files and HTTP 404 responses while preserving mandatory includes.
+  This allows projects to define an optional include for client-specific
+  customizations.
+- Fix HTTP error logging during INI inclusion and preserve the original exception.
+- Fix relative INI includes from URLs with a directory path.
 
 ## 5.4.1 (2026-08-04)
 

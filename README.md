@@ -198,6 +198,32 @@ If an included file is an HTTP-URL, it is loaded from there.
 
 If the included file is a relative path, it is loaded relative to the parent's directory or URL.
 
+Missing files and HTTP errors stop configuration loading. Use `include-optional` for files that may be absent.
+
+Default: empty
+
+##### `include-optional`
+
+Optional includes allow projects to define a client-specific configuration file
+via a file name defined by a convention - e.g. to make customer- or
+developer-specific adaptions which should not be checked into a repository.
+
+Include one or more optional INI files, one per line:
+
+```ini
+[settings]
+include-optional =
+    mx-custom.ini
+```
+
+Missing local files and HTTP 404 responses are ignored. Other errors, such as HTTP 403/500,
+connection failures, or invalid INI content, still stop configuration loading.
+Mandatory `include` entries inside an existing optional file remain mandatory.
+
+Paths and URLs are resolved in the same way as `include`, and optional files may include other files.
+For each file, mandatory includes are read first, then optional includes in their listed order,
+then the file itself. Later settings override earlier settings, so the main file takes precedence.
+
 Default: empty
 
 ##### `directory`
